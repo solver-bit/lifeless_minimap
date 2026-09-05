@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lifeless Shop</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="okey.css">
+</head>
+<body>
+    <div id="app">
+        <div class="header">
+            <h1>🎰 Lifeless Shop</h1>
+        </div>
+        <div id="balance">Баланс: 🪙 <span id="coins">0</span></div>
+        <div class="cases-grid">
+            <button class="case-btn" onclick="openCase('10')">📦 Новичка (10🪙)</button>
+            <button class="case-btn" onclick="openCase('50')">💼 Обычный (50🪙)</button>
+            <button class="case-btn" onclick="openCase('250')">🔥 Хайроллер (250🪙)</button>
+        </div>
+        <button class="back-btn" onclick="closeApp()">🔙 Закрыть</button>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
