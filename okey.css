@@ -6,28 +6,57 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, #0a0a12 0%, #12121f 100%);
+    background: #0a0a12;
     color: #f0e6d2;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     padding: 0;
-    padding-bottom: 70px; /* запас под нижнюю навигацию */
 }
 
 #app {
-    max-width: 420px;
     width: 100%;
     background: linear-gradient(145deg, #13131f, #1c1c2e);
-    border-radius: 24px 24px 0 0;
-    min-height: 100vh;
-    box-shadow: 0 0 40px rgba(212, 175, 55, 0.1);
+    border-radius: 24px;
     border: 1px solid rgba(212, 175, 55, 0.2);
-    border-bottom: none;
     position: relative;
+    overflow: hidden;
 }
 
+/* Загрузка */
+.loader {
+    position: absolute;
+    inset: 0;
+    background: #13131f;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    transition: opacity 0.3s;
+}
+
+.loader.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #d4af37;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Шапка */
 .header {
     text-align: center;
     padding: 24px 20px 10px;
@@ -57,21 +86,11 @@ body {
     margin-top: 4px;
 }
 
-/* Макет */
-.layout {
-    display: flex;
-    min-height: calc(100vh - 120px);
-}
-
-.main-area {
-    flex: 1;
-    padding: 0;
-}
-
+/* Контент */
 .content {
     padding: 20px;
     overflow-y: auto;
-    max-height: calc(100vh - 170px);
+    max-height: calc(100vh - 140px);
 }
 
 .tab {
@@ -99,6 +118,7 @@ body {
     margin-top: 20px;
 }
 
+/* Баланс */
 #balance-block {
     background: rgba(212, 175, 55, 0.1);
     border: 1px solid rgba(212, 175, 55, 0.3);
@@ -122,6 +142,7 @@ body {
     margin-top: 4px;
 }
 
+/* Быстрые действия */
 .quick-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -159,6 +180,7 @@ body {
     margin-top: 4px;
 }
 
+/* Кейсы */
 .cases-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -198,6 +220,7 @@ body {
     color: #f9d423;
 }
 
+/* Профиль */
 #profile-block {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 16px;
@@ -251,6 +274,7 @@ body {
     margin-left: 8px;
 }
 
+/* Бонусы */
 .bonus-list {
     display: flex;
     flex-direction: column;
@@ -303,6 +327,42 @@ body {
     transform: scale(1.05);
 }
 
+/* Вывод */
+.withdraw-block {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.withdraw-block p {
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.withdraw-block input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    background: #1e1e2e;
+    color: #fff;
+    margin-bottom: 12px;
+}
+
+.withdraw-btn {
+    width: 100%;
+    background: linear-gradient(145deg, #d4af37, #f9d423);
+    border: none;
+    border-radius: 12px;
+    color: #1a1a2e;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Магазин */
 .shop-categories {
     display: flex;
     flex-direction: column;
@@ -334,49 +394,6 @@ body {
     font-size: 16px;
 }
 
-/* Нижняя навигация (мобильная) */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 420px;
-    display: flex;
-    background: rgba(20, 20, 35, 0.95);
-    border-top: 1px solid rgba(212, 175, 55, 0.2);
-    padding: 8px 0;
-    border-radius: 0 0 24px 24px;
-}
-
-.nav-btn {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: #8a8aa0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    padding: 8px 0;
-    transition: color 0.2s;
-}
-
-.nav-btn.active {
-    color: #d4af37;
-}
-
-.nav-icon {
-    font-size: 22px;
-}
-
-.nav-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
 /* Модалка */
 .modal {
     position: fixed;
@@ -406,8 +423,15 @@ body {
 }
 
 .case-animation {
-    font-size: 64px;
+    font-size: 80px;
     margin-bottom: 20px;
+    animation: wheelSpin 2s ease-out;
+}
+
+@keyframes wheelSpin {
+    0% { transform: rotate(0deg) scale(0.5); opacity: 0.5; }
+    50% { transform: rotate(360deg) scale(1.2); opacity: 1; }
+    100% { transform: rotate(720deg) scale(1); }
 }
 
 #result-text {
@@ -433,78 +457,88 @@ body {
     cursor: pointer;
 }
 
-/* Сайдбар скрыт по умолчанию */
-.sidebar {
-    display: none;
+/* Адаптивность через класс body */
+body.mobile #app {
+    max-width: 420px;
+    min-height: 100vh;
+    border-radius: 0;
 }
 
-/* ==== АДАПТИВНОСТЬ ДЛЯ ПК ==== */
-@media (min-width: 768px) {
-    body {
-        padding: 20px;
-        padding-bottom: 20px;
-        background: radial-gradient(circle at 50% 0%, #1a1a2e 0%, #0a0a12 80%);
-    }
-
-    #app {
-        max-width: 900px;
-        border-radius: 24px;
-        min-height: calc(100vh - 40px);
-        box-shadow: 0 0 60px rgba(212, 175, 55, 0.15);
-        border: 1px solid rgba(212, 175, 55, 0.2);
-        padding-bottom: 0;
-    }
-
-    .layout {
-        min-height: calc(100vh - 130px);
-    }
-
-    .sidebar {
-        display: flex;
-        flex-direction: column;
-        width: 220px;
-        background: rgba(20, 20, 35, 0.9);
-        border-right: 1px solid rgba(212, 175, 55, 0.2);
-        padding: 20px 10px;
-        border-radius: 24px 0 0 24px;
-    }
-
-    .side-btn {
-        background: transparent;
-        border: none;
-        color: #8a8aa0;
-        padding: 12px;
-        text-align: left;
-        font-size: 16px;
-        cursor: pointer;
-        border-radius: 8px;
-        margin-bottom: 8px;
-        transition: all 0.2s;
-    }
-
-    .side-btn:hover {
-        background: rgba(212, 175, 55, 0.1);
-        color: #d4af37;
-    }
-
-    .side-btn.active {
-        background: rgba(212, 175, 55, 0.2);
-        color: #d4af37;
-    }
-
-    .main-area {
-        padding: 20px;
-    }
-
-    .content {
-        max-height: calc(100vh - 130px);
-    }
-
-    .bottom-nav {
-        display: none;
-    }
-
-    .header {
-        padding: 20px;
-    }
+body.mobile .content {
+    padding-bottom: 80px;
 }
+
+body.mobile .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    background: rgba(20, 20, 35, 0.95);
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+    padding: 8px 0;
+    z-index: 100;
+}
+
+body.mobile .nav-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #8a8aa0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 8px 0;
+}
+
+body.mobile .nav-btn.active {
+    color: #d4af37;
+}
+
+body.mobile .side-nav { display: none; }
+
+body.pc #app {
+    max-width: 900px;
+    min-height: calc(100vh - 40px);
+    border-radius: 24px;
+    margin: 20px;
+}
+
+body.pc .layout {
+    display: flex;
+}
+
+body.pc .sidebar {
+    width: 220px;
+    background: rgba(20, 20, 35, 0.9);
+    border-right: 1px solid rgba(212, 175, 55, 0.2);
+    padding: 20px 10px;
+}
+
+body.pc .side-btn {
+    background: transparent;
+    border: none;
+    color: #8a8aa0;
+    padding: 12px;
+    text-align: left;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+body.pc .side-btn.active {
+    background: rgba(212, 175, 55, 0.2);
+    color: #d4af37;
+}
+
+body.pc .content {
+    flex: 1;
+    padding: 20px;
+}
+
+body.pc .bottom-nav { display: none; }

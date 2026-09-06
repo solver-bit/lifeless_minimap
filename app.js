@@ -1,4 +1,8 @@
-// Фоллбек для ПК (если открыто вне Telegram)
+// Определяем устройство
+const isMobile = window.innerWidth < 768;
+document.body.classList.add(isMobile ? 'mobile' : 'pc');
+
+// Фоллбек для tg
 let tg = window.Telegram?.WebApp;
 if (!tg) {
     tg = {
@@ -10,16 +14,82 @@ if (!tg) {
         sendData: () => {}
     };
 }
-tg.expand();
 
+// Инициализация
+tg.expand();
 let user = tg.initDataUnsafe?.user || { id: 0, first_name: "Гость" };
 document.getElementById('user-id').textContent = user.id;
 
-// ⚠️ Замени на реальный URL после покупки сервера
-const API_BASE = "https://ваш-домен.ru";
+// API конфигурация
+const API_BASE = "https://ваш-домен.ru"; // замени после покупки сервера
 const SECRET = "my_super_secret_key";
 
-// Функция получения баланса и данных
+// Создание навигации
+function createNav() {
+    const tabs = ['home', 'cases', 'profile', 'bonuses', 'withdraw', 'shop'];
+    let navHTML = '';
+    if (isMobile) {
+        navHTML = '<nav class="bottom-nav">';
+        tabs.forEach(tab => {
+            navHTML += `<button class="nav-btn ${tab === 'home' ? 'active' : ''}" data-tab="${tab}"><span class="nav-icon">${getIcon(tab)}</span><span class="nav-label">${getLabel(tab)}</span></button>`;
+        });
+        navHTML += '</nav>';
+    } else {
+        navHTML = '<aside class="sidebar"><nav class="side-nav">';
+        tabs.forEach(tab => {
+            navHTML += `<button class="side-btn ${tab === 'home' ? 'active' : ''}" data-tab="${tab}">${getIcon(tab)} ${getLabel(tab)}</button>`;
+        });
+        navHTML += '</nav></aside>';
+    }
+    // Вставляем навигацию в подходящее место
+    if (isMobile) {
+        document.getElementById('app').insertAdjacentHTML('beforeend', navHTML);
+    } else {
+        // Для ПК оборачиваем контент в layout
+        const content = document.getElementById('main-content');
+        const layout = document.createElement('div');
+        layout.className = 'layout';
+        layout.innerHTML = navHTML;
+        layout.appendChild(content.cloneNode(true));
+        document.getElementById('app').appendChild(layout);
+        // Удаляем старый контент
+        content.remove();
+        // Называем новый контент правильным ID
+        layout.querySelector('.content').id = 'main-content';
+    }
+    // Обработчики кликов
+    document.querySelectorAll('.nav-btn, .side-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+}
+
+function getIcon(tab) {
+    const icons = {
+        home: '🏠', cases: '🎰', profile: '👤', bonuses: '🎁', withdraw: '💸', shop: '🛍️'
+    };
+    return icons[tab] || '❓';
+}
+
+function getLabel(tab) {
+    const labels = {
+        home: 'Главная', cases: 'Кейсы', profile: 'Профиль', bonuses: 'Бонусы', withdraw: 'Вывод', shop: 'Магазин'
+    };
+    return labels[tab] || tab;
+}
+
+createNav();
+
+// Переключение вкладок
+function switchTab(tabId) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    document.querySelectorAll('.nav-btn, .side-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.tab === tabId) btn.classList.add('active');
+    });
+}
+
+// Загрузка данных
 async function fetchBalance() {
     try {
         const res = await fetch(`${API_BASE}/api/me?user_id=${user.id}`, {
@@ -35,7 +105,7 @@ async function fetchBalance() {
         }
     } catch (e) {
         console.error('Ошибка баланса:', e);
-        // Заглушка при отсутствии API
+        // Демо-данные
         document.getElementById('coins').textContent = 1000;
         document.getElementById('cases-opened').textContent = 5;
         document.getElementById('ref-link').textContent = 'https://t.me/your_bot?start=' + user.id;
@@ -68,23 +138,34 @@ async function openCase(caseId) {
         const reward = Math.floor(Math.random() * 50) + 10;
         setTimeout(() => {
             showResult('🎉 Выигрыш!', reward + ' 🪙');
-            // имитация обновления баланса
             document.getElementById('coins').textContent = parseInt(document.getElementById('coins').textContent) + reward;
         }, 1500);
     }
 }
 
-// Открытие звёздного кейса (заглушка)
+// Открытие звёздного кейса
 function openStarCase(caseId) {
     showModal('Открываем звёздный кейс...');
     setTimeout(() => {
-        showResult('⭐ Выигрыш!', caseId * 10 + ' 🪙');
+        const reward = caseId * 10;
+        showResult('⭐ Выигрыш!', reward + ' 🪙');
     }, 1500);
 }
 
 // Ежедневный бонус (заглушка)
 function claimDaily() {
     alert('Ежедневный бонус скоро будет доступен! (заглушка)');
+}
+
+// Вывод средств (заглушка)
+function requestWithdraw() {
+    const address = document.getElementById('withdraw-address').value;
+    if (!address) {
+        alert('Введите адрес кошелька');
+        return;
+    }
+    // Здесь будет запрос к API
+    alert('Запрос на вывод отправлен! (заглушка)');
 }
 
 // Копирование реферальной ссылки
@@ -99,6 +180,10 @@ function showModal(text) {
     document.getElementById('open-modal').classList.remove('hidden');
     document.getElementById('result-text').textContent = text;
     document.getElementById('result-amount').textContent = '';
+    const wheel = document.getElementById('case-wheel');
+    wheel.style.animation = 'none';
+    wheel.offsetHeight; // рестарт анимации
+    wheel.style.animation = '';
 }
 
 function showResult(title, amount) {
@@ -111,27 +196,8 @@ function hideModal() {
     document.getElementById('open-modal').classList.add('hidden');
 }
 
-// Переключение вкладок (общая функция)
-function switchTab(tabId) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + tabId).classList.add('active');
+// Скрыть загрузочный экран
+document.getElementById('loader').classList.add('hidden');
 
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelector(`.nav-btn[data-tab="${tabId}"]`)?.classList.add('active');
-
-    document.querySelectorAll('.side-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelector(`.side-btn[data-tab="${tabId}"]`)?.classList.add('active');
-}
-
-// Привязка нижней навигации
-document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-});
-
-// Привязка бокового меню (для ПК)
-document.querySelectorAll('.side-btn').forEach(btn => {
-    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-});
-
-// Инициализация
+// Запуск
 fetchBalance();
