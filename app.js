@@ -100,17 +100,25 @@ function hideModal() {
     document.getElementById('open-modal').classList.add('hidden');
 }
 
-// Переключение вкладок
+// Переключение вкладок (общая функция)
 function switchTab(tabId) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + tabId).classList.add('active');
 
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelector(`.nav-btn[data-tab="${tabId}"]`).classList.add('active');
+    document.querySelector(`.nav-btn[data-tab="${tabId}"]`)?.classList.add('active');
+
+    document.querySelectorAll('.side-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.side-btn[data-tab="${tabId}"]`)?.classList.add('active');
 }
 
-// Привязка навигации
+// Привязка нижней навигации
 document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+// Привязка бокового меню (для ПК)
+document.querySelectorAll('.side-btn').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
