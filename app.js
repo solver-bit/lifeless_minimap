@@ -1,4 +1,15 @@
-let tg = window.Telegram.WebApp;
+// Фоллбек для ПК (если открыто вне Telegram)
+let tg = window.Telegram?.WebApp;
+if (!tg) {
+    tg = {
+        initDataUnsafe: { user: { id: 123456789, first_name: "Тест" } },
+        expand: () => {},
+        close: () => {},
+        showPopup: (obj) => alert(obj.message),
+        openTelegramLink: (url) => window.open(url, '_blank'),
+        sendData: () => {}
+    };
+}
 tg.expand();
 
 let user = tg.initDataUnsafe?.user || { id: 0, first_name: "Гость" };
