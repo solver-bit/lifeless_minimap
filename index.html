@@ -2,79 +2,196 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lifeless Shop</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lifeless Casino</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="okey.css">
 </head>
 <body>
     <div id="app">
         <!-- Шапка -->
-        <div class="header">
+        <header class="header">
             <div class="logo">
                 <span>🖤</span>
                 <h1>LIFELESS</h1>
                 <span>💛</span>
             </div>
             <p class="subtitle">CASINO</p>
-        </div>
+        </header>
 
-        <!-- Баланс -->
-        <div id="balance-block">
-            <div class="label">Баланс</div>
-            <div class="balance">🪙 <span id="coins">0</span></div>
-        </div>
-
-        <!-- Меню кейсов -->
-        <div class="section-title">🎰 Кейсы</div>
-        <div class="cases-grid">
-            <button class="case-btn" onclick="openCase('10')">
-                <div class="case-icon">📦</div>
-                <div class="case-info">
-                    <span class="case-name">Новичка</span>
-                    <span class="case-price">10 🪙</span>
-                </div>
+        <!-- Нижняя навигация -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" data-tab="home">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Главная</span>
             </button>
-            <button class="case-btn" onclick="openCase('50')">
-                <div class="case-icon">💼</div>
-                <div class="case-info">
-                    <span class="case-name">Обычный</span>
-                    <span class="case-price">50 🪙</span>
-                </div>
+            <button class="nav-btn" data-tab="cases">
+                <span class="nav-icon">🎰</span>
+                <span class="nav-label">Кейсы</span>
             </button>
-            <button class="case-btn" onclick="openCase('250')">
-                <div class="case-icon">🔥</div>
-                <div class="case-info">
-                    <span class="case-name">Хайроллер</span>
-                    <span class="case-price">250 🪙</span>
-                </div>
+            <button class="nav-btn" data-tab="profile">
+                <span class="nav-icon">👤</span>
+                <span class="nav-label">Профиль</span>
             </button>
-            <button class="case-btn" onclick="openCase('1000')">
-                <div class="case-icon">💎</div>
-                <div class="case-info">
-                    <span class="case-name">Ультра</span>
-                    <span class="case-price">1000 🪙</span>
-                </div>
+            <button class="nav-btn" data-tab="bonuses">
+                <span class="nav-icon">🎁</span>
+                <span class="nav-label">Бонусы</span>
             </button>
-        </div>
+            <button class="nav-btn" data-tab="shop">
+                <span class="nav-icon">🛍️</span>
+                <span class="nav-label">Магазин</span>
+            </button>
+        </nav>
 
-        <!-- Профиль -->
-        <div class="section-title">👤 Профиль</div>
-        <div id="profile-block">
-            <div class="profile-row"><span>ID:</span> <span id="user-id">—</span></div>
-            <div class="profile-row"><span>Кейсов открыто:</span> <span id="cases-opened">0</span></div>
-            <div class="profile-row"><span>Реферальная ссылка:</span> <span id="ref-link">—</span></div>
-        </div>
+        <!-- Контент вкладок -->
+        <main class="content">
+            <!-- Главная -->
+            <section id="tab-home" class="tab active">
+                <div id="balance-block">
+                    <div class="label">Баланс</div>
+                    <div class="balance">🪙 <span id="coins">0</span></div>
+                </div>
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="switchTab('cases')">🎰 Открыть кейс</button>
+                    <button class="quick-btn" onclick="switchTab('bonuses')">🎁 Получить бонус</button>
+                </div>
+                <div class="promo-banner">
+                    <p>🔥 Счастливые часы: 20:00–22:00</p>
+                    <p class="promo-small">+20% к выигрышу</p>
+                </div>
+            </section>
 
-        <!-- Кнопка закрыть -->
-        <button class="back-btn" onclick="closeApp()">🔙 Закрыть</button>
-    </div>
+            <!-- Кейсы -->
+            <section id="tab-cases" class="tab">
+                <div class="section-title">🎰 Монетные кейсы</div>
+                <div class="cases-grid">
+                    <button class="case-btn" onclick="openCase('10')">
+                        <div class="case-icon">📦</div>
+                        <div class="case-name">Новичка</div>
+                        <div class="case-price">10 🪙</div>
+                    </button>
+                    <button class="case-btn" onclick="openCase('50')">
+                        <div class="case-icon">💼</div>
+                        <div class="case-name">Обычный</div>
+                        <div class="case-price">50 🪙</div>
+                    </button>
+                    <button class="case-btn" onclick="openCase('250')">
+                        <div class="case-icon">🔥</div>
+                        <div class="case-name">Хайроллер</div>
+                        <div class="case-price">250 🪙</div>
+                    </button>
+                    <button class="case-btn" onclick="openCase('1000')">
+                        <div class="case-icon">💎</div>
+                        <div class="case-name">Ультра</div>
+                        <div class="case-price">1000 🪙</div>
+                    </button>
+                    <button class="case-btn" onclick="openCase('5000')">
+                        <div class="case-icon">👑</div>
+                        <div class="case-name">Легенда</div>
+                        <div class="case-price">5000 🪙</div>
+                    </button>
+                    <button class="case-btn" onclick="openCase('10000')">
+                        <div class="case-icon">🌌</div>
+                        <div class="case-name">Миф</div>
+                        <div class="case-price">10000 🪙</div>
+                    </button>
+                </div>
+                <div class="section-title">⭐ Звёздные кейсы</div>
+                <div class="cases-grid">
+                    <button class="case-btn" onclick="openStarCase(1)">
+                        <div class="case-icon">🪙</div>
+                        <div class="case-name">Фарм</div>
+                        <div class="case-price">1 ⭐</div>
+                    </button>
+                    <button class="case-btn" onclick="openStarCase(3)">
+                        <div class="case-icon">🪙</div>
+                        <div class="case-name">Базовый</div>
+                        <div class="case-price">3 ⭐</div>
+                    </button>
+                    <button class="case-btn" onclick="openStarCase(5)">
+                        <div class="case-icon">🔥</div>
+                        <div class="case-name">Лёгкий</div>
+                        <div class="case-price">5 ⭐</div>
+                    </button>
+                </div>
+            </section>
 
-    <!-- Модалка для анимации открытия -->
-    <div id="open-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="spinner"></div>
-            <div id="result-text">Открываем...</div>
+            <!-- Профиль -->
+            <section id="tab-profile" class="tab">
+                <div class="section-title">👤 Мой профиль</div>
+                <div id="profile-block">
+                    <div class="profile-row"><span>ID</span><span id="user-id">—</span></div>
+                    <div class="profile-row"><span>Кейсов открыто</span><span id="cases-opened">0</span></div>
+                    <div class="profile-row"><span>Баланс</span><span id="profile-balance">0 🪙</span></div>
+                    <div class="profile-row"><span>Рефералов</span><span id="referrals">0</span></div>
+                </div>
+                <div class="section-title">🔗 Реферальная программа</div>
+                <div id="ref-block">
+                    <p class="ref-desc">Приглашай друзей и получай <b>+25 🪙</b> за каждого!</p>
+                    <div class="ref-link-box">
+                        <span id="ref-link">Загрузка...</span>
+                        <button class="copy-btn" onclick="copyRefLink()">📋</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Бонусы -->
+            <section id="tab-bonuses" class="tab">
+                <div class="section-title">🎁 Бесплатные бонусы</div>
+                <div class="bonus-list">
+                    <div class="bonus-item">
+                        <div class="bonus-icon">📢</div>
+                        <div class="bonus-info">
+                            <span class="bonus-title">Подпишись на канал</span>
+                            <span class="bonus-reward">+150 🪙</span>
+                        </div>
+                        <button class="bonus-btn" onclick="window.Telegram.WebApp.openTelegramLink('https://t.me/durvww')">Открыть</button>
+                    </div>
+                    <div class="bonus-item">
+                        <div class="bonus-icon">💬</div>
+                        <div class="bonus-info">
+                            <span class="bonus-title">Вступи в чат</span>
+                            <span class="bonus-reward">+50 🪙</span>
+                        </div>
+                        <button class="bonus-btn" onclick="window.Telegram.WebApp.openTelegramLink('https://t.me/wwlifeless')">Открыть</button>
+                    </div>
+                    <div class="bonus-item">
+                        <div class="bonus-icon">🎉</div>
+                        <div class="bonus-info">
+                            <span class="bonus-title">Ежедневный бонус</span>
+                            <span class="bonus-reward">+20 🪙</span>
+                        </div>
+                        <button class="bonus-btn" onclick="claimDaily()">Забрать</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Магазин -->
+            <section id="tab-shop" class="tab">
+                <div class="section-title">🛍️ Магазин</div>
+                <div class="shop-categories">
+                    <button class="shop-cat" onclick="alert('Покупка монет за звёзды (заглушка)')">
+                        <span class="cat-icon">🪙</span>
+                        <span class="cat-name">Купить монеты за ⭐</span>
+                    </button>
+                    <button class="shop-cat" onclick="alert('Покупка премиума (заглушка)')">
+                        <span class="cat-icon">💎</span>
+                        <span class="cat-name">Telegram Premium</span>
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Модалка открытия кейса -->
+        <div id="open-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="case-animation">
+                    <div class="case-3d">🎁</div>
+                </div>
+                <div id="result-text">Открываем...</div>
+                <div id="result-amount"></div>
+                <button class="close-modal" onclick="hideModal()">Ок</button>
+            </div>
         </div>
     </div>
 
