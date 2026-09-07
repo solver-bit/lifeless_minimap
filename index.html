@@ -49,7 +49,7 @@
 
                 <div id="balance-block">
                     <div class="label">Баланс</div>
-                    <div class="balance">🪙 <span id="coins">0</span></div>
+                    <div class="balance">🪙 <span id="coins">0</span> | ⭐ <span id="stars">0</span></div>
                 </div>
 
                 <div class="quick-actions">
@@ -110,15 +110,16 @@
                 <div class="section-title">🎡 Колесо фортуны</div>
                 <div class="wheel-container">
                     <div class="wheel-pointer"></div>
-                    <img src="https://raw.githubusercontent.com/solver-bit/lifeless_minimap/main/durov3.jpg" id="wheel-img" class="wheel-img" alt="Колесо">
+                    <div class="wheel" id="wheel"></div>
                 </div>
-                <button class="play-btn" onclick="spinWheel()">Крутить (10 🪙)</button>
+                <button class="play-btn" onclick="spinWheel()">Крутить (10 ⭐)</button>
                 <div id="wheel-result" class="game-result"></div>
             </section>
 
             <!-- САПЁР -->
             <section id="tab-saper" class="tab">
                 <div class="section-title">💣 Сапёр</div>
+                <div class="saper-info">Ставка: 25 ⭐</div>
                 <div id="saper-grid" class="saper-grid"></div>
                 <button class="play-btn" onclick="startSaper()">Новая игра</button>
                 <div id="saper-result" class="game-result"></div>
@@ -131,7 +132,7 @@
                     <div id="dice1" class="dice">?</div>
                     <div id="dice2" class="dice">?</div>
                 </div>
-                <button class="play-btn" onclick="rollDice()">Бросить (5 🪙)</button>
+                <button class="play-btn" onclick="rollDice()">Бросить (10 ⭐)</button>
                 <div id="dice-result" class="game-result"></div>
             </section>
 
@@ -142,6 +143,7 @@
                     <div class="profile-row"><span>ID</span><span id="user-id">—</span></div>
                     <div class="profile-row"><span>Кейсов открыто</span><span id="cases-opened">0</span></div>
                     <div class="profile-row"><span>Баланс</span><span id="profile-balance">0 🪙</span></div>
+                    <div class="profile-row"><span>Звёзд</span><span id="profile-stars">0 ⭐</span></div>
                     <div class="profile-row"><span>Рефералов</span><span id="referrals">0</span></div>
                 </div>
                 <div class="section-title">🔗 Реферальная программа</div>
@@ -154,49 +156,14 @@
                 </div>
             </section>
 
-            <!-- БОНУСЫ -->
-            <section id="tab-bonuses" class="tab">
-                <div class="section-title">🎁 Бесплатные бонусы</div>
-                <div class="bonus-list">
-                    <div class="bonus-item">
-                        <div class="bonus-icon">📢</div>
-                        <div class="bonus-info">
-                            <span class="bonus-title">Подпишись на канал</span>
-                            <span class="bonus-reward">+150 🪙</span>
-                        </div>
-                        <button class="bonus-btn" onclick="window.Telegram.WebApp.openTelegramLink('https://t.me/durvww')">Открыть</button>
-                    </div>
-                    <div class="bonus-item">
-                        <div class="bonus-icon">💬</div>
-                        <div class="bonus-info">
-                            <span class="bonus-title">Вступи в чат</span>
-                            <span class="bonus-reward">+50 🪙</span>
-                        </div>
-                        <button class="bonus-btn" onclick="window.Telegram.WebApp.openTelegramLink('https://t.me/wwlifeless')">Открыть</button>
-                    </div>
-                    <div class="bonus-item">
-                        <div class="bonus-icon">🎉</div>
-                        <div class="bonus-info">
-                            <span class="bonus-title">Ежедневный бонус</span>
-                            <span class="bonus-reward">+20 🪙</span>
-                        </div>
-                        <button class="bonus-btn" onclick="claimDaily()">Забрать</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- МАГАЗИН -->
+            <!-- МАГАЗИН (покупка монет за звёзды) -->
             <section id="tab-shop" class="tab">
                 <div class="section-title">🛍️ Магазин</div>
                 <div class="shop-categories">
-                    <button class="shop-cat" onclick="alert('Покупка монет за звёзды (скоро)')">
-                        <span class="cat-icon">🪙</span>
-                        <span class="cat-name">Купить монеты за ⭐</span>
-                    </button>
-                    <button class="shop-cat" onclick="alert('Покупка премиума (скоро)')">
-                        <span class="cat-icon">💎</span>
-                        <span class="cat-name">Telegram Premium</span>
-                    </button>
+                    <button class="shop-cat" onclick="buyCoins(100, 10)"><span class="cat-icon">🪙</span><span class="cat-name">100 монет за 10 ⭐</span></button>
+                    <button class="shop-cat" onclick="buyCoins(500, 50)"><span class="cat-icon">🪙</span><span class="cat-name">500 монет за 50 ⭐</span></button>
+                    <button class="shop-cat" onclick="buyCoins(2000, 200)"><span class="cat-icon">🪙</span><span class="cat-name">2000 монет за 200 ⭐</span></button>
+                    <button class="shop-cat" onclick="buyCoins(5000, 500)"><span class="cat-icon">🪙</span><span class="cat-name">5000 монет за 500 ⭐</span></button>
                 </div>
             </section>
         </main>
@@ -211,11 +178,12 @@
         </div>
 
         <nav class="bottom-nav">
-            <button class="nav-btn active" data-tab="home"><span class="nav-icon">🏠</span><span class="nav-label">Главная</span></button>
-            <button class="nav-btn" data-tab="cases"><span class="nav-icon">🎰</span><span class="nav-label">Кейсы</span></button>
-            <button class="nav-btn" data-tab="wheel"><span class="nav-icon">🎡</span><span class="nav-label">Колесо</span></button>
-            <button class="nav-btn" data-tab="saper"><span class="nav-icon">💣</span><span class="nav-label">Сапёр</span></button>
-            <button class="nav-btn" data-tab="dice"><span class="nav-icon">🎲</span><span class="nav-label">Кости</span></button>
+            <button class="nav-btn active" data-tab="home"><span class="nav-icon">⌂</span><span class="nav-label">Главная</span></button>
+            <button class="nav-btn" data-tab="cases"><span class="nav-icon">◈</span><span class="nav-label">Кейсы</span></button>
+            <button class="nav-btn" data-tab="wheel"><span class="nav-icon">◎</span><span class="nav-label">Колесо</span></button>
+            <button class="nav-btn" data-tab="saper"><span class="nav-icon">✸</span><span class="nav-label">Сапёр</span></button>
+            <button class="nav-btn" data-tab="dice"><span class="nav-icon">⚄</span><span class="nav-label">Кости</span></button>
+            <button class="nav-btn" data-tab="shop"><span class="nav-icon">◉</span><span class="nav-label">Магазин</span></button>
             <button class="nav-btn" data-tab="profile"><span class="nav-icon">👤</span><span class="nav-label">Профиль</span></button>
         </nav>
     </div>
