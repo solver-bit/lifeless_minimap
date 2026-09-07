@@ -52,14 +52,12 @@
                     <div class="balance">🪙 <span id="coins">0</span></div>
                 </div>
 
-                <nav class="bottom-nav">
-    <button class="nav-btn active" data-tab="home"><span class="nav-icon">⌂</span><span class="nav-label">Главная</span></button>
-    <button class="nav-btn" data-tab="cases"><span class="nav-icon">◈</span><span class="nav-label">Кейсы</span></button>
-    <button class="nav-btn" data-tab="wheel"><span class="nav-icon">◎</span><span class="nav-label">Колесо</span></button>
-    <button class="nav-btn" data-tab="saper"><span class="nav-icon">✸</span><span class="nav-label">Сапёр</span></button>
-    <button class="nav-btn" data-tab="dice"><span class="nav-icon">⚄</span><span class="nav-label">Кости</span></button>
-    <button class="nav-btn" data-tab="profile"><span class="nav-icon">◉</span><span class="nav-label">Профиль</span></button>
-</nav>
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="switchTab('cases')">🎰 Кейсы</button>
+                    <button class="quick-btn" onclick="switchTab('wheel')">🎡 Колесо</button>
+                    <button class="quick-btn" onclick="switchTab('saper')">💣 Сапёр</button>
+                    <button class="quick-btn" onclick="switchTab('dice')">🎲 Кости</button>
+                </div>
 
                 <div class="promo-banner">
                     <p>🔥 Счастливые часы: 20:00–22:00</p>
@@ -111,6 +109,7 @@
             <section id="tab-wheel" class="tab">
                 <div class="section-title">🎡 Колесо фортуны</div>
                 <div class="wheel-container">
+                    <div class="wheel-pointer"></div>
                     <img src="https://raw.githubusercontent.com/solver-bit/lifeless_minimap/main/durov3.jpg" id="wheel-img" class="wheel-img" alt="Колесо">
                 </div>
                 <button class="play-btn" onclick="spinWheel()">Крутить (10 🪙)</button>
