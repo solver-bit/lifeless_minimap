@@ -16,7 +16,6 @@ document.getElementById('user-id').textContent = user.id;
 const API_BASE = "https://ваш-домен.ru";
 const SECRET = "my_super_secret_key";
 
-// ---------- НАВИГАЦИЯ ----------
 function switchTab(tabId) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + tabId).classList.add('active');
@@ -30,7 +29,6 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
-// ---------- КАРУСЕЛЬ ----------
 let currentSlide = 0;
 const track = document.getElementById('carousel-track');
 const slides = document.querySelectorAll('.carousel-slide');
@@ -40,14 +38,10 @@ function showSlide(index) {
     currentSlide = (index + slideCount) % slideCount;
     track.style.transform = `translateX(-${currentSlide * 100}%)`;
 }
-
 function nextSlide() { showSlide(currentSlide + 1); }
 function prevSlide() { showSlide(currentSlide - 1); }
-
-// Автопрокрутка каждые 10 секунд
 setInterval(nextSlide, 10000);
 
-// ---------- БАЛАНС ----------
 async function fetchBalance() {
     try {
         const res = await fetch(`${API_BASE}/api/me?user_id=${user.id}`, {
@@ -70,7 +64,6 @@ async function fetchBalance() {
     }
 }
 
-// ---------- КЕЙСЫ ----------
 async function openCase(caseId) {
     showModal('Открываем кейс...');
     try {
@@ -103,7 +96,6 @@ function openStarCase(caseId) {
     }, 1500);
 }
 
-// ---------- КОЛЕСО ФОРТУНЫ ----------
 function spinWheel() {
     const wheel = document.getElementById('wheel-img');
     const prizes = [10, 20, 50, 100, 0, 200, 500, 25];
@@ -120,7 +112,6 @@ function spinWheel() {
     }, 3000);
 }
 
-// ---------- САПЁР ----------
 let saperStarted = false;
 function startSaper() {
     const grid = document.getElementById('saper-grid');
@@ -149,7 +140,6 @@ function startSaper() {
     }
 }
 
-// ---------- КОСТИ ----------
 function rollDice() {
     const d1 = Math.floor(Math.random() * 6) + 1;
     const d2 = Math.floor(Math.random() * 6) + 1;
@@ -158,7 +148,6 @@ function rollDice() {
     document.getElementById('dice-result').textContent = `Сумма: ${d1 + d2}`;
 }
 
-// ---------- ОБЩИЕ ФУНКЦИИ ----------
 function claimDaily() {
     alert('Ежедневный бонус скоро будет доступен!');
 }
@@ -173,10 +162,6 @@ function showModal(text) {
     document.getElementById('open-modal').classList.remove('hidden');
     document.getElementById('result-text').textContent = text;
     document.getElementById('result-amount').textContent = '';
-    const wheel = document.getElementById('case-wheel');
-    wheel.style.animation = 'none';
-    wheel.offsetHeight;
-    wheel.style.animation = '';
 }
 
 function showResult(title, amount) {
@@ -189,7 +174,6 @@ function hideModal() {
     document.getElementById('open-modal').classList.add('hidden');
 }
 
-// ---------- ИНИЦИАЛИЗАЦИЯ ----------
 document.getElementById('loader').classList.add('hidden');
 fetchBalance();
 startSaper();
