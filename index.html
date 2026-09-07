@@ -9,13 +9,11 @@
 </head>
 <body class="mobile">
     <div id="app">
-        <!-- Экран загрузки -->
         <div id="loader" class="loader">
             <div class="spinner"></div>
             <p>Загрузка...</p>
         </div>
 
-        <!-- Шапка -->
         <header class="header">
             <div class="logo">
                 <span>🖤</span>
@@ -25,22 +23,20 @@
             <p class="subtitle">CASINO</p>
         </header>
 
-        <!-- Контент -->
         <main class="content" id="main-content">
             <!-- ГЛАВНАЯ -->
             <section id="tab-home" class="tab active">
-                <!-- Карусель -->
                 <div class="carousel">
                     <div class="carousel-track" id="carousel-track">
-                        <div class="carousel-slide active" onclick="switchTab('cases')">
-                            <img src="images/gift.png" alt="Кейсы">
+                        <div class="carousel-slide" onclick="switchTab('cases')">
+                            <img src="image/durov1.jpg" alt="Кейсы">
                             <div class="slide-overlay">
                                 <span class="slide-title">Открыть кейсы</span>
                                 <button class="slide-btn">Играть</button>
                             </div>
                         </div>
                         <div class="carousel-slide" onclick="switchTab('wheel')">
-                            <img src="images/wheel.png" alt="Колесо">
+                            <img src="image/durov2.jpg" alt="Колесо">
                             <div class="slide-overlay">
                                 <span class="slide-title">Колесо удачи</span>
                                 <button class="slide-btn">Крутить</button>
@@ -113,7 +109,7 @@
             <section id="tab-wheel" class="tab">
                 <div class="section-title">🎡 Колесо фортуны</div>
                 <div class="wheel-container">
-                    <img src="images/wheel.png" id="wheel-img" class="wheel-img" alt="Колесо">
+                    <img src="image/durov2.jpg" id="wheel-img" class="wheel-img" alt="Колесо">
                 </div>
                 <button class="play-btn" onclick="spinWheel()">Крутить (10 🪙)</button>
                 <div id="wheel-result" class="game-result"></div>
@@ -204,7 +200,6 @@
             </section>
         </main>
 
-        <!-- Модалка -->
         <div id="open-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="case-animation"><div id="case-wheel">🎁</div></div>
@@ -214,12 +209,12 @@
             </div>
         </div>
 
-        <!-- Навигация -->
         <nav class="bottom-nav">
             <button class="nav-btn active" data-tab="home"><span class="nav-icon">🏠</span><span class="nav-label">Главная</span></button>
             <button class="nav-btn" data-tab="cases"><span class="nav-icon">🎰</span><span class="nav-label">Кейсы</span></button>
             <button class="nav-btn" data-tab="wheel"><span class="nav-icon">🎡</span><span class="nav-label">Колесо</span></button>
-            <button class="nav-btn" data-tab="games"><span class="nav-icon">🎲</span><span class="nav-label">Игры</span></button>
+            <button class="nav-btn" data-tab="saper"><span class="nav-icon">💣</span><span class="nav-label">Сапёр</span></button>
+            <button class="nav-btn" data-tab="dice"><span class="nav-icon">🎲</span><span class="nav-label">Кости</span></button>
             <button class="nav-btn" data-tab="profile"><span class="nav-icon">👤</span><span class="nav-label">Профиль</span></button>
         </nav>
     </div>

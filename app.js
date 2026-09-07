@@ -13,7 +13,7 @@ tg.expand();
 let user = tg.initDataUnsafe?.user || { id: 0, first_name: "Гость" };
 document.getElementById('user-id').textContent = user.id;
 
-const API_BASE = "https://ваш-домен.ru"; // замени после покупки сервера
+const API_BASE = "https://ваш-домен.ru";
 const SECRET = "my_super_secret_key";
 
 // ---------- НАВИГАЦИЯ ----------
@@ -40,10 +40,12 @@ function showSlide(index) {
     currentSlide = (index + slideCount) % slideCount;
     track.style.transform = `translateX(-${currentSlide * 100}%)`;
 }
+
 function nextSlide() { showSlide(currentSlide + 1); }
 function prevSlide() { showSlide(currentSlide - 1); }
 
-setInterval(nextSlide, 5000);
+// Автопрокрутка каждые 10 секунд
+setInterval(nextSlide, 10000);
 
 // ---------- БАЛАНС ----------
 async function fetchBalance() {
@@ -60,7 +62,6 @@ async function fetchBalance() {
             document.getElementById('referrals').textContent = data.referrals || 0;
         }
     } catch (e) {
-        console.error('Ошибка баланса:', e);
         document.getElementById('coins').textContent = 1000;
         document.getElementById('cases-opened').textContent = 5;
         document.getElementById('ref-link').textContent = 'https://t.me/your_bot?start=' + user.id;
@@ -131,7 +132,6 @@ function startSaper() {
     for (let i = 0; i < 25; i++) {
         const cell = document.createElement('div');
         cell.className = 'cell';
-        cell.dataset.index = i;
         cell.onclick = () => {
             if (!saperStarted) return;
             if (i === mineIndex) {
@@ -143,7 +143,6 @@ function startSaper() {
             } else {
                 cell.textContent = '✅';
                 cell.classList.add('opened');
-                // Можно дать бонус
             }
         };
         grid.appendChild(cell);
@@ -193,4 +192,4 @@ function hideModal() {
 // ---------- ИНИЦИАЛИЗАЦИЯ ----------
 document.getElementById('loader').classList.add('hidden');
 fetchBalance();
-startSaper(); // Запускаем сапёр для первой генерации (перезапустится при клике)
+startSaper();
