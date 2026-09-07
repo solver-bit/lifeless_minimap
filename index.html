@@ -9,7 +9,7 @@
 </head>
 <body>
     <div id="app">
-        <!-- Шапка с лого и названием -->
+        <!-- Шапка с лого, названием, балансом и плюсом -->
         <header class="header glass">
             <div class="header-left">
                 <img src="https://raw.githubusercontent.com/solver-bit/lifeless_minimap/main/durov4.jpg" class="logo-img" alt="Logo">
@@ -18,11 +18,13 @@
                     <h2>SHOP</h2>
                 </div>
             </div>
-            <div class="balance-box">
-                <span class="coin-icon">🪙</span>
-                <span id="coins">0</span>
+            <div class="header-right">
+                <div class="balance-box">
+                    <span class="coin-icon">🪙</span>
+                    <span id="coins">0</span>
+                </div>
+                <button class="add-btn" onclick="openTopUp()">+</button>
             </div>
-            <button class="add-btn" onclick="openTopUp()">+</button>
         </header>
 
         <!-- Контент -->
@@ -95,7 +97,7 @@
                 <div class="games-grid">
                     <div class="game-card" onclick="switchTab('wheel')">
                         <img src="https://raw.githubusercontent.com/solver-bit/lifeless_minimap/main/durov1.jpg" alt="Колесо">
-                        <span>Колесо</span>
+                        <span>Колесо фортуны</span>
                     </div>
                     <div class="game-card" onclick="switchTab('saper')">
                         <img src="https://raw.githubusercontent.com/solver-bit/lifeless_minimap/main/durov2.jpg" alt="Сапёр">
@@ -192,7 +194,6 @@
             <button class="nav-btn" data-tab="profile"><span>◉</span><span class="nav-label">Профиль</span></button>
         </nav>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
