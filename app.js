@@ -13,20 +13,22 @@ tg.expand();
 let user = tg.initDataUnsafe?.user || { id: 0, first_name: "Гость" };
 document.getElementById('user-id').textContent = user.id;
 
-const API_BASE = "https://silver-toes-sing.loca.lt"; // замени на свой URL
+// Текущий URL для API (замени на свой туннель/домен)
+const API_BASE = "https://silver-toes-sing.loca.lt";
 const SECRET = "my_super_secret_key";
 
 let currentUserData = { balance: 0, stars: 0, cases_opened: 0, referrals: 0 };
 
+// Обновление UI
 function updateBalanceUI() {
     document.getElementById('coins').textContent = currentUserData.balance;
-    document.getElementById('stars').textContent = currentUserData.stars;
+    document.getElementById('cases-opened').textContent = currentUserData.cases_opened;
     document.getElementById('profile-balance').textContent = currentUserData.balance + ' 🪙';
     document.getElementById('profile-stars').textContent = currentUserData.stars + ' ⭐';
-    document.getElementById('cases-opened').textContent = currentUserData.cases_opened;
     document.getElementById('referrals').textContent = currentUserData.referrals;
 }
 
+// Навигация
 function switchTab(tabId) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + tabId).classList.add('active');
@@ -53,6 +55,7 @@ function nextSlide() { showSlide(currentSlide + 1); }
 function prevSlide() { showSlide(currentSlide - 1); }
 setInterval(nextSlide, 10000);
 
+// Загрузка баланса (если API недоступен — ставим тестовые данные)
 async function fetchBalance() {
     try {
         const res = await fetch(`${API_BASE}/api/me?user_id=${user.id}`, {
@@ -64,15 +67,14 @@ async function fetchBalance() {
             updateBalanceUI();
         }
     } catch (e) {
-        console.log('API недоступен, используем локальные данные');
         currentUserData = { balance: 1000, stars: 100, cases_opened: 5, referrals: 0 };
         updateBalanceUI();
     } finally {
-        setTimeout(() => document.getElementById('loader').classList.add('hidden'), 300);
+        document.getElementById('loader').classList.add('hidden');
     }
 }
 
-// Покупка монет (локально, потом через API)
+// Покупка монет
 function buyCoins(coinAmount, starCost) {
     if (currentUserData.stars < starCost) {
         alert('Недостаточно звёзд!');
@@ -81,37 +83,43 @@ function buyCoins(coinAmount, starCost) {
     currentUserData.stars -= starCost;
     currentUserData.balance += coinAmount;
     updateBalanceUI();
-    showResult('Покупка!', `+${coinAmount} 🪙`);
     closeTopUp();
+    showPopup('Покупка!', `+${coinAmount} 🪙`);
+}
+
+function showPopup(title, amount) {
+    document.getElementById('popup-title').textContent = title;
+    document.getElementById('popup-amount').textContent = amount;
+    document.getElementById('popup-modal').classList.remove('hidden');
+    setTimeout(() => document.getElementById('popup-modal').classList.add('hidden'), 2000);
+}
+
+// Пополнение (открыть/закрыть)
+function openTopUp() {
+    document.getElementById('topup-modal').classList.remove('hidden');
+}
+function closeTopUp() {
+    document.getElementById('topup-modal').classList.add('hidden');
 }
 
 // Открытие кейса
 async function openCase(caseId) {
-    showModal('Открываем кейс...');
-    try {
-        const res = await fetch(`${API_BASE}/api/open_case`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Secret': SECRET },
-            body: JSON.stringify({ user_id: user.id, case_id: caseId })
-        });
-        const data = await res.json();
-        if (data.error) {
-            showResult('Ошибка', data.error);
-        } else {
-            currentUserData.balance = data.balance;
-            currentUserData.cases_opened++;
-            updateBalanceUI();
-            showResult('🎉 Выигрыш!', `+${data.reward} 🪙`);
-        }
-    } catch (e) {
-        showResult('Ошибка', 'Недостаточно монет или сервер недоступен');
+    if (currentUserData.balance < parseInt(caseId)) {
+        alert('Недостаточно монет!');
+        return;
     }
+    // Простая имитация выигрыша
+    const reward = Math.floor(Math.random() * (parseInt(caseId) * 1.5)) + 5;
+    currentUserData.balance -= parseInt(caseId);
+    currentUserData.balance += reward;
+    currentUserData.cases_opened++;
+    updateBalanceUI();
+    showPopup('🎉 Выигрыш!', `+${reward} 🪙`);
 }
 
 function openStarCase(caseId) {
-    showModal('Открываем звёздный кейс...');
     if (currentUserData.stars < caseId) {
-        showResult('Ошибка', 'Недостаточно звёзд');
+        alert('Недостаточно звёзд!');
         return;
     }
     currentUserData.stars -= caseId;
@@ -119,15 +127,12 @@ function openStarCase(caseId) {
     currentUserData.balance += reward;
     currentUserData.cases_opened++;
     updateBalanceUI();
-    setTimeout(() => {
-        showResult('⭐ Выигрыш!', `+${reward} 🪙`);
-    }, 1500);
+    showPopup('⭐ Выигрыш!', `+${reward} 🪙`);
 }
 
 // Колесо
 const prizes = [5, 10, 15, 20, 0, 25, 30, 10];
 const colors = ['#ffd700', '#00aaff', '#ffffff', '#ff3b3b', '#ffd700', '#00aaff', '#ffffff', '#ff3b3b'];
-
 function createWheel() {
     const wheel = document.getElementById('wheel');
     wheel.innerHTML = '';
@@ -144,10 +149,9 @@ function createWheel() {
         wheel.appendChild(segment);
     });
 }
-
 let currentRotation = 0;
 let isSpinning = false;
-async function spinWheel() {
+function spinWheel() {
     if (isSpinning) return;
     if (currentUserData.stars < 10) {
         alert('Нужно 10 звёзд!');
@@ -156,45 +160,24 @@ async function spinWheel() {
     isSpinning = true;
     currentUserData.stars -= 10;
     updateBalanceUI();
-
     const wheel = document.getElementById('wheel');
     const randomIndex = Math.floor(Math.random() * prizes.length);
     const segmentAngle = 360 / prizes.length;
     const extraSpins = 5 + Math.floor(Math.random() * 3);
     const targetRotation = currentRotation + extraSpins * 360 + (randomIndex * segmentAngle);
-
     wheel.style.transition = 'none';
     wheel.style.transform = `rotate(${currentRotation}deg)`;
     void wheel.offsetWidth;
     wheel.style.transition = 'transform 3s cubic-bezier(0.2, 0.8, 0.2, 1)';
     wheel.style.transform = `rotate(${targetRotation}deg)`;
     currentRotation = targetRotation;
-
-    try {
-        const res = await fetch(`${API_BASE}/api/spin_wheel`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Secret': SECRET },
-            body: JSON.stringify({ user_id: user.id })
-        });
-        const data = await res.json();
-        if (data.error) {
-            alert(data.error);
-            currentUserData.stars += 10;
-            updateBalanceUI();
-        } else {
-            currentUserData.balance = data.balance;
-            currentUserData.stars = data.stars;
-            updateBalanceUI();
-            setTimeout(() => {
-                document.getElementById('wheel-result').textContent = `Выигрыш: ${data.reward} 🪙`;
-            }, 3000);
-        }
-    } catch (e) {
-        setTimeout(() => {
-            document.getElementById('wheel-result').textContent = 'Ошибка сети';
-        }, 3000);
-    }
-    isSpinning = false;
+    setTimeout(() => {
+        const prize = prizes[randomIndex];
+        currentUserData.balance += prize;
+        updateBalanceUI();
+        document.getElementById('wheel-result').textContent = `Выигрыш: ${prize} 🪙`;
+        isSpinning = false;
+    }, 3000);
 }
 
 // Сапёр
@@ -271,36 +254,12 @@ function rollDice() {
     document.getElementById('dice-result').textContent = `Сумма: ${sum} | Выигрыш: ${reward} 🪙`;
 }
 
-// Модалки
-function showModal(text) {
-    document.getElementById('open-modal').classList.remove('hidden');
-    document.getElementById('result-text').textContent = text;
-    document.getElementById('result-amount').textContent = '';
-}
-function showResult(title, amount) {
-    document.getElementById('result-text').textContent = title;
-    document.getElementById('result-amount').textContent = amount;
-    setTimeout(hideModal, 3000);
-}
-function hideModal() {
-    document.getElementById('open-modal').classList.add('hidden');
-}
-
-// Модалка пополнения
-function openTopUp() {
-    document.getElementById('topup-modal').classList.remove('hidden');
-}
-function closeTopUp() {
-    document.getElementById('topup-modal').classList.add('hidden');
-}
-
 // Прочее
 function claimDaily() {
     currentUserData.balance += 20;
     updateBalanceUI();
     alert('Ежедневный бонус +20 монет!');
 }
-
 function copyRefLink() {
     const link = document.getElementById('ref-link').textContent;
     tg.showPopup({ message: 'Скопируй ссылку: ' + link, buttons: [{ text: 'Ок' }] });
@@ -311,4 +270,3 @@ function copyRefLink() {
 document.getElementById('loader').classList.add('hidden');
 fetchBalance();
 createWheel();
-startSaper(); // предзаполним поле (без списания, т.к. saperStarted=false)
