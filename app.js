@@ -13,11 +13,27 @@ tg.expand();
 let user = tg.initDataUnsafe?.user || { id: 0, first_name: "Гость" };
 document.getElementById('user-id').textContent = user.id;
 
-// Текущий URL для API (замени на свой туннель/домен)
-const API_BASE = "https://silver-toes-sing.loca.lt";
+const API_BASE = "https://silver-toes-sing.loca.lt"; // замени на свой URL
 const SECRET = "my_super_secret_key";
 
 let currentUserData = { balance: 0, stars: 0, cases_opened: 0, referrals: 0 };
+
+// Функция переключения вкладок (работает и для main, и для nav)
+function switchTab(tabId) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    const target = document.getElementById('tab-' + tabId);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.tab === tabId) btn.classList.add('active');
+    });
+}
+
+// Навигация
+document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
 
 // Обновление UI
 function updateBalanceUI() {
@@ -27,20 +43,6 @@ function updateBalanceUI() {
     document.getElementById('profile-stars').textContent = currentUserData.stars + ' ⭐';
     document.getElementById('referrals').textContent = currentUserData.referrals;
 }
-
-// Навигация
-function switchTab(tabId) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + tabId).classList.add('active');
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.tab === tabId) btn.classList.add('active');
-    });
-}
-
-document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-});
 
 // Карусель
 let currentSlide = 0;
@@ -55,7 +57,6 @@ function nextSlide() { showSlide(currentSlide + 1); }
 function prevSlide() { showSlide(currentSlide - 1); }
 setInterval(nextSlide, 10000);
 
-// Загрузка баланса (если API недоступен — ставим тестовые данные)
 async function fetchBalance() {
     try {
         const res = await fetch(`${API_BASE}/api/me?user_id=${user.id}`, {
@@ -74,7 +75,6 @@ async function fetchBalance() {
     }
 }
 
-// Покупка монет
 function buyCoins(coinAmount, starCost) {
     if (currentUserData.stars < starCost) {
         alert('Недостаточно звёзд!');
@@ -84,17 +84,9 @@ function buyCoins(coinAmount, starCost) {
     currentUserData.balance += coinAmount;
     updateBalanceUI();
     closeTopUp();
-    showPopup('Покупка!', `+${coinAmount} 🪙`);
+    alert('Покупка успешна! +' + coinAmount + ' 🪙');
 }
 
-function showPopup(title, amount) {
-    document.getElementById('popup-title').textContent = title;
-    document.getElementById('popup-amount').textContent = amount;
-    document.getElementById('popup-modal').classList.remove('hidden');
-    setTimeout(() => document.getElementById('popup-modal').classList.add('hidden'), 2000);
-}
-
-// Пополнение (открыть/закрыть)
 function openTopUp() {
     document.getElementById('topup-modal').classList.remove('hidden');
 }
@@ -102,19 +94,17 @@ function closeTopUp() {
     document.getElementById('topup-modal').classList.add('hidden');
 }
 
-// Открытие кейса
 async function openCase(caseId) {
     if (currentUserData.balance < parseInt(caseId)) {
         alert('Недостаточно монет!');
         return;
     }
-    // Простая имитация выигрыша
     const reward = Math.floor(Math.random() * (parseInt(caseId) * 1.5)) + 5;
     currentUserData.balance -= parseInt(caseId);
     currentUserData.balance += reward;
     currentUserData.cases_opened++;
     updateBalanceUI();
-    showPopup('🎉 Выигрыш!', `+${reward} 🪙`);
+    alert('🎉 Выигрыш! +' + reward + ' 🪙');
 }
 
 function openStarCase(caseId) {
@@ -127,7 +117,7 @@ function openStarCase(caseId) {
     currentUserData.balance += reward;
     currentUserData.cases_opened++;
     updateBalanceUI();
-    showPopup('⭐ Выигрыш!', `+${reward} 🪙`);
+    alert('⭐ Выигрыш! +' + reward + ' 🪙');
 }
 
 // Колесо
@@ -180,7 +170,7 @@ function spinWheel() {
     }, 3000);
 }
 
-// Сапёр
+// Сапёр (не вызывается при загрузке!)
 const SAPER_SIZE = 5;
 const SAPER_MINES = 7;
 const SAPER_COST = 25;
@@ -233,7 +223,6 @@ function startSaper() {
     }
 }
 
-// Кости
 function rollDice() {
     if (currentUserData.stars < 10) {
         alert('Нужно 10 звёзд!');
@@ -254,7 +243,6 @@ function rollDice() {
     document.getElementById('dice-result').textContent = `Сумма: ${sum} | Выигрыш: ${reward} 🪙`;
 }
 
-// Прочее
 function claimDaily() {
     currentUserData.balance += 20;
     updateBalanceUI();
@@ -266,7 +254,7 @@ function copyRefLink() {
     navigator.clipboard.writeText(link).catch(() => {});
 }
 
-// Инициализация
+// Инициализация (БЕЗ ВЫЗОВА startSaper!)
 document.getElementById('loader').classList.add('hidden');
 fetchBalance();
 createWheel();

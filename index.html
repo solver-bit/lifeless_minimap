@@ -9,13 +9,11 @@
 </head>
 <body class="mobile">
     <div id="app">
-        <!-- Экран загрузки -->
         <div id="loader" class="loader hidden">
             <div class="spinner"></div>
             <p>Загрузка...</p>
         </div>
 
-        <!-- Верхняя панель -->
         <header class="header">
             <div class="header-left">
                 <div class="logo-mini">L</div>
@@ -27,9 +25,7 @@
             <button class="add-btn" onclick="openTopUp()">+</button>
         </header>
 
-        <!-- Контент -->
         <main class="content">
-            <!-- Главная -->
             <section id="tab-home" class="tab active">
                 <div class="carousel">
                     <div class="carousel-track" id="carousel-track">
@@ -60,7 +56,6 @@
                 </div>
             </section>
 
-            <!-- Кейсы -->
             <section id="tab-cases" class="tab">
                 <div class="section-title">🎰 Монетные кейсы</div>
                 <div class="cases-grid">
@@ -100,7 +95,6 @@
                 </div>
             </section>
 
-            <!-- Игры -->
             <section id="tab-games" class="tab">
                 <div class="section-title">🎮 Игры</div>
                 <div class="game-banner">
@@ -122,7 +116,6 @@
                 </div>
             </section>
 
-            <!-- Колесо -->
             <section id="tab-wheel" class="tab">
                 <div class="section-title">🎡 Колесо</div>
                 <div class="wheel-container">
@@ -133,7 +126,6 @@
                 <div id="wheel-result" class="game-result"></div>
             </section>
 
-            <!-- Сапёр -->
             <section id="tab-saper" class="tab">
                 <div class="section-title">💣 Сапёр</div>
                 <div class="saper-info">Ставка: 25 ⭐</div>
@@ -142,7 +134,6 @@
                 <div id="saper-result" class="game-result"></div>
             </section>
 
-            <!-- Кости -->
             <section id="tab-dice" class="tab">
                 <div class="section-title">🎲 Кости</div>
                 <div class="dice-container">
@@ -153,7 +144,6 @@
                 <div id="dice-result" class="game-result"></div>
             </section>
 
-            <!-- Магазин -->
             <section id="tab-shop" class="tab">
                 <div class="section-title">🛍️ Магазин</div>
                 <div class="shop-categories">
@@ -168,7 +158,6 @@
                 </div>
             </section>
 
-            <!-- Бонусы -->
             <section id="tab-bonuses" class="tab">
                 <div class="section-title">🎁 Бонусы</div>
                 <div class="bonus-list">
@@ -199,7 +188,6 @@
                 </div>
             </section>
 
-            <!-- Профиль -->
             <section id="tab-profile" class="tab">
                 <div class="section-title">👤 Профиль</div>
                 <div class="profile-block">
@@ -220,7 +208,6 @@
             </section>
         </main>
 
-        <!-- Модалка пополнения -->
         <div id="topup-modal" class="modal hidden">
             <div class="modal-content">
                 <h3>Пополнить баланс</h3>
@@ -234,7 +221,6 @@
             </div>
         </div>
 
-        <!-- Нижняя навигация -->
         <nav class="bottom-nav">
             <button class="nav-btn active" data-tab="home"><span>⌂</span><span class="nav-label">Главная</span></button>
             <button class="nav-btn" data-tab="cases"><span>◈</span><span class="nav-label">Кейсы</span></button>
