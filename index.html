@@ -9,20 +9,27 @@
 </head>
 <body class="mobile">
     <div id="app">
+        <!-- Лоадер -->
         <div id="loader" class="loader">
             <div class="spinner"></div>
             <p>Загрузка...</p>
         </div>
 
+        <!-- Header с балансом и кнопкой пополнения -->
         <header class="header">
-            <div class="logo">
-                <span>🖤</span>
-                <h1>LIFELESS</h1>
-                <span>💛</span>
+            <div class="header-left">
+                <div class="logo-mini">L</div>
+                <div class="balance-display">
+                    <span class="balance-icon">🪙</span>
+                    <span id="coins">0</span>
+                </div>
             </div>
-            <p class="subtitle">CASINO</p>
+            <div class="header-right">
+                <button class="add-balance-btn" onclick="openTopUp()">+</button>
+            </div>
         </header>
 
+        <!-- Контент -->
         <main class="content" id="main-content">
             <!-- ГЛАВНАЯ -->
             <section id="tab-home" class="tab active">
@@ -47,21 +54,11 @@
                     <button class="carousel-next" onclick="nextSlide()">›</button>
                 </div>
 
-                <div id="balance-block">
-                    <div class="label">Баланс</div>
-                    <div class="balance">🪙 <span id="coins">0</span> | ⭐ <span id="stars">0</span></div>
-                </div>
-
                 <div class="quick-actions">
                     <button class="quick-btn" onclick="switchTab('cases')">🎰 Кейсы</button>
                     <button class="quick-btn" onclick="switchTab('games')">🎮 Игры</button>
                     <button class="quick-btn" onclick="switchTab('shop')">🛒 Магазин</button>
                     <button class="quick-btn" onclick="switchTab('bonuses')">🎁 Бонусы</button>
-                </div>
-
-                <div class="promo-banner">
-                    <p>🔥 Счастливые часы: 20:00–22:00</p>
-                    <p class="promo-small">+20% к выигрышу</p>
                 </div>
             </section>
 
@@ -105,14 +102,12 @@
                 </div>
             </section>
 
-            <!-- ИГРЫ (главная вкладка) -->
+            <!-- ИГРЫ -->
             <section id="tab-games" class="tab">
                 <div class="section-title">🎮 Игры</div>
-                <!-- Баннер (квадратное закруглённое фото) -->
                 <div class="game-banner">
                     <img src="https://raw.githubusercontent.com/solver-bit/lifeless_minimap/main/durov1.jpg" alt="Баннер">
                 </div>
-                <!-- Сетка игр -->
                 <div class="games-grid">
                     <div class="game-card" onclick="switchTab('wheel')">
                         <div class="game-icon">🎡</div>
@@ -129,7 +124,7 @@
                 </div>
             </section>
 
-            <!-- КОЛЕСО ФОРТУНЫ -->
+            <!-- КОЛЕСО -->
             <section id="tab-wheel" class="tab">
                 <div class="section-title">🎡 Колесо фортуны</div>
                 <div class="wheel-container">
@@ -164,10 +159,8 @@
             <section id="tab-shop" class="tab">
                 <div class="section-title">🛍️ Магазин</div>
                 <div class="shop-categories">
-                    <button class="shop-cat" onclick="buyCoins(100, 10)"><span class="cat-icon">🪙</span><span class="cat-name">100 монет за 10 ⭐</span></button>
-                    <button class="shop-cat" onclick="buyCoins(500, 50)"><span class="cat-icon">🪙</span><span class="cat-name">500 монет за 50 ⭐</span></button>
-                    <button class="shop-cat" onclick="buyCoins(2000, 200)"><span class="cat-icon">🪙</span><span class="cat-name">2000 монет за 200 ⭐</span></button>
-                    <button class="shop-cat" onclick="buyCoins(5000, 500)"><span class="cat-icon">🪙</span><span class="cat-name">5000 монет за 500 ⭐</span></button>
+                    <button class="shop-cat" onclick="openTopUp()"><span class="cat-icon">🪙</span><span class="cat-name">Купить монеты</span></button>
+                    <button class="shop-cat" onclick="alert('Скоро будет')"><span class="cat-icon">💎</span><span class="cat-name">Telegram Premium</span></button>
                 </div>
             </section>
 
@@ -223,13 +216,28 @@
             </section>
         </main>
 
-        <!-- Модалка -->
+        <!-- Модалка открытия кейса -->
         <div id="open-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="case-animation"><div id="case-wheel">🎁</div></div>
                 <div id="result-text">Открываем...</div>
                 <div id="result-amount"></div>
                 <button class="close-modal" onclick="hideModal()">Ок</button>
+            </div>
+        </div>
+
+        <!-- Модалка пополнения -->
+        <div id="topup-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3>Пополнить баланс</h3>
+                <p>Выбери пакет монет:</p>
+                <div class="topup-options">
+                    <button class="topup-option" onclick="buyCoins(100, 10)">100 🪙 за 10 ⭐</button>
+                    <button class="topup-option" onclick="buyCoins(500, 50)">500 🪙 за 50 ⭐</button>
+                    <button class="topup-option" onclick="buyCoins(2000, 200)">2000 🪙 за 200 ⭐</button>
+                    <button class="topup-option" onclick="buyCoins(5000, 500)">5000 🪙 за 500 ⭐</button>
+                </div>
+                <button class="close-modal" onclick="closeTopUp()">Закрыть</button>
             </div>
         </div>
 

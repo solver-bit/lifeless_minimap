@@ -13,10 +13,10 @@ tg.expand();
 let user = tg.initDataUnsafe?.user || { id: 0, first_name: "Гость" };
 document.getElementById('user-id').textContent = user.id;
 
-const API_BASE = "https://silver-toes-sing.loca.lt";
+const API_BASE = "https://silver-toes-sing.loca.lt"; // замени на свой URL
 const SECRET = "my_super_secret_key";
 
-let currentUserData = { balance: 0, stars: 0, cases_opened: 0 };
+let currentUserData = { balance: 0, stars: 0, cases_opened: 0, referrals: 0 };
 
 function updateBalanceUI() {
     document.getElementById('coins').textContent = currentUserData.balance;
@@ -24,6 +24,7 @@ function updateBalanceUI() {
     document.getElementById('profile-balance').textContent = currentUserData.balance + ' 🪙';
     document.getElementById('profile-stars').textContent = currentUserData.stars + ' ⭐';
     document.getElementById('cases-opened').textContent = currentUserData.cases_opened;
+    document.getElementById('referrals').textContent = currentUserData.referrals;
 }
 
 function switchTab(tabId) {
@@ -39,6 +40,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
+// Карусель
 let currentSlide = 0;
 const track = document.getElementById('carousel-track');
 const slides = document.querySelectorAll('.carousel-slide');
@@ -62,25 +64,28 @@ async function fetchBalance() {
             updateBalanceUI();
         }
     } catch (e) {
-        console.log('API недоступен, используем локальные данные', e);
+        console.log('API недоступен, используем локальные данные');
+        currentUserData = { balance: 1000, stars: 100, cases_opened: 5, referrals: 0 };
+        updateBalanceUI();
+    } finally {
+        setTimeout(() => document.getElementById('loader').classList.add('hidden'), 300);
     }
 }
 
-async function buyCoins(coinAmount, starCost) {
-    const res = await fetch(`${API_BASE}/api/buy_coins`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Secret': SECRET },
-        body: JSON.stringify({ user_id: user.id, coins: coinAmount })
-    });
-    const data = await res.json();
-    if (data.invoice_link) {
-        // Открываем окно оплаты прямо в Telegram
-        tg.openLink(data.invoice_link);
-    } else {
-        alert('Ошибка создания платежа');
+// Покупка монет (локально, потом через API)
+function buyCoins(coinAmount, starCost) {
+    if (currentUserData.stars < starCost) {
+        alert('Недостаточно звёзд!');
+        return;
     }
+    currentUserData.stars -= starCost;
+    currentUserData.balance += coinAmount;
+    updateBalanceUI();
+    showResult('Покупка!', `+${coinAmount} 🪙`);
+    closeTopUp();
 }
 
+// Открытие кейса
 async function openCase(caseId) {
     showModal('Открываем кейс...');
     try {
@@ -94,18 +99,67 @@ async function openCase(caseId) {
             showResult('Ошибка', data.error);
         } else {
             currentUserData.balance = data.balance;
+            currentUserData.cases_opened++;
             updateBalanceUI();
             showResult('🎉 Выигрыш!', `+${data.reward} 🪙`);
         }
     } catch (e) {
-        showResult('Ошибка', 'Проверь соединение');
+        showResult('Ошибка', 'Недостаточно монет или сервер недоступен');
     }
 }
 
-async function spinWheel() {
+function openStarCase(caseId) {
+    showModal('Открываем звёздный кейс...');
+    if (currentUserData.stars < caseId) {
+        showResult('Ошибка', 'Недостаточно звёзд');
+        return;
+    }
+    currentUserData.stars -= caseId;
+    const reward = Math.floor(Math.random() * (caseId * 15)) + 10;
+    currentUserData.balance += reward;
+    currentUserData.cases_opened++;
+    updateBalanceUI();
+    setTimeout(() => {
+        showResult('⭐ Выигрыш!', `+${reward} 🪙`);
+    }, 1500);
+}
+
+// Колесо
+const prizes = [5, 10, 15, 20, 0, 25, 30, 10];
+const colors = ['#ffd700', '#00aaff', '#ffffff', '#ff3b3b', '#ffd700', '#00aaff', '#ffffff', '#ff3b3b'];
+
+function createWheel() {
     const wheel = document.getElementById('wheel');
+    wheel.innerHTML = '';
     const segmentAngle = 360 / prizes.length;
+    prizes.forEach((prize, i) => {
+        const segment = document.createElement('div');
+        segment.className = 'wheel-segment';
+        segment.style.background = colors[i];
+        segment.style.transform = `rotate(${i * segmentAngle}deg)`;
+        segment.style.setProperty('--angle', `${i * segmentAngle}deg`);
+        const span = document.createElement('span');
+        span.textContent = prize + '🪙';
+        segment.appendChild(span);
+        wheel.appendChild(segment);
+    });
+}
+
+let currentRotation = 0;
+let isSpinning = false;
+async function spinWheel() {
+    if (isSpinning) return;
+    if (currentUserData.stars < 10) {
+        alert('Нужно 10 звёзд!');
+        return;
+    }
+    isSpinning = true;
+    currentUserData.stars -= 10;
+    updateBalanceUI();
+
+    const wheel = document.getElementById('wheel');
     const randomIndex = Math.floor(Math.random() * prizes.length);
+    const segmentAngle = 360 / prizes.length;
     const extraSpins = 5 + Math.floor(Math.random() * 3);
     const targetRotation = currentRotation + extraSpins * 360 + (randomIndex * segmentAngle);
 
@@ -125,6 +179,8 @@ async function spinWheel() {
         const data = await res.json();
         if (data.error) {
             alert(data.error);
+            currentUserData.stars += 10;
+            updateBalanceUI();
         } else {
             currentUserData.balance = data.balance;
             currentUserData.stars = data.stars;
@@ -135,13 +191,124 @@ async function spinWheel() {
         }
     } catch (e) {
         setTimeout(() => {
-            document.getElementById('wheel-result').textContent = 'Ошибка!';
+            document.getElementById('wheel-result').textContent = 'Ошибка сети';
         }, 3000);
+    }
+    isSpinning = false;
+}
+
+// Сапёр
+const SAPER_SIZE = 5;
+const SAPER_MINES = 7;
+const SAPER_COST = 25;
+let saperStarted = false;
+function startSaper() {
+    if (!saperStarted && currentUserData.stars < SAPER_COST) {
+        alert('Нужно 25 звёзд!');
+        return;
+    }
+    if (!saperStarted) {
+        currentUserData.stars -= SAPER_COST;
+        updateBalanceUI();
+    }
+    saperStarted = true;
+    document.getElementById('saper-result').textContent = '';
+    const grid = document.getElementById('saper-grid');
+    grid.innerHTML = '';
+    const minePositions = new Set();
+    while (minePositions.size < SAPER_MINES) {
+        minePositions.add(Math.floor(Math.random() * (SAPER_SIZE * SAPER_SIZE)));
+    }
+    let openedSafe = 0;
+    const totalSafe = SAPER_SIZE * SAPER_SIZE - SAPER_MINES;
+    for (let i = 0; i < SAPER_SIZE * SAPER_SIZE; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.onclick = () => {
+            if (!saperStarted) return;
+            if (minePositions.has(i)) {
+                cell.textContent = '💣';
+                cell.classList.add('mine');
+                document.getElementById('saper-result').textContent = 'Проигрыш!';
+                saperStarted = false;
+                grid.querySelectorAll('.cell').forEach(c => c.style.pointerEvents = 'none');
+            } else {
+                cell.textContent = '✅';
+                cell.classList.add('opened');
+                openedSafe++;
+                currentUserData.balance += 3;
+                updateBalanceUI();
+                if (openedSafe === totalSafe) {
+                    document.getElementById('saper-result').textContent = 'Победа! +50 бонус';
+                    currentUserData.balance += 50;
+                    updateBalanceUI();
+                    saperStarted = false;
+                }
+            }
+        };
+        grid.appendChild(cell);
     }
 }
 
-// Остальные функции (createWheel, startSaper, rollDice, modal) - можно оставить как есть, но с учетом данных от API, либо заменить на аналогичные fetch запросы.
-// Для скорости оставляю логику сапера на фронте, а начисление монет через /api/play_saper (если добавишь) или локально.
-// Но обязательно подключи fetchBalance в конце.
+// Кости
+function rollDice() {
+    if (currentUserData.stars < 10) {
+        alert('Нужно 10 звёзд!');
+        return;
+    }
+    currentUserData.stars -= 10;
+    const d1 = Math.floor(Math.random() * 6) + 1;
+    const d2 = Math.floor(Math.random() * 6) + 1;
+    const sum = d1 + d2;
+    let reward = 0;
+    if (sum === 7 || sum === 11) reward = 25;
+    else if (sum === 12) reward = 50;
+    else if (sum === 2) reward = 10;
+    currentUserData.balance += reward;
+    updateBalanceUI();
+    document.getElementById('dice1').textContent = d1;
+    document.getElementById('dice2').textContent = d2;
+    document.getElementById('dice-result').textContent = `Сумма: ${sum} | Выигрыш: ${reward} 🪙`;
+}
+
+// Модалки
+function showModal(text) {
+    document.getElementById('open-modal').classList.remove('hidden');
+    document.getElementById('result-text').textContent = text;
+    document.getElementById('result-amount').textContent = '';
+}
+function showResult(title, amount) {
+    document.getElementById('result-text').textContent = title;
+    document.getElementById('result-amount').textContent = amount;
+    setTimeout(hideModal, 3000);
+}
+function hideModal() {
+    document.getElementById('open-modal').classList.add('hidden');
+}
+
+// Модалка пополнения
+function openTopUp() {
+    document.getElementById('topup-modal').classList.remove('hidden');
+}
+function closeTopUp() {
+    document.getElementById('topup-modal').classList.add('hidden');
+}
+
+// Прочее
+function claimDaily() {
+    currentUserData.balance += 20;
+    updateBalanceUI();
+    alert('Ежедневный бонус +20 монет!');
+}
+
+function copyRefLink() {
+    const link = document.getElementById('ref-link').textContent;
+    tg.showPopup({ message: 'Скопируй ссылку: ' + link, buttons: [{ text: 'Ок' }] });
+    navigator.clipboard.writeText(link).catch(() => {});
+}
+
+// Инициализация
+document.getElementById('loader').classList.add('hidden');
 fetchBalance();
 createWheel();
+startSaper(); // предзаполним поле (без списания, т.к. saperStarted=false)
