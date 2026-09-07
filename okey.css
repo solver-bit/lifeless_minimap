@@ -366,3 +366,41 @@ body {
         border-radius: 12px 12px 0 0;
     }
 }
+
+/* Анимация иконок */
+.nav-icon {
+    display: inline-block;
+    font-size: 22px;
+    animation: subtle-bounce 2s infinite;
+}
+
+@keyframes subtle-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
+/* Активная вкладка */
+.nav-btn.active {
+    background: linear-gradient(145deg, rgba(0,170,255,0.3), rgba(255,215,0,0.3));
+    border-radius: 12px;
+    color: #ffd700;
+}
+
+/* Обычное состояние */
+.nav-btn {
+    color: #8a8aa0;
+}
+
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: conic-gradient(#00aaff, #ffd700, #00aaff);
+    -webkit-mask: radial-gradient(circle, transparent 55%, black 56%);
+    mask: radial-gradient(circle, transparent 55%, black 56%);
+    animation: spin 1.2s linear infinite;
+    box-shadow: 0 0 15px rgba(0,170,255,0.5);
+    margin-bottom: 15px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
