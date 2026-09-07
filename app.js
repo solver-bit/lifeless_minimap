@@ -18,8 +18,7 @@ let userCoins = 1000;
 let userStars = 100;
 let casesOpened = 0;
 let referrals = 0;
-
-const API_BASE = "https://ваш-домен.ru";
+const API_BASE = "https://silver-toes-sing.loca.lt";
 const SECRET = "my_super_secret_key";
 
 // Обновление баланса на экране
