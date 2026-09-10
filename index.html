@@ -10,6 +10,7 @@
 </head>
 <body>
 
+<!-- ЗАГРУЗЧИК -->
 <div id="global-loader">
     <div class="loader-spinner"></div>
     <div class="loader-text">LIFELESS</div>
@@ -17,10 +18,10 @@
 
 <div id="app" class="hidden">
 
-    <!-- HEADER -->
+    <!-- ═══════════ HEADER ═══════════ -->
     <header class="header glass-strong">
         <div class="header-left">
-            <!-- ① ЛОГОТИП — замени ссылку -->
+            <!-- ① ЛОГОТИП — замени ссылку на свою -->
             <img src="https://placehold.co/80x80/06060f/ffd700?text=L" class="logo-img" alt="Logo">
             <div class="header-title">
                 <h1>LIFELESS</h1>
@@ -36,16 +37,17 @@
         </div>
     </header>
 
+    <!-- ═══════════ КОНТЕНТ ═══════════ -->
     <main class="content">
 
-        <!-- ═══════════ ГЛАВНАЯ ═══════════ -->
+        <!-- ─────── ГЛАВНАЯ ─────── -->
         <section id="tab-home" class="tab active">
 
             <!-- Бесплатный кейс -->
             <div class="free-case-card" id="free-case-card" onclick="openFreeCase()">
                 <div class="free-case-img">
                     <!-- ② КАРТИНКА БЕСПЛАТНОГО КЕЙСА — замени -->
-                    <img src="https://placehold.co/300x300/1a0d3e/ffd700?text=🎁" alt="Free">
+                    <img src="https://placehold.co/300x300/1a0d3e/ffd700?text=%F0%9F%8E%81" alt="Free">
                 </div>
                 <div class="free-case-info">
                     <div class="free-case-label">🎁 Бесплатный кейс</div>
@@ -55,7 +57,7 @@
                 <div class="free-case-arrow">›</div>
             </div>
 
-            <!-- Баннеры (свайп) -->
+            <!-- Баннеры (свайп + стрелки) -->
             <div class="carousel glass" id="carousel">
                 <div class="carousel-track" id="carousel-track">
                     <div class="carousel-slide" onclick="switchTab('cases')">
@@ -63,7 +65,7 @@
                         <img src="https://placehold.co/800x400/0d1b3e/ffd700?text=CASES" alt="">
                         <div class="slide-overlay">
                             <span>🎰 Кейсы</span>
-                            <button>Играть</button>
+                            <button type="button">Играть</button>
                         </div>
                     </div>
                     <div class="carousel-slide" onclick="switchTab('games')">
@@ -71,7 +73,7 @@
                         <img src="https://placehold.co/800x400/1a0d3e/00aaff?text=GAMES" alt="">
                         <div class="slide-overlay">
                             <span>🎮 Игры</span>
-                            <button>Играть</button>
+                            <button type="button">Играть</button>
                         </div>
                     </div>
                     <div class="carousel-slide" onclick="switchTab('shop')">
@@ -79,10 +81,12 @@
                         <img src="https://placehold.co/800x400/3e2a0d/ffd700?text=SHOP" alt="">
                         <div class="slide-overlay">
                             <span>🛒 Магазин</span>
-                            <button>Открыть</button>
+                            <button type="button">Открыть</button>
                         </div>
                     </div>
                 </div>
+                <button class="carousel-btn left" type="button" onclick="event.stopPropagation(); prevSlide()">‹</button>
+                <button class="carousel-btn right" type="button" onclick="event.stopPropagation(); nextSlide()">›</button>
                 <div class="carousel-dots" id="carousel-dots"></div>
             </div>
 
@@ -128,33 +132,36 @@
 
         </section>
 
-        <!-- ═══════════ КЕЙСЫ ═══════════ -->
+        <!-- ─────── КЕЙСЫ ─────── -->
         <section id="tab-cases" class="tab">
             <div class="section-title">📦 Монетные кейсы</div>
             <div class="cases-grid" id="cases-grid"></div>
 
             <div class="section-title">⭐ Звёздные кейсы</div>
-            <div class="cases-grid star-cases" id="star-cases-grid"></div>
+            <div class="cases-grid" id="star-cases-grid"></div>
         </section>
 
-        <!-- ═══════════ ИГРЫ ═══════════ -->
+        <!-- ─────── ИГРЫ ─────── -->
         <section id="tab-games" class="tab">
-            <div class="section-title">🎮 Игры</div>
-            <div class="games-grid">
-                <div class="game-card" onclick="switchTab('wheel')">
-                    <!-- ⑥ КАРТИНКА КОЛЕСА — замени -->
-                    <img src="https://placehold.co/400x400/1a0d3e/ffd700?text=🎡" alt="">
-                    <span>Колесо</span>
-                </div>
-                <div class="game-card" onclick="switchTab('dice')">
-                    <!-- ⑦ КАРТИНКА КОСТЕЙ — замени -->
-                    <img src="https://placehold.co/400x400/0d1b3e/00aaff?text=🎲" alt="">
-                    <span>Кости</span>
-                </div>
-                <div class="game-card" onclick="switchTab('saper')">
-                    <!-- ⑧ КАРТИНКА САПЁРА — замени -->
-                    <img src="https://placehold.co/400x400/3e0d1b/ffd700?text=💣" alt="">
-                    <span>Сапёр</span>
+
+            <div id="games-menu">
+                <div class="section-title">🎮 Игры</div>
+                <div class="games-grid">
+                    <div class="game-card" onclick="openGame('wheel')">
+                        <!-- ⑥ КАРТИНКА КОЛЕСА — замени -->
+                        <img src="https://placehold.co/400x400/1a0d3e/ffd700?text=%F0%9F%8E%A1" alt="">
+                        <span>Колесо</span>
+                    </div>
+                    <div class="game-card" onclick="openGame('dice')">
+                        <!-- ⑦ КАРТИНКА КОСТЕЙ — замени -->
+                        <img src="https://placehold.co/400x400/0d1b3e/00aaff?text=%F0%9F%8E%B2" alt="">
+                        <span>Кости</span>
+                    </div>
+                    <div class="game-card" onclick="openGame('saper')">
+                        <!-- ⑧ КАРТИНКА САПЁРА — замени -->
+                        <img src="https://placehold.co/400x400/3e0d1b/ffd700?text=%F0%9F%92%A3" alt="">
+                        <span>Сапёр</span>
+                    </div>
                 </div>
             </div>
 
@@ -202,6 +209,7 @@
             <!-- САПЁР -->
             <div id="game-saper" class="game-view hidden">
                 <div class="section-title">💣 Сапёр</div>
+
                 <div class="saper-setup" id="saper-setup">
                     <p>Выбери сложность:</p>
                     <div class="saper-levels">
@@ -222,16 +230,19 @@
                         </button>
                     </div>
                 </div>
+
                 <div id="saper-play" class="hidden">
                     <div class="saper-info" id="saper-info"></div>
                     <div id="saper-grid" class="saper-grid"></div>
                     <div id="saper-result" class="game-result"></div>
-                    <button class="back-link" onclick="resetSaper()">← Выбрать другое поле</button>
                 </div>
+
+                <button class="back-link" onclick="closeGameView()">← Назад к играм</button>
             </div>
+
         </section>
 
-        <!-- ═══════════ МАГАЗИН ═══════════ -->
+        <!-- ─────── МАГАЗИН ─────── -->
         <section id="tab-shop" class="tab">
             <div class="section-title">💎 Купить монеты</div>
             <div class="shop-grid" id="shop-grid"></div>
@@ -242,7 +253,7 @@
             </div>
         </section>
 
-        <!-- ═══════════ БОНУСЫ ═══════════ -->
+        <!-- ─────── БОНУСЫ ─────── -->
         <section id="tab-bonuses" class="tab">
             <div class="section-title">🎁 Бонусы</div>
             <div class="bonus-list">
@@ -273,12 +284,12 @@
             </div>
         </section>
 
-        <!-- ═══════════ ПРОФИЛЬ ═══════════ -->
+        <!-- ─────── ПРОФИЛЬ ─────── -->
         <section id="tab-profile" class="tab">
             <div class="profile-card glass-strong">
                 <div class="profile-avatar-wrap">
                     <img id="profile-avatar" class="profile-avatar"
-                         src="https://placehold.co/200x200/06060f/ffd700?text=?" alt="avatar">
+                         src="https://placehold.co/200x200/06060f/ffd700?text=%3F" alt="avatar">
                     <div class="profile-badge" id="profile-badge">#0</div>
                 </div>
                 <div class="profile-name" id="profile-name">Загрузка...</div>
@@ -325,7 +336,7 @@
 
     </main>
 
-    <!-- ═══════════ МОДАЛКИ ═══════════ -->
+    <!-- ═══════════ МОДАЛКА: ПОПОЛНЕНИЕ ═══════════ -->
     <div id="topup-modal" class="modal hidden">
         <div class="modal-content glass-strong">
             <h3>💎 Пополнить баланс</h3>
@@ -334,32 +345,35 @@
         </div>
     </div>
 
+    <!-- ═══════════ МОДАЛКА: СВОЯ СУММА ═══════════ -->
     <div id="custom-modal" class="modal hidden">
         <div class="modal-content glass-strong">
             <h3>✏️ Своя сумма</h3>
             <p class="modal-hint">от 100 до 100 000 монет</p>
-            <input id="custom-coins-input" type="number" min="100" max="100000" placeholder="Введите количество" class="modal-input">
+            <input id="custom-coins-input" type="number" min="100" max="100000"
+                   placeholder="Введите количество" class="modal-input">
             <button class="close-btn primary" onclick="submitCustomTopUp()">Пополнить</button>
             <button class="close-btn" onclick="closeModal('custom-modal')">Отмена</button>
         </div>
     </div>
 
+    <!-- ═══════════ МОДАЛКА: ПОДДЕРЖКА ═══════════ -->
     <div id="support-modal" class="modal hidden">
         <div class="modal-content glass-strong">
             <h3>🆘 Поддержка</h3>
-            <select id="support-topic" class="modal-input">
-                <option value="Вопрос">Вопрос</option>
-                <option value="Жалоба">Жалоба</option>
-                <option value="Баг">Баг</option>
-                <option value="Идея">Идея</option>
-            </select>
+            <div class="support-topics" id="support-topics">
+                <button class="support-topic active" data-topic="Вопрос" onclick="selectTopic(this)">❓ Вопрос</button>
+                <button class="support-topic" data-topic="Жалоба" onclick="selectTopic(this)">⚠️ Жалоба</button>
+                <button class="support-topic" data-topic="Баг" onclick="selectTopic(this)">🐛 Баг</button>
+                <button class="support-topic" data-topic="Идея" onclick="selectTopic(this)">💡 Идея</button>
+            </div>
             <textarea id="support-text" class="modal-input" placeholder="Опишите подробно..." maxlength="2000"></textarea>
             <button class="close-btn primary" onclick="submitSupport()">Отправить</button>
             <button class="close-btn" onclick="closeModal('support-modal')">Отмена</button>
         </div>
     </div>
 
-    <!-- 3D РУЛЕТКА КЕЙСА -->
+    <!-- ═══════════ МОДАЛКА: 3D-РУЛЕТКА КЕЙСА ═══════════ -->
     <div id="case-modal" class="modal hidden">
         <div class="case-modal-inner">
             <div class="case-modal-title" id="case-modal-title">Открытие кейса...</div>
@@ -371,16 +385,18 @@
         </div>
     </div>
 
+    <!-- ═══════════ УВЕДОМЛЕНИЯ ═══════════ -->
     <div id="toast-container" class="toast-container"></div>
 
-    <!-- ═══════════ НАВИГАЦИЯ ═══════════ -->
+    <!-- ═══════════ НИЖНЯЯ НАВИГАЦИЯ ═══════════ -->
     <nav class="bottom-nav glass-strong">
-        <button class="nav-btn" data-tab="home"><span>🏠</span><span class="nav-label">Главная</span></button>
+        <button class="nav-btn active" data-tab="home"><span>🏠</span><span class="nav-label">Главная</span></button>
         <button class="nav-btn" data-tab="games"><span>🎮</span><span class="nav-label">Игры</span></button>
         <button class="nav-btn nav-btn-cases" data-tab="cases"><span>🎰</span><span class="nav-label">Кейсы</span></button>
         <button class="nav-btn" data-tab="shop"><span>💎</span><span class="nav-label">Магазин</span></button>
         <button class="nav-btn" data-tab="profile"><span>👤</span><span class="nav-label">Профиль</span></button>
     </nav>
+
 </div>
 
 <script src="app.js"></script>

@@ -1,12 +1,15 @@
 /* ============================================================
    LIFELESS SHOP · WebApp Frontend
-   Демо-режим: работает без сервера (localStorage)
-   Прод-режим: автоматически подключается к API
+   Демо-режим форсирован (пока нет сервера)
    ============================================================ */
 
-// ---------- Telegram WebApp ----------
+// ⚠️ ⚠️ ⚠️  ВАЖНО: Пока нет сервера — ДЕМО включено принудительно.
+// После деплоя API на VPS — поменяй на false.
+const FORCE_DEMO = true;
+// ⚠️ ⚠️ ⚠️
+
 let tg = window.Telegram?.WebApp;
-const DEMO = !tg?.initData; // true = localStorage, false = API
+const DEMO = FORCE_DEMO || !tg?.initData;
 
 if (!tg) {
     tg = {
@@ -20,21 +23,21 @@ if (!tg) {
         HapticFeedback: { impactOccurred: () => {}, notificationOccurred: () => {} },
     };
 } else {
-    tg.expand();
+    try { tg.expand(); } catch(_) {}
     tg.setHeaderColor?.("#06060f");
     tg.setBackgroundColor?.("#06060f");
 }
 
 const API_BASE = location.origin;
 
-// ---------- Стейт ----------
 let currentUser = {
-    id: 0, first_name: "", last_name: "", username: "",
+    id: 0, first_name: "", last_name: "", username: "", avatar_url: "",
     balance: 0, cases_opened: 0, referrals: 0,
     stars_spent: 0, total_wagered: 0, best_drop: 0,
-    drops: [],
+    drops: [], rank: 1, total_users: 1,
+    ref_link: "", last_free_case: 0, last_daily: "",
 };
-let state = { spinning: false, rolling: false, saperActive: false, caseOpening: false };
+let state = { spinning: false, rolling: false, caseOpening: false, saperActive: false };
 
 // ---------- Утилиты ----------
 function haptic(t = "light") { try { tg.HapticFeedback?.impactOccurred(t); } catch(_) {} }
@@ -42,6 +45,7 @@ function hapticNotify(t = "success") { try { tg.HapticFeedback?.notificationOccu
 
 function toast(msg, type = "info", ms = 2500) {
     const cont = document.getElementById("toast-container");
+    if (!cont) return;
     const el = document.createElement("div");
     el.className = `toast ${type}`;
     el.textContent = msg;
@@ -66,21 +70,21 @@ function loadDemo() {
         if (raw) return JSON.parse(raw);
     } catch(_) {}
     return {
-        balance: 50000,        // ← НАЧАЛЬНЫЙ БАЛАНС ДЛЯ ТЕСТА
+        balance: 50000,        // ← НАЧАЛЬНЫЙ БАЛАНС
         cases_opened: 0,
         referrals: 0,
         stars_spent: 0,
         total_wagered: 0,
         best_drop: 0,
         drops: [],
-        last_free_case: 0,     // timestamp
-        last_daily: "",        // YYYY-MM-DD
+        last_free_case: 0,
+        last_daily: "",
     };
 }
 function saveDemo() {
     if (!DEMO) return;
     try {
-        const d = {
+        localStorage.setItem(LS_KEY, JSON.stringify({
             balance: currentUser.balance,
             cases_opened: currentUser.cases_opened,
             referrals: currentUser.referrals,
@@ -90,11 +94,9 @@ function saveDemo() {
             drops: currentUser.drops.slice(0, 20),
             last_free_case: currentUser.last_free_case,
             last_daily: currentUser.last_daily,
-        };
-        localStorage.setItem(LS_KEY, JSON.stringify(d));
+        }));
     } catch(_) {}
 }
-
 function resetDemo() {
     if (!confirm("Сбросить весь прогресс? Баланс станет 50 000 🪙")) return;
     localStorage.removeItem(LS_KEY);
@@ -102,11 +104,10 @@ function resetDemo() {
 }
 
 // ============================================================
-//                    API / DEMO WRAPPER
+//                    API WRAPPER
 // ============================================================
 async function apiCall(path, body = null) {
     if (DEMO) return demoApi(path, body);
-
     const headers = { "X-Init-Data": tg.initData || "" };
     if (body) headers["Content-Type"] = "application/json";
     const res = await fetch(`${API_BASE}${path}`, {
@@ -115,11 +116,11 @@ async function apiCall(path, body = null) {
         body: body ? JSON.stringify(body) : undefined,
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || "Ошибка запроса");
+    if (!res.ok) throw new Error(data.detail || "Ошибка");
     return data;
 }
 
-// --- Локальная "экономика" в демо ---
+// ---------- Локальная экономика ----------
 const CASE_MULTIPLIERS = [0.0, 0.5, 1.0, 1.5, 2.0, 4.0];
 const CASE_WEIGHTS = [40, 20, 20, 12, 6, 2];
 
@@ -131,34 +132,33 @@ function pickMultiplier() {
     }
     return 0;
 }
-
 function getRtp(cases) {
     if (cases < 4) return 1.15;
     if (cases < 6) return 1.15 - ((1.15 - 0.92) / 2) * (cases - 3);
     return 0.92;
 }
-
 function happyBonus(x) {
     const h = new Date().getHours();
     return (h >= 20 && h < 22) ? Math.floor(x * 1.2) : x;
 }
 
 async function demoApi(path, body) {
-    await new Promise(r => setTimeout(r, 150)); // имитация сети
+    await new Promise(r => setTimeout(r, 120));
 
     switch (path) {
         case "/api/me":
             return {
-                id: 1, first_name: "Demo", last_name: "",
-                username: "demo_user",
+                id: currentUser.id, first_name: currentUser.first_name,
+                last_name: currentUser.last_name, username: currentUser.username,
                 balance: currentUser.balance,
                 cases_opened: currentUser.cases_opened,
                 referrals: currentUser.referrals,
                 stars_spent: currentUser.stars_spent,
-                rank: 1, total_users: 1,
-                ref_link: "https://t.me/demo_bot?start=demo",
+                rank: currentUser.rank, total_users: currentUser.total_users,
+                ref_link: currentUser.ref_link,
                 is_admin: true,
                 happy_hours: new Date().getHours() >= 20 && new Date().getHours() < 22,
+                avatar_url: currentUser.avatar_url,
             };
 
         case "/api/leaderboard":
@@ -169,20 +169,53 @@ async function demoApi(path, body) {
             if (currentUser.balance < cost) throw new Error("Недостаточно монет");
             currentUser.balance -= cost;
             currentUser.total_wagered += cost;
-
             const rtp = getRtp(currentUser.cases_opened);
             const m = pickMultiplier();
             let reward = Math.floor(cost * m * rtp);
             reward = happyBonus(reward);
-
             currentUser.balance += reward;
             currentUser.cases_opened++;
-
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
             addDrop(`Кейс ${body.case_id}🪙`, reward - cost, m >= 4);
             saveDemo();
-
             return { reward, cost, balance: currentUser.balance, multiplier: m, win: m > 0, jackpot: m >= 4, rtp };
+        }
+
+        case "/api/open_star_case": {
+            const stars = body.stars;
+            const cost = stars * 10;
+            if (currentUser.balance < cost) throw new Error("Недостаточно монет");
+            currentUser.balance -= cost;
+            currentUser.total_wagered += cost;
+            const rtp = getRtp(currentUser.cases_opened);
+            const tables = {
+                1:   [0, 0.5, 1.0, 1.5, 2.0, 3.0],
+                3:   [0, 0.5, 1.0, 1.5, 2.0, 3.0],
+                5:   [0, 0.7, 1.0, 1.5, 2.0, 3.5],
+                10:  [0, 0.7, 1.0, 1.5, 2.0, 4.0],
+                25:  [0, 0.8, 1.0, 1.5, 2.5, 5.0],
+                50:  [0, 0.8, 1.0, 1.5, 3.0, 6.0],
+                75:  [0, 0.8, 1.0, 1.5, 3.0, 8.0],
+                100: [0, 1.0, 1.2, 1.5, 3.0, 10.0],
+                250: [0, 1.0, 1.2, 1.5, 3.5, 12.0],
+                500: [0, 1.0, 1.5, 2.0, 4.0, 15.0],
+            };
+            const mults = tables[stars] || tables[10];
+            const weights = [40, 20, 20, 12, 6, 2];
+            const totalW = weights.reduce((a, b) => a + b, 0);
+            let r = Math.random() * totalW, mIdx = 0;
+            for (let i = 0; i < weights.length; i++) {
+                if ((r -= weights[i]) <= 0) { mIdx = i; break; }
+            }
+            const m = mults[mIdx];
+            let reward = Math.floor(cost * m * rtp);
+            reward = happyBonus(reward);
+            currentUser.balance += reward;
+            currentUser.cases_opened++;
+            if (reward > currentUser.best_drop) currentUser.best_drop = reward;
+            addDrop(`⭐ Кейс ${stars}⭐`, reward - cost, m >= mults[5]);
+            saveDemo();
+            return { reward, cost, balance: currentUser.balance, multiplier: m, win: m > 0, jackpot: m >= mults[5], rtp };
         }
 
         case "/api/spin_wheel": {
@@ -192,8 +225,7 @@ async function demoApi(path, body) {
             const prizes = [0, 5, 10, 15, 20, 25, 30, 50];
             const weights = [25, 20, 18, 12, 10, 8, 5, 2];
             const total = weights.reduce((a, b) => a + b, 0);
-            let r = Math.random() * total;
-            let idx = 0;
+            let r = Math.random() * total, idx = 0;
             for (let i = 0; i < weights.length; i++) {
                 if ((r -= weights[i]) <= 0) { idx = i; break; }
             }
@@ -222,7 +254,6 @@ async function demoApi(path, body) {
         }
 
         case "/api/saper/start": {
-            // В демо — клиент сам генерирует поле, тут только списываем
             const cost = body.cost || 25;
             if (currentUser.balance < cost) throw new Error("Недостаточно монет");
             currentUser.balance -= cost;
@@ -254,7 +285,6 @@ async function demoApi(path, body) {
             return { ok: true, delivered: 1 };
 
         case "/api/invoice/coins": {
-            // В демо — просто начисляем
             currentUser.balance += body.coins;
             saveDemo();
             return { stars: Math.floor(body.coins / 10), coins: body.coins, demo: true };
@@ -262,10 +292,8 @@ async function demoApi(path, body) {
 
         case "/api/free_case": {
             const now = Date.now();
-            const cooldown = 60 * 60 * 1000; // 1 час для демо (в проде — 24ч)
-            if (now - (currentUser.last_free_case || 0) < cooldown) {
-                throw new Error("Ещё не готов");
-            }
+            const cooldown = 60 * 60 * 1000;
+            if (now - (currentUser.last_free_case || 0) < cooldown) throw new Error("Ещё не готов");
             const reward = happyBonus(1 + Math.floor(Math.random() * 500));
             currentUser.balance += reward;
             currentUser.cases_opened++;
@@ -283,12 +311,10 @@ function generateFakeLeaderboard() {
     const names = ["Whale", "LuckyKing", "CryptoBoss", "Neon", "ZeroX", "MaxWin", "Flash", "Void", "Nova", "Titan",
         "Ghost", "Ace", "Samurai", "Phantom", "Fury", "Blade", "Storm", "Venom", "Echo", "Frost"];
     const top = names.slice(0, 20).map((n, i) => ({
-        rank: i + 1,
-        username: n,
+        rank: i + 1, username: n,
         balance: Math.floor(1000000 / (i + 1) + Math.random() * 50000),
         cases: Math.floor(100 + Math.random() * 900),
     }));
-    // Вставляем себя
     top[3] = { rank: 4, username: currentUser.username || "Ты", balance: currentUser.balance, cases: currentUser.cases_opened };
     top.sort((a, b) => b.balance - a.balance);
     top.forEach((u, i) => u.rank = i + 1);
@@ -296,14 +322,10 @@ function generateFakeLeaderboard() {
 }
 
 function addDrop(label, delta, jackpot = false) {
-    const drop = {
-        label,
-        delta,
-        jackpot,
-        ts: Date.now(),
+    currentUser.drops.unshift({
+        label, delta, jackpot, ts: Date.now(),
         user: currentUser.username || "Ты",
-    };
-    currentUser.drops.unshift(drop);
+    });
     if (currentUser.drops.length > 20) currentUser.drops.length = 20;
     renderDropsFeed();
 }
@@ -312,20 +334,23 @@ function addDrop(label, delta, jackpot = false) {
 //                    ИНИЦИАЛИЗАЦИЯ
 // ============================================================
 async function bootstrap() {
-    try {
-        if (DEMO) {
-            const d = loadDemo();
-            Object.assign(currentUser, d);
-            // Первая регистрация
-            if (!currentUser.id) {
-                currentUser.id = 1;
-                currentUser.username = "demo_user";
-                currentUser.first_name = "Demo";
-            }
-        }
+    // 1. Загружаем локальное состояние
+    Object.assign(currentUser, loadDemo());
 
-        await loadMe();
-        await loadLeaderboard();
+    // Заполняем данные пользователя из Telegram
+    const u = tg.initDataUnsafe?.user || {};
+    if (!currentUser.id) {
+        currentUser.id = u.id || 1;
+        currentUser.first_name = u.first_name || "Игрок";
+        currentUser.last_name = u.last_name || "";
+        currentUser.username = u.username || "demo_user";
+        currentUser.rank = 4;
+        currentUser.total_users = 20;
+        currentUser.ref_link = `https://t.me/demo_bot?start=${currentUser.id}`;
+    }
+
+    // 2. Рендер всего UI — НЕЗАВИСИМО от API
+    try {
         buildCases();
         buildStarCases();
         buildCarouselDots();
@@ -333,56 +358,59 @@ async function bootstrap() {
         buildShopGrid();
         buildWheel();
         bindCarouselSwipe();
-        startFreeCaseTimer();
+        bindSaperLevels();
+        renderProfile();
         renderDropsFeed();
+        startFreeCaseTimer();
     } catch (e) {
-        console.error(e);
-        toast("Ошибка загрузки: " + e.message, "error", 4000);
-    } finally {
-        document.getElementById("global-loader").classList.add("hidden");
-        document.getElementById("app").classList.remove("hidden");
+        console.error("Build error:", e);
+        toast("Ошибка инициализации: " + e.message, "error", 5000);
     }
+
+    // 3. Прячем лоадер — что бы ни случилось
+    document.getElementById("global-loader").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+
+    // 4. Синхронизация с API (не критична)
+    try { await loadMe(); } catch(e) { console.warn("loadMe:", e); }
+    try { await loadLeaderboard(); } catch(e) { console.warn("leaderboard:", e); }
 }
 
-async function loadMe() {
-    const data = await apiCall("/api/me");
-    // Не перетираем локальные поля
-    const local = {
-        balance: currentUser.balance,
-        cases_opened: currentUser.cases_opened,
-        referrals: currentUser.referrals,
-        stars_spent: currentUser.stars_spent,
-        total_wagered: currentUser.total_wagered,
-        best_drop: currentUser.best_drop,
-        drops: currentUser.drops,
-        last_free_case: currentUser.last_free_case,
-        last_daily: currentUser.last_daily,
-    };
-    Object.assign(currentUser, data, DEMO ? local : {});
-
-    setBalance(currentUser.balance, false);
-
-    // Профиль
+function renderProfile() {
     const u = tg.initDataUnsafe?.user || {};
     const initials = (u.first_name || currentUser.first_name || "U").charAt(0);
-    document.getElementById("profile-avatar").src =
-        currentUser.avatar_url || `https://placehold.co/200x200/06060f/ffd700?text=${encodeURIComponent(initials)}`;
-    document.getElementById("profile-name").textContent =
-        [u.first_name || currentUser.first_name, u.last_name || currentUser.last_name].filter(Boolean).join(" ") || "Демо-игрок";
-    document.getElementById("profile-username").textContent =
-        (u.username || currentUser.username) ? `@${u.username || currentUser.username}` : `ID: ${currentUser.id}`;
-    document.getElementById("profile-badge").textContent = `#${currentUser.rank || 1} из ${currentUser.total_users || 1}`;
+
+    const avatarEl = document.getElementById("profile-avatar");
+    if (avatarEl) {
+        avatarEl.src = currentUser.avatar_url ||
+            `https://placehold.co/200x200/06060f/ffd700?text=${encodeURIComponent(initials)}`;
+        avatarEl.onerror = () => {
+            avatarEl.src = `https://placehold.co/200x200/06060f/ffd700?text=${encodeURIComponent(initials)}`;
+        };
+    }
+
+    const nameEl = document.getElementById("profile-name");
+    if (nameEl) {
+        nameEl.textContent = [u.first_name || currentUser.first_name, u.last_name || currentUser.last_name]
+            .filter(Boolean).join(" ") || "Игрок";
+    }
+    const unEl = document.getElementById("profile-username");
+    if (unEl) {
+        const un = u.username || currentUser.username;
+        unEl.textContent = un ? `@${un}` : `ID: ${currentUser.id}`;
+    }
+
+    document.getElementById("profile-badge").textContent = `#${currentUser.rank} из ${currentUser.total_users}`;
     document.getElementById("profile-cases").textContent = currentUser.cases_opened;
     document.getElementById("profile-stars").textContent = currentUser.stars_spent;
     document.getElementById("profile-refs").textContent = currentUser.referrals;
     document.getElementById("ref-link").textContent = currentUser.ref_link || "—";
 
-    document.getElementById("happy-banner").style.display = data.happy_hours ? "flex" : "none";
-
-    // Мини-статы на главной
     document.getElementById("home-cases").textContent = currentUser.cases_opened;
     document.getElementById("home-wagered").textContent = formatNum(currentUser.total_wagered);
     document.getElementById("home-best").textContent = formatNum(currentUser.best_drop);
+
+    setBalance(currentUser.balance, false);
 }
 
 function formatNum(n) {
@@ -391,33 +419,43 @@ function formatNum(n) {
     return n;
 }
 
+async function loadMe() {
+    const data = await apiCall("/api/me");
+    if (!DEMO) {
+        Object.assign(currentUser, data);
+    }
+    renderProfile();
+    const happy = data.happy_hours;
+    const banner = document.getElementById("happy-banner");
+    if (banner) banner.style.display = happy ? "flex" : "none";
+}
+
 async function loadLeaderboard() {
     try {
         const { top } = await apiCall("/api/leaderboard");
         const box = document.getElementById("leaderboard-list");
+        if (!box) return;
         box.innerHTML = top.map(u => {
             const isMe = u.username === (currentUser.username || "Ты");
             const cls = u.rank === 1 ? "gold" : u.rank === 2 ? "silver" : u.rank === 3 ? "bronze" : "";
-            return `
-                <div class="leader-row ${isMe ? 'me' : ''}">
-                    <div class="leader-rank ${cls}">#${u.rank}</div>
-                    <div class="leader-name">${isMe ? '⭐ ' : ''}${u.username}</div>
-                    <div class="leader-balance">${u.balance.toLocaleString("ru-RU")} 🪙</div>
-                </div>`;
+            return `<div class="leader-row ${isMe ? 'me' : ''}">
+                <div class="leader-rank ${cls}">#${u.rank}</div>
+                <div class="leader-name">${isMe ? '⭐ ' : ''}${u.username}</div>
+                <div class="leader-balance">${u.balance.toLocaleString("ru-RU")} 🪙</div>
+            </div>`;
         }).join("");
     } catch (_) {}
 }
 
-// ---------- Баланс ----------
 function setBalance(v, animate = true) {
     currentUser.balance = v;
-    document.getElementById("coins").textContent = v.toLocaleString("ru-RU");
+    const coinsEl = document.getElementById("coins");
+    if (coinsEl) coinsEl.textContent = v.toLocaleString("ru-RU");
     const prof = document.getElementById("profile-balance");
     if (prof) prof.textContent = v.toLocaleString("ru-RU");
     if (animate) {
         const pill = document.getElementById("balance-pill");
-        pill.classList.add("bump");
-        setTimeout(() => pill.classList.remove("bump"), 300);
+        if (pill) { pill.classList.add("bump"); setTimeout(() => pill.classList.remove("bump"), 300); }
     }
     saveDemo();
 }
@@ -427,32 +465,71 @@ function setBalance(v, animate = true) {
 // ============================================================
 function switchTab(tabId) {
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-    document.getElementById(`tab-${tabId}`)?.classList.add("active");
+    const el = document.getElementById(`tab-${tabId}`);
+    if (el) el.classList.add("active");
     document.querySelectorAll(".nav-btn").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.tab === tabId);
     });
     haptic("light");
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
+
 document.querySelectorAll(".nav-btn").forEach(btn =>
-    btn.addEventListener("click", () => switchTab(btn.dataset.tab))
+    btn.addEventListener("click", () => {
+        closeGameView();
+        switchTab(btn.dataset.tab);
+    })
 );
 
 // ============================================================
-//                    CAROUSEL (свайп)
+//                    ИГРЫ
+// ============================================================
+function openGame(gameId) {
+    const menu = document.getElementById("games-menu");
+    if (menu) menu.classList.add("hidden");
+    document.querySelectorAll(".game-view").forEach(v => v.classList.add("hidden"));
+    const view = document.getElementById(`game-${gameId}`);
+    if (view) view.classList.remove("hidden");
+    haptic("light");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function closeGameView() {
+    document.querySelectorAll(".game-view").forEach(v => v.classList.add("hidden"));
+    const menu = document.getElementById("games-menu");
+    if (menu) menu.classList.remove("hidden");
+    resetSaper();
+}
+
+function resetSaper() {
+    const setup = document.getElementById("saper-setup");
+    const play = document.getElementById("saper-play");
+    if (setup) setup.classList.remove("hidden");
+    if (play) play.classList.add("hidden");
+    const grid = document.getElementById("saper-grid");
+    if (grid) grid.innerHTML = "";
+    const res = document.getElementById("saper-result");
+    if (res) { res.textContent = ""; res.className = "game-result"; }
+}
+
+// ============================================================
+//                    CAROUSEL
 // ============================================================
 let currentSlide = 0;
 let carouselTimer = null;
 
 function buildCarouselDots() {
     const track = document.getElementById("carousel-track");
+    if (!track) return;
     const n = track.children.length;
     const dots = document.getElementById("carousel-dots");
+    if (!dots) return;
     dots.innerHTML = Array.from({ length: n }, (_, i) => `<i class="${i === 0 ? 'active' : ''}"></i>`).join("");
     startCarouselAuto();
 }
 function showSlide(i) {
     const track = document.getElementById("carousel-track");
+    if (!track) return;
     const n = track.children.length;
     currentSlide = ((i % n) + n) % n;
     track.style.transform = `translateX(-${currentSlide * 100}%)`;
@@ -460,6 +537,8 @@ function showSlide(i) {
         d.classList.toggle("active", idx === currentSlide)
     );
 }
+function nextSlide() { showSlide(currentSlide + 1); startCarouselAuto(); }
+function prevSlide() { showSlide(currentSlide - 1); startCarouselAuto(); }
 function startCarouselAuto() {
     if (carouselTimer) clearInterval(carouselTimer);
     carouselTimer = setInterval(() => showSlide(currentSlide + 1), 6000);
@@ -501,25 +580,25 @@ function bindCarouselSwipe() {
 const CASE_COSTS = { "10": 10, "50": 50, "250": 250, "1000": 1000, "5000": 5000, "10000": 10000 };
 
 const COIN_CASES = [
-    { id: "10",    name: "Пыль",        price: 10,    emoji: "📦", rar: "common" },
-    { id: "50",    name: "Пепел",       price: 50,    emoji: "💼", rar: "uncommon" },
-    { id: "250",   name: "Мелл",        price: 250,   emoji: "🔥", rar: "rare" },
-    { id: "1000",  name: "Telega",      price: 1000,  emoji: "💎", rar: "epic" },
-    { id: "5000",  name: "Оникс",       price: 5000,  emoji: "👑", rar: "legendary" },
-    { id: "10000", name: "Бездна",      price: 10000, emoji: "🌌", rar: "jackpot" },
+    { id: "10",    name: "Пыль",    price: 10,    emoji: "📦" },
+    { id: "50",    name: "Пепел",   price: 50,    emoji: "💼" },
+    { id: "250",   name: "Мелл",    price: 250,   emoji: "🔥" },
+    { id: "1000",  name: "Telega",  price: 1000,  emoji: "💎" },
+    { id: "5000",  name: "Оникс",   price: 5000,  emoji: "👑" },
+    { id: "10000", name: "Бездна",  price: 10000, emoji: "🌌" },
 ];
 
 const STAR_CASES = [
-    { id: "1",    name: "Фарм",     price: 1,    emoji: "🌱" },
-    { id: "3",    name: "Базовый",  price: 3,    emoji: "🎯" },
-    { id: "5",    name: "Лёгкий",   price: 5,    emoji: "🎈" },
-    { id: "10",   name: "Удача",    price: 10,   emoji: "🍀" },
-    { id: "25",   name: "Везучий",  price: 25,   emoji: "🎪" },
-    { id: "50",   name: "Подарки",  price: 50,   emoji: "🎁" },
-    { id: "75",   name: "Победа",   price: 75,   emoji: "🏆" },
-    { id: "100",  name: "Фортуна",  price: 100,  emoji: "⭐" },
-    { id: "250",  name: "Джекпот",  price: 250,  emoji: "💥" },
-    { id: "500",  name: "NFT",      price: 500,  emoji: "🪐" },
+    { id: "1",   name: "Фарм",    price: 1,   emoji: "🌱" },
+    { id: "3",   name: "Базовый", price: 3,   emoji: "🎯" },
+    { id: "5",   name: "Лёгкий",  price: 5,   emoji: "🎈" },
+    { id: "10",  name: "Удача",   price: 10,  emoji: "🍀" },
+    { id: "25",  name: "Везучий", price: 25,  emoji: "🎪" },
+    { id: "50",  name: "Подарки", price: 50,  emoji: "🎁" },
+    { id: "75",  name: "Победа",  price: 75,  emoji: "🏆" },
+    { id: "100", name: "Фортуна", price: 100, emoji: "⭐" },
+    { id: "250", name: "Джекпот", price: 250, emoji: "💥" },
+    { id: "500", name: "NFT",     price: 500, emoji: "🪐" },
 ];
 
 const RARITIES = [
@@ -533,6 +612,7 @@ const RARITIES = [
 
 function buildCases() {
     const grid = document.getElementById("cases-grid");
+    if (!grid) return;
     grid.innerHTML = COIN_CASES.map(c => `
         <button class="case-btn" data-case="${c.id}">
             <div class="case-icon">${c.emoji}</div>
@@ -546,6 +626,7 @@ function buildCases() {
 
 function buildStarCases() {
     const grid = document.getElementById("star-cases-grid");
+    if (!grid) return;
     grid.innerHTML = STAR_CASES.map(c => `
         <button class="case-btn star" data-star="${c.id}">
             <div class="case-icon">${c.emoji}</div>
@@ -571,11 +652,9 @@ async function openCase(caseId) {
     const caseData = COIN_CASES.find(c => c.id === caseId);
     if (!caseData) return;
     if (currentUser.balance < caseData.price) {
-        toast("Недостаточно монет", "error");
-        hapticNotify("error");
-        return;
+        toast("Недостаточно монет", "error"); hapticNotify("error"); return;
     }
-    await runCaseAnimation(`Кейс «${caseData.name}»`, caseData.price, () =>
+    await runCaseAnimation(`Кейс «${caseData.name}»`, () =>
         apiCall("/api/open_case", { case_id: caseId })
     );
 }
@@ -585,30 +664,28 @@ async function openStarCase(starId) {
     const caseData = STAR_CASES.find(c => c.id === starId);
     if (!caseData) return;
 
-    // В демо режиме звёздные кейсы стоят монеты (1⭐ = 10🪙) для теста
-    const coinsPrice = DEMO ? caseData.price * 10 : 0;
-    if (DEMO && currentUser.balance < coinsPrice) {
-        toast(`Нужно ${coinsPrice} 🪙 (демо)`, "error");
-        return;
+    if (DEMO) {
+        const coinsPrice = caseData.price * 10;
+        if (currentUser.balance < coinsPrice) {
+            toast(`Нужно ${coinsPrice} 🪙 (демо-курс 1⭐=10🪙)`, "error");
+            hapticNotify("error"); return;
+        }
+        await runCaseAnimation(`⭐ «${caseData.name}» · ${caseData.price}⭐`, () =>
+            apiCall("/api/open_star_case", { stars: caseData.price })
+        );
+    } else {
+        toast("Звёздные кейсы — в боте ⭐", "info");
     }
-    if (!DEMO) {
-        // В проде — отправляем в бота для оплаты Stars
-        toast("Звёздные кейсы — в боте!", "info");
-        return;
-    }
-    await runCaseAnimation(`⭐ Кейс «${caseData.name}»`, coinsPrice, async () => {
-        // эмулируем как монетный кейс
-        return apiCall("/api/open_case", { case_id: "250" });
-    });
 }
 
-async function runCaseAnimation(title, cost, apiFn) {
+async function runCaseAnimation(title, apiFn) {
     state.caseOpening = true;
     haptic("medium");
 
     const WINNER_INDEX = 50;
     const reel = document.getElementById("case-reel");
-    document.getElementById("case-modal-title").textContent = title;
+    const titleEl = document.getElementById("case-modal-title");
+    if (titleEl) titleEl.textContent = title;
     reel.innerHTML = "";
     reel.style.transition = "none";
     reel.style.transform = "translateX(0)";
@@ -617,7 +694,7 @@ async function runCaseAnimation(title, cost, apiFn) {
     for (let i = 0; i < 60; i++) items.push(pickRandomRarity());
     items[WINNER_INDEX] = { ...pickRandomRarity(), label: "?" };
 
-    items.forEach((it, i) => {
+    items.forEach(it => {
         const div = document.createElement("div");
         div.className = `case-item r-${it.key}`;
         div.innerHTML = `${it.emoji}<small>${it.label}</small>`;
@@ -639,9 +716,8 @@ async function runCaseAnimation(title, cost, apiFn) {
     reel.style.transform = `translateX(${finalX}px)`;
 
     let result;
-    try {
-        result = await apiFn();
-    } catch (e) {
+    try { result = await apiFn(); }
+    catch (e) {
         toast(e.message, "error");
         document.getElementById("case-modal").classList.add("hidden");
         state.caseOpening = false;
@@ -654,8 +730,8 @@ async function runCaseAnimation(title, cost, apiFn) {
             const isJackpot = result.jackpot;
             resEl.innerHTML = `
                 <span style="color:${isJackpot ? '#ff3b5b' : '#ffd700'};text-shadow:0 0 30px currentColor">
-                    ${isJackpot ? "🎉 JACKPOT!" : "🏆 ПОБЕДА!"}
-                    <br>+${result.reward.toLocaleString("ru-RU")} 🪙
+                    ${isJackpot ? "🎉 JACKPOT!" : "🏆 ПОБЕДА!"}<br>
+                    +${result.reward.toLocaleString("ru-RU")} 🪙
                 </span>
                 <div style="margin-top:12px;font-size:13px;color:#8a8aa0">
                     x${result.multiplier} · RTP ${(result.rtp * 100).toFixed(0)}%
@@ -666,7 +742,7 @@ async function runCaseAnimation(title, cost, apiFn) {
             hapticNotify("error");
         }
         setBalance(result.balance);
-        loadMe();
+        renderProfile();
         setTimeout(() => {
             document.getElementById("case-modal").classList.add("hidden");
             state.caseOpening = false;
@@ -688,13 +764,9 @@ function startFreeCaseTimer() {
 function updateFreeCaseUI() {
     const card = document.getElementById("free-case-card");
     const timer = document.getElementById("free-case-timer");
-    if (!card) return;
-
-    const cooldown = 60 * 60 * 1000; // 1 час демо
-    const now = Date.now();
-    const last = currentUser.last_free_case || 0;
-    const diff = now - last;
-
+    if (!card || !timer) return;
+    const cooldown = 60 * 60 * 1000;
+    const diff = Date.now() - (currentUser.last_free_case || 0);
     if (diff >= cooldown) {
         card.classList.remove("disabled");
         timer.textContent = "Готов к открытию!";
@@ -713,11 +785,10 @@ async function openFreeCase() {
     if (state.caseOpening) return;
     const cooldown = 60 * 60 * 1000;
     if (Date.now() - (currentUser.last_free_case || 0) < cooldown) {
-        toast("Ещё не готов", "error");
-        return;
+        toast("Ещё не готов", "error"); return;
     }
-    await runCaseAnimation("🎁 Бесплатный кейс", 0, () => apiCall("/api/free_case"));
-    loadMe();
+    await runCaseAnimation("🎁 Бесплатный кейс", () => apiCall("/api/free_case"));
+    renderProfile();
 }
 
 // ============================================================
@@ -733,12 +804,11 @@ function renderDropsFeed() {
     box.innerHTML = currentUser.drops.slice(0, 10).map(d => {
         const cls = d.delta > 0 ? (d.jackpot ? "jackpot" : "win") : "lose";
         const sign = d.delta > 0 ? "+" : "";
-        return `
-            <div class="drop-row">
-                <div class="drop-icon">${d.jackpot ? "🌟" : d.delta > 0 ? "🎉" : "💔"}</div>
-                <div class="drop-text"><b>${d.user}</b> · ${d.label}</div>
-                <div class="drop-value ${cls}">${sign}${d.delta.toLocaleString("ru-RU")} 🪙</div>
-            </div>`;
+        return `<div class="drop-row">
+            <div class="drop-icon">${d.jackpot ? "🌟" : d.delta > 0 ? "🎉" : "💔"}</div>
+            <div class="drop-text"><b>${d.user}</b> · ${d.label}</div>
+            <div class="drop-value ${cls}">${sign}${d.delta.toLocaleString("ru-RU")} 🪙</div>
+        </div>`;
     }).join("");
 }
 
@@ -750,6 +820,7 @@ let wheelRotation = 0;
 
 function buildWheel() {
     const inner = document.getElementById("wheel-inner");
+    if (!inner) return;
     inner.innerHTML = "";
     const total = WHEEL_PRIZES.length;
     const seg = 360 / total;
@@ -796,7 +867,7 @@ async function spinWheel() {
             hapticNotify("error");
         }
         setBalance(result.balance);
-        loadMe();
+        renderProfile();
         state.spinning = false;
         btn.disabled = false;
     }, 5100);
@@ -814,8 +885,8 @@ const DICE_EMOJIS = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
 function setDiceFace(diceEl, value) {
     const rot = DICE_ROTATIONS[value];
     const extra = 360 * 3;
+    diceEl.style.transition = "transform 2.2s cubic-bezier(0.3, 1.2, 0.4, 1)";
     diceEl.style.transform = `rotateX(${rot.x + extra}deg) rotateY(${rot.y + extra}deg)`;
-    // Установить эмодзи на все грани
     ["front", "back", "right", "left", "top", "bottom"].forEach((f, i) => {
         const face = diceEl.querySelector(`.dice-face.${f}`);
         if (face) face.textContent = DICE_EMOJIS[i];
@@ -854,7 +925,7 @@ async function rollDice() {
             hapticNotify("error");
         }
         setBalance(result.balance);
-        loadMe();
+        renderProfile();
         state.rolling = false;
     }, 2400);
 }
@@ -864,21 +935,22 @@ async function rollDice() {
 // ============================================================
 let saperConfig = { size: 5, mines: 5, cost: 25 };
 
-document.querySelectorAll(".saper-level").forEach(btn => {
-    btn.addEventListener("click", () => {
-        saperConfig = {
-            size: parseInt(btn.dataset.size),
-            mines: parseInt(btn.dataset.mines),
-            cost: parseInt(btn.dataset.cost),
-        };
-        startSaperGame();
+function bindSaperLevels() {
+    document.querySelectorAll(".saper-level").forEach(btn => {
+        btn.addEventListener("click", () => {
+            saperConfig = {
+                size: parseInt(btn.dataset.size),
+                mines: parseInt(btn.dataset.mines),
+                cost: parseInt(btn.dataset.cost),
+            };
+            startSaperGame();
+        });
     });
-});
+}
 
 async function startSaperGame() {
     if (currentUser.balance < saperConfig.cost) {
-        toast(`Нужно ${saperConfig.cost} 🪙`, "error");
-        return;
+        toast(`Нужно ${saperConfig.cost} 🪙`, "error"); return;
     }
     if (DEMO) {
         currentUser.balance -= saperConfig.cost;
@@ -890,7 +962,6 @@ async function startSaperGame() {
     }
     haptic("medium");
 
-    // Показываем игровое поле
     document.getElementById("saper-setup").classList.add("hidden");
     document.getElementById("saper-play").classList.remove("hidden");
 
@@ -900,7 +971,8 @@ async function startSaperGame() {
 
     document.getElementById("saper-info").textContent =
         `${saperConfig.size}×${saperConfig.size} · ${saperConfig.mines} мин · +6 🪙 за клетку`;
-    document.getElementById("saper-result").textContent = "";
+    const resEl = document.getElementById("saper-result");
+    resEl.textContent = ""; resEl.className = "game-result";
 
     const total = saperConfig.size * saperConfig.size;
     const mines = new Set();
@@ -919,7 +991,6 @@ async function startSaperGame() {
                 cell.textContent = "💣";
                 cell.classList.add("mine");
                 hapticNotify("error");
-                // Показать все мины
                 document.querySelectorAll("#saper-grid .cell").forEach((c, idx) => {
                     if (mines.has(idx) && c !== cell) {
                         c.textContent = "💣";
@@ -952,10 +1023,7 @@ async function finishSaper(safeOpened) {
         } else {
             result = await apiCall("/api/saper/finish", { cells_opened: safeOpened });
         }
-    } catch (e) {
-        toast(e.message, "error");
-        return;
-    }
+    } catch (e) { toast(e.message, "error"); return; }
 
     const el = document.getElementById("saper-result");
     if (result.reward > 0) {
@@ -967,30 +1035,8 @@ async function finishSaper(safeOpened) {
         el.classList.add("lose");
     }
     setBalance(result.balance);
-    loadMe();
+    renderProfile();
 }
-
-function resetSaper() {
-    document.getElementById("saper-play").classList.add("hidden");
-    document.getElementById("saper-setup").classList.remove("hidden");
-    document.getElementById("saper-grid").innerHTML = "";
-    document.getElementById("saper-result").textContent = "";
-}
-
-function closeGameView() {
-    document.querySelectorAll(".game-view").forEach(v => v.classList.add("hidden"));
-}
-
-// Переключение на игру
-const originalSwitch = switchTab;
-switchTab = function(tabId) {
-    originalSwitch(tabId);
-    closeGameView();
-    if (tabId === "wheel" || tabId === "dice" || tabId === "saper") {
-        const el = document.getElementById(`game-${tabId}`);
-        if (el) el.classList.remove("hidden");
-    }
-};
 
 // ============================================================
 //                    SHOP
@@ -1004,6 +1050,7 @@ const TOPUP_OPTIONS = [
 
 function buildTopUpOptions() {
     const box = document.getElementById("topup-options");
+    if (!box) return;
     box.innerHTML = TOPUP_OPTIONS.map(o =>
         `<button onclick="buyCoins(${o.coins})">${o.coins} 🪙 · ${o.stars} ⭐</button>`
     ).join("");
@@ -1011,6 +1058,7 @@ function buildTopUpOptions() {
 
 function buildShopGrid() {
     const grid = document.getElementById("shop-grid");
+    if (!grid) return;
     grid.innerHTML = TOPUP_OPTIONS.map(o => `
         <button class="shop-card" onclick="buyCoins(${o.coins})">
             <div class="shop-coin">🪙</div>
@@ -1029,11 +1077,10 @@ async function buyCoins(coins) {
     try {
         const data = await apiCall("/api/invoice/coins", { coins });
         if (DEMO) {
-            // демо — просто добавляем
             currentUser.balance += coins;
             setBalance(currentUser.balance);
             toast(`🧪 Демо: +${coins} 🪙`, "success", 3000);
-            loadMe();
+            renderProfile();
             closeModal("topup-modal");
             return;
         }
@@ -1051,9 +1098,7 @@ async function buyCoins(coins) {
             tg.openLink(data.invoice_link);
         }
         closeModal("topup-modal");
-    } catch (e) {
-        toast(e.message, "error");
-    }
+    } catch (e) { toast(e.message, "error"); }
 }
 
 function openTopUp() {
@@ -1066,8 +1111,7 @@ function openCustomTopUp() {
 function submitCustomTopUp() {
     const v = parseInt(document.getElementById("custom-coins-input").value);
     if (!v || v < 100 || v > 100000) {
-        toast("Введите число от 100 до 100 000", "error");
-        return;
+        toast("Введите число от 100 до 100 000", "error"); return;
     }
     closeModal("custom-modal");
     buyCoins(v);
@@ -1077,16 +1121,24 @@ function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
 // ============================================================
 //                    SUPPORT
 // ============================================================
+let selectedTopic = "Вопрос";
+
+function selectTopic(btn) {
+    document.querySelectorAll(".support-topic").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    selectedTopic = btn.dataset.topic;
+}
+
 function openSupport() {
     document.getElementById("support-modal").classList.remove("hidden");
 }
+
 async function submitSupport() {
-    const topic = document.getElementById("support-topic").value;
     const text = document.getElementById("support-text").value.trim();
     if (!text) { toast("Введите текст", "error"); return; }
     try {
-        const r = await apiCall("/api/support", { topic, text });
-        toast(`✅ Отправлено`, "success");
+        await apiCall("/api/support", { topic: selectedTopic, text });
+        toast("✅ Отправлено", "success");
         document.getElementById("support-text").value = "";
         closeModal("support-modal");
     } catch (e) { toast(e.message, "error"); }
@@ -1103,7 +1155,7 @@ async function claimDaily() {
         setBalance(r.balance);
         toast(`🎁 Ежедневный бонус: +${r.reward} 🪙`, "success", 3500);
         hapticNotify("success");
-        loadMe();
+        renderProfile();
     } catch (e) {
         toast(e.message, "error");
         btn.disabled = false;
@@ -1121,4 +1173,8 @@ function copyRef() {
 }
 
 // ---------- Старт ----------
-window.addEventListener("load", bootstrap);
+if (document.readyState === "loading") {
+    window.addEventListener("DOMContentLoaded", bootstrap);
+} else {
+    bootstrap();
+}
