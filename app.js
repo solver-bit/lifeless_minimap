@@ -1,5 +1,5 @@
 /* ============================================================
-   LIFELESS SHOP · WebApp Logic (v3)
+   LIFELESS SHOP · WebApp Logic (v5)
    ============================================================ */
 
 const FORCE_DEMO = true;
@@ -27,9 +27,8 @@ if (!tg) {
 const API_BASE = location.origin;
 const BOT_USERNAME = "Solver_Life_bot";
 
-// ─── Ключ хранилища: свой для каждого Telegram user_id ───
 const TG_USER_ID = tg.initDataUnsafe?.user?.id || 0;
-const LS_KEY = `lifeless_demo_v3_u${TG_USER_ID}`;
+const LS_KEY = `lifeless_demo_v5_u${TG_USER_ID}`;
 
 const defaultUser = {
     id: 0, first_name: "", last_name: "", username: "", avatar_url: "",
@@ -44,9 +43,7 @@ const state = {
     saperActive: false, saperSafe: 0, saperTotal: 0, saperConfig: null,
 };
 
-// ============================================================
-//                    УТИЛИТЫ
-// ============================================================
+/* ----------------------- УТИЛИТЫ ----------------------- */
 function haptic(t = "light") { try { tg.HapticFeedback?.impactOccurred(t); } catch (_) {} }
 function hapticNotify(t = "success") { try { tg.HapticFeedback?.notificationOccurred(t); } catch (_) {} }
 
@@ -90,13 +87,11 @@ function makeInitialsAvatar(firstName, lastName, username) {
     letters = letters.toUpperCase();
 
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-        <defs>
-            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#00aaff"/>
-                <stop offset="50%" stop-color="#c04cff"/>
-                <stop offset="100%" stop-color="#ffd700"/>
-            </linearGradient>
-        </defs>
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#00aaff"/>
+            <stop offset="50%" stop-color="#c04cff"/>
+            <stop offset="100%" stop-color="#ffd700"/>
+        </linearGradient></defs>
         <rect width="200" height="200" fill="#06060f"/>
         <circle cx="100" cy="100" r="90" fill="url(#g)" opacity="0.9"/>
         <text x="100" y="100" font-family="-apple-system,sans-serif" font-size="90"
@@ -107,9 +102,7 @@ function makeInitialsAvatar(firstName, lastName, username) {
     return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
 
-// ============================================================
-//                    DEMO DB (per-user, только прогресс)
-// ============================================================
+/* ----------------------- DEMO DB ----------------------- */
 function loadDemo() {
     try {
         const raw = localStorage.getItem(LS_KEY);
@@ -158,9 +151,7 @@ function resetDemo() {
     location.reload();
 }
 
-// ============================================================
-//                    ЭКОНОМИКА / ШАНСЫ
-// ============================================================
+/* ----------------------- ЭКОНОМИКА ----------------------- */
 const CASE_COSTS = { "10": 10, "50": 50, "250": 250, "1000": 1000, "5000": 5000, "10000": 10000 };
 
 const MULTIPLIERS = [0.0, 0.5, 1.0, 1.5, 2.0, 4.0];
@@ -199,9 +190,7 @@ function applyHappy(x) {
     return isHappyHours() ? Math.floor(x * 1.2) : x;
 }
 
-// ============================================================
-//                    API WRAPPER
-// ============================================================
+/* ----------------------- API ----------------------- */
 async function apiCall(path, body = null) {
     if (DEMO) return demoApi(path, body);
 
@@ -385,7 +374,6 @@ async function demoApi(path, body) {
             return { ok: true, delivered: 1 };
 
         case "/api/invoice/coins": {
-            // ⚠️ Начисление — ТОЛЬКО здесь. В buyCoins больше не начисляем.
             currentUser.balance += body.coins;
             saveDemo();
             return { stars: Math.floor(body.coins / 10), coins: body.coins, demo: true };
@@ -410,6 +398,7 @@ async function demoApi(path, body) {
     throw new Error("Unknown endpoint: " + path);
 }
 
+/* ----------------------- ДРОПЫ ----------------------- */
 function addDrop(label, delta, jackpot = false) {
     currentUser.drops.unshift({
         label, delta, jackpot, ts: Date.now(),
@@ -469,9 +458,7 @@ function renderDropsFeed() {
     }).join("");
 }
 
-// ============================================================
-//                    СПРАВОЧНИКИ
-// ============================================================
+/* ----------------------- СПРАВОЧНИКИ ----------------------- */
 const CASE_LABEL = {
     "10": "Кейс Пыль", "50": "Кейс Пепел", "250": "Кейс Мелл",
     "1000": "Кейс Telega", "5000": "Кейс Оникс", "10000": "Кейс Бездна",
@@ -503,14 +490,10 @@ const STAR_CASES = [
     { id: "500", name: "NFT",     price: 500, emoji: "🪐" },
 ];
 
-// ============================================================
-//                    BOOTSTRAP
-// ============================================================
+/* ----------------------- BOOTSTRAP ----------------------- */
 function bootstrap() {
-    // 1. Прогресс из LS (только баланс/статы)
     if (DEMO) Object.assign(currentUser, loadDemo());
 
-    // 2. Данные пользователя — ВСЕГДА из Telegram, не из LS
     const u = tg.initDataUnsafe?.user || {};
     currentUser.id = u.id || 0;
     currentUser.first_name = u.first_name || "";
@@ -521,7 +504,6 @@ function bootstrap() {
     currentUser.total_users = currentUser.total_users || 1;
     currentUser.ref_link = `https://t.me/${BOT_USERNAME}?start=${currentUser.id}`;
 
-    // 3. Первичная отрисовка
     try {
         buildCases();
         buildStarCases();
@@ -550,9 +532,7 @@ function renderAll() {
     setBalance(currentUser.balance, false);
 }
 
-// ============================================================
-//                    ПРОФИЛЬ / БАЛАНС
-// ============================================================
+/* ----------------------- ПРОФИЛЬ / БАЛАНС ----------------------- */
 function renderProfile() {
     const u = tg.initDataUnsafe?.user || {};
 
@@ -575,9 +555,8 @@ function renderProfile() {
 
     const nameEl = document.getElementById("profile-name");
     if (nameEl) {
-        const displayName = [u.first_name || currentUser.first_name, u.last_name || currentUser.last_name]
+        nameEl.textContent = [u.first_name || currentUser.first_name, u.last_name || currentUser.last_name]
             .filter(Boolean).join(" ") || "Игрок";
-        nameEl.textContent = displayName;
     }
 
     const unEl = document.getElementById("profile-username");
@@ -586,10 +565,7 @@ function renderProfile() {
         unEl.textContent = un ? `@${un}` : `ID: ${currentUser.id}`;
     }
 
-    const setText = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val;
-    };
+    const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     setText("profile-badge", `#${currentUser.rank} из ${currentUser.total_users}`);
     setText("profile-cases", currentUser.cases_opened);
     setText("profile-stars", currentUser.stars_spent);
@@ -603,9 +579,9 @@ function renderProfile() {
     if (happy) happy.style.display = isHappyHours() ? "flex" : "none";
 }
 
-// Плавная анимация баланса
 let balanceAnimFrame = null;
-function animateBalance(from, to, duration = 600) {
+
+function animateBalance(from, to, duration = 700) {
     const el = document.getElementById("coins");
     const prof = document.getElementById("profile-balance");
     if (!el) return;
@@ -628,12 +604,17 @@ function animateBalance(from, to, duration = 600) {
     balanceAnimFrame = requestAnimationFrame(tick);
 }
 
-function setBalance(v, animate = true) {
-    const old = currentUser.balance;
+/**
+ * @param {number} v — новое значение
+ * @param {boolean} animate
+ * @param {number|null} fromValue — принудительно начальное значение
+ */
+function setBalance(v, animate = true, fromValue = null) {
+    const old = fromValue !== null ? fromValue : currentUser.balance;
     currentUser.balance = v;
 
     if (animate && old !== v) {
-        animateBalance(old, v, 600);
+        animateBalance(old, v, 700);
         const pill = document.getElementById("balance-pill");
         if (pill) {
             pill.classList.add("bump");
@@ -648,9 +629,7 @@ function setBalance(v, animate = true) {
     saveDemo();
 }
 
-// ============================================================
-//                    ЛИДЕРБОРД
-// ============================================================
+/* ----------------------- ЛИДЕРБОРД ----------------------- */
 function generateLeaderboard() {
     const list = AMBIENT_NAMES.slice(0, 20).map((name) => {
         let seed = 0;
@@ -690,14 +669,11 @@ function renderLeaderboard() {
         </div>`;
     }).join("");
 
-    // Обновим бейдж в профиле
     const badge = document.getElementById("profile-badge");
     if (badge) badge.textContent = `#${currentUser.rank} из ${currentUser.total_users}`;
 }
 
-// ============================================================
-//                    НАВИГАЦИЯ
-// ============================================================
+/* ----------------------- НАВИГАЦИЯ ----------------------- */
 function switchTab(tabId) {
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
     const el = document.getElementById(`tab-${tabId}`);
@@ -717,9 +693,7 @@ document.querySelectorAll(".nav-btn").forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
 });
 
-// ============================================================
-//                    ИГРЫ
-// ============================================================
+/* ----------------------- ИГРЫ ----------------------- */
 function openGame(gameId) {
     const menu = document.getElementById("games-menu");
     if (menu) menu.classList.add("hidden");
@@ -737,9 +711,7 @@ function closeGameView() {
     resetSaperState();
 }
 
-// ============================================================
-//                    КАРУСЕЛЬ
-// ============================================================
+/* ----------------------- КАРУСЕЛЬ ----------------------- */
 let currentSlide = 0;
 let carouselTimer = null;
 
@@ -806,9 +778,7 @@ function bindCarouselSwipe() {
     el.addEventListener("mouseleave", () => { dragging = false; startCarouselAuto(); });
 }
 
-// ============================================================
-//                    КЕЙСЫ
-// ============================================================
+/* ----------------------- КЕЙСЫ ----------------------- */
 function buildCases() {
     const grid = document.getElementById("cases-grid");
     if (!grid) return;
@@ -876,6 +846,8 @@ async function openStarCase(starId) {
 async function runCaseAnimation(title, apiFn) {
     state.caseOpening = true;
     haptic("medium");
+
+    const balanceBefore = currentUser.balance;
 
     let result;
     try { result = await apiFn(); }
@@ -950,7 +922,7 @@ async function runCaseAnimation(title, apiFn) {
             hapticNotify("error");
         }
 
-        setBalance(result.balance);
+        setBalance(result.balance, true, balanceBefore);
         renderProfile();
         renderLeaderboard();
 
@@ -961,9 +933,7 @@ async function runCaseAnimation(title, apiFn) {
     }, 5600);
 }
 
-// ============================================================
-//                    БЕСПЛАТНЫЙ КЕЙС
-// ============================================================
+/* ----------------------- БЕСПЛАТНЫЙ КЕЙС ----------------------- */
 let freeCaseTimerId = null;
 const FREE_CASE_COOLDOWN = 24 * 60 * 60 * 1000;
 
@@ -1006,9 +976,7 @@ async function openFreeCase() {
     renderLeaderboard();
 }
 
-// ============================================================
-//                    КОЛЕСО
-// ============================================================
+/* ----------------------- КОЛЕСО ----------------------- */
 const WHEEL_PRIZES = [0, 5, 10, 15, 20, 25, 30, 50];
 let wheelRotation = 0;
 
@@ -1021,7 +989,6 @@ function buildWheel() {
     WHEEL_PRIZES.forEach((prize, i) => {
         const label = document.createElement("div");
         label.className = "wheel-seg-label";
-        // Сдвигаем на полсегмента, чтобы центр сегмента совпал с направлением "вверх"
         const angle = i * seg + seg / 2;
         label.style.transform = `rotate(${angle - 90}deg) translate(90px, 0)`;
         label.textContent = prize === 0 ? "💀" : prize + "🪙";
@@ -1042,15 +1009,21 @@ async function spinWheel() {
     resultEl.textContent = "";
     resultEl.className = "game-result";
 
+    // ⚡ СНАЧАЛА СПИСЫВАЕМ — баланс перелистывается вниз
+    const balanceBeforeSpin = currentUser.balance;
+    setBalance(balanceBeforeSpin - 10, true, balanceBeforeSpin);
+
     let result;
     try { result = await apiCall("/api/spin_wheel"); }
-    catch (e) { toast(e.message, "error"); state.spinning = false; btn.disabled = false; return; }
+    catch (e) {
+        setBalance(balanceBeforeSpin, true, balanceBeforeSpin - 10);
+        toast(e.message, "error");
+        state.spinning = false;
+        btn.disabled = false;
+        return;
+    }
 
     const seg = 360 / WHEEL_PRIZES.length;
-
-    // ⚠️ Формула: сбрасываем накопление. Стрелка на 0° (верх).
-    // conic-gradient начинается с 0° (верх), сегмент i занимает [i*seg, (i+1)*seg].
-    // Центр сегмента i = i*seg + seg/2. Чтобы он оказался на 0°, поворачиваем на -(i*seg + seg/2).
     const normalizedCurrent = ((wheelRotation % 360) + 360) % 360;
     const targetIn360 = (360 - (result.index * seg + seg / 2)) % 360;
     const delta = (targetIn360 - normalizedCurrent + 360) % 360;
@@ -1069,22 +1042,20 @@ async function spinWheel() {
             resultEl.classList.add("lose");
             hapticNotify("error");
         }
-        setBalance(result.balance);
+        // ⚡ После остановки — перелистываем от "списано" к "списано + выигрыш"
+        setBalance(result.balance, true, balanceBeforeSpin - 10);
         renderProfile();
         renderLeaderboard();
         state.spinning = false;
         btn.disabled = false;
 
-        // ⚠️ Сбрасываем накопление до 0..360 без transition
         wheelEl.style.transition = "none";
         wheelRotation = wheelRotation % 360;
         wheelEl.style.transform = `rotate(${wheelRotation}deg)`;
     }, 5100);
 }
 
-// ============================================================
-//                    КОСТИ (2 куба, 3D)
-// ============================================================
+/* ----------------------- КОСТИ ----------------------- */
 const DICE_ROTATIONS = {
     1: { x: 0,   y: 0   },
     2: { x: -90, y: 0   },
@@ -1094,15 +1065,6 @@ const DICE_ROTATIONS = {
     6: { x: 0,   y: 180 },
 };
 
-const DICE_FACE_EMOJI = {
-    front:  "⚀",
-    bottom: "⚁",
-    right:  "⚂",
-    left:   "⚃",
-    top:    "⚄",
-    back:   "⚅",
-};
-
 function setDiceToValue(diceEl, value, delay = 0) {
     const rot = DICE_ROTATIONS[value] || DICE_ROTATIONS[1];
     const spinsX = 3 + Math.floor(Math.random() * 3);
@@ -1110,16 +1072,10 @@ function setDiceToValue(diceEl, value, delay = 0) {
     const extraX = 360 * spinsX;
     const extraY = 360 * spinsY;
     const extraZ = 90 * (Math.floor(Math.random() * 4) - 2);
-
     const duration = 1.8 + Math.random() * 0.6;
 
     diceEl.style.transition = `transform ${duration}s cubic-bezier(0.22, 0.85, 0.25, 1) ${delay}s`;
     diceEl.style.transform = `rotateX(${rot.x + extraX}deg) rotateY(${rot.y + extraY}deg) rotateZ(${extraZ}deg)`;
-
-    Object.entries(DICE_FACE_EMOJI).forEach(([face, emoji]) => {
-        const el = diceEl.querySelector(`.dice-face.${face}`);
-        if (el) el.textContent = emoji;
-    });
 }
 
 async function rollDice() {
@@ -1133,6 +1089,8 @@ async function rollDice() {
     const resultEl = document.getElementById("dice-result");
     resultEl.textContent = "";
     resultEl.className = "game-result";
+
+    const balanceBefore = currentUser.balance;
 
     let result;
     try { result = await apiCall("/api/roll_dice"); }
@@ -1161,16 +1119,14 @@ async function rollDice() {
             resultEl.classList.add("lose");
             hapticNotify("error");
         }
-        setBalance(result.balance);
+        setBalance(result.balance, true, balanceBefore);
         renderProfile();
         renderLeaderboard();
         state.rolling = false;
     }, 2600);
 }
 
-// ============================================================
-//                    САПЁР
-// ============================================================
+/* ----------------------- САПЁР ----------------------- */
 function bindSaperLevels() {
     document.querySelectorAll(".saper-level").forEach(btn => {
         btn.addEventListener("click", () => {
@@ -1197,7 +1153,7 @@ async function startSaperGame() {
     if (DEMO) {
         currentUser.balance -= cfg.cost;
         currentUser.total_wagered += cfg.cost;
-        setBalance(currentUser.balance, false);
+        setBalance(currentUser.balance, true, currentUser.balance + cfg.cost);
         saveDemo();
     } else {
         try { await apiCall("/api/saper/start", { cost: cfg.cost }); }
@@ -1258,14 +1214,12 @@ async function handleSaperClick(cell, isMine, index, mines) {
         cell.textContent = "💣";
         cell.classList.add("mine");
         hapticNotify("error");
-
         document.querySelectorAll("#saper-grid .cell").forEach((c, idx) => {
             if (mines.has(idx) && c !== cell) {
                 c.textContent = "💣";
                 c.classList.add("mine");
             }
         });
-
         await finishSaper();
     } else {
         cell.textContent = "✅";
@@ -1273,10 +1227,7 @@ async function handleSaperClick(cell, isMine, index, mines) {
         state.saperSafe++;
         haptic("light");
         updateCashoutButton();
-
-        if (state.saperSafe >= state.saperTotal) {
-            await saperCashOut();
-        }
+        if (state.saperSafe >= state.saperTotal) await saperCashOut();
     }
 }
 
@@ -1302,15 +1253,11 @@ async function finishSaper() {
 
             addDrop("Сапёр", finalReward - cfg.cost, finalReward > cfg.cost * 2);
             saveDemo();
-
             result = { reward: finalReward, balance: currentUser.balance };
         } else {
             result = await apiCall("/api/saper/finish", { cells_opened: cellsOpened });
         }
-    } catch (e) {
-        toast(e.message, "error");
-        return;
-    }
+    } catch (e) { toast(e.message, "error"); return; }
 
     const el = document.getElementById("saper-result");
     if (result.reward > 0) {
@@ -1321,7 +1268,7 @@ async function finishSaper() {
         el.innerHTML = `<span style="color:#ff3b5b">💥 Пусто</span>`;
         el.classList.add("lose");
     }
-    setBalance(result.balance);
+    setBalance(result.balance, true, result.balance - result.reward);
     renderProfile();
     renderLeaderboard();
 
@@ -1345,14 +1292,16 @@ function resetSaperState() {
     if (btn) btn.style.display = "none";
 }
 
-// ============================================================
-//                    МАГАЗИН
-// ============================================================
+/* ----------------------- МАГАЗИН ----------------------- */
 const TOPUP_OPTIONS = [
-    { coins: 100,  stars: 10 },
-    { coins: 500,  stars: 50 },
-    { coins: 2000, stars: 200 },
-    { coins: 5000, stars: 500 },
+    { coins: 100,   stars: 10,   cls: "",        badge: null },
+    { coins: 250,   stars: 25,   cls: "",        badge: "Популярный", badgeCls: "popular" },
+    { coins: 500,   stars: 50,   cls: "",        badge: null },
+    { coins: 1000,  stars: 100,  cls: "gold",    badge: "Хит",       badgeCls: "hit" },
+    { coins: 2500,  stars: 250,  cls: "",        badge: null },
+    { coins: 5000,  stars: 500,  cls: "gold",    badge: "Выгодно",   badgeCls: "best" },
+    { coins: 10000, stars: 1000, cls: "epic",    badge: "Про",       badgeCls: "hit" },
+    { coins: 25000, stars: 2500, cls: "mega",    badge: "MEGA",      badgeCls: "best" },
 ];
 
 function buildTopUpOptions() {
@@ -1366,26 +1315,48 @@ function buildTopUpOptions() {
 function buildShopGrid() {
     const grid = document.getElementById("shop-grid");
     if (!grid) return;
-    grid.innerHTML = TOPUP_OPTIONS.map(o => `
-        <button class="shop-card" onclick="buyCoins(${o.coins})">
-            <div class="shop-coin">🪙</div>
-            <div class="shop-amount">${o.coins}</div>
-            <div class="shop-price">${o.stars} ⭐</div>
-        </button>`).join("") + `
+
+    let html = "";
+    TOPUP_OPTIONS.forEach(o => {
+        if (o.cls === "mega") {
+            html += `
+                <button class="shop-card ${o.cls}" onclick="buyCoins(${o.coins})">
+                    ${o.badge ? `<div class="shop-badge ${o.badgeCls}">${o.badge}</div>` : ""}
+                    <div class="shop-coin">💎</div>
+                    <div class="shop-info">
+                        <div class="shop-amount">${o.coins.toLocaleString("ru-RU")} монет</div>
+                        <div class="shop-price">${o.stars} ⭐</div>
+                    </div>
+                </button>`;
+        } else {
+            html += `
+                <button class="shop-card ${o.cls}" onclick="buyCoins(${o.coins})">
+                    ${o.badge ? `<div class="shop-badge ${o.badgeCls}">${o.badge}</div>` : ""}
+                    <div class="shop-coin">🪙</div>
+                    <div class="shop-amount">${o.coins.toLocaleString("ru-RU")}</div>
+                    <div class="shop-price">${o.stars} ⭐</div>
+                </button>`;
+        }
+    });
+
+    html += `
         <button class="shop-card gold" onclick="openCustomTopUp()">
             <div class="shop-coin">✨</div>
             <div class="shop-amount">Своя сумма</div>
             <div class="shop-price">от 100 🪙</div>
         </button>`;
+
+    grid.innerHTML = html;
 }
 
 async function buyCoins(coins) {
     haptic("medium");
+    const before = currentUser.balance;
     try {
         const data = await apiCall("/api/invoice/coins", { coins });
         if (DEMO) {
-            // ⚠️ demoApi уже начислил монеты. Здесь НЕ начисляем повторно.
-            setBalance(currentUser.balance);
+            // demoApi уже начислил монеты. НЕ начисляем повторно.
+            setBalance(currentUser.balance, true, before);
             renderProfile();
             renderLeaderboard();
             toast(`🧪 Демо: +${coins} 🪙`, "success", 3000);
@@ -1433,9 +1404,7 @@ function closeModal(id) {
     if (el) el.classList.add("hidden");
 }
 
-// ============================================================
-//                    ПОДДЕРЖКА
-// ============================================================
+/* ----------------------- ПОДДЕРЖКА ----------------------- */
 let selectedTopic = "Вопрос";
 
 function selectTopic(btn) {
@@ -1459,15 +1428,14 @@ async function submitSupport() {
     } catch (e) { toast(e.message, "error"); }
 }
 
-// ============================================================
-//                    DAILY / REF
-// ============================================================
+/* ----------------------- DAILY / REF ----------------------- */
 async function claimDaily() {
     const btn = document.getElementById("daily-btn");
     btn.disabled = true;
+    const before = currentUser.balance;
     try {
         const r = await apiCall("/api/daily");
-        setBalance(r.balance);
+        setBalance(r.balance, true, before);
         renderProfile();
         renderLeaderboard();
         toast(`🎁 Ежедневный бонус: +${r.reward} 🪙`, "success", 3500);
@@ -1485,9 +1453,7 @@ function copyRef() {
         .catch(() => toast("Не удалось скопировать", "error"));
 }
 
-// ============================================================
-//                    СТАРТ
-// ============================================================
+/* ----------------------- СТАРТ ----------------------- */
 if (document.readyState === "loading") {
     window.addEventListener("DOMContentLoaded", bootstrap);
 } else {
