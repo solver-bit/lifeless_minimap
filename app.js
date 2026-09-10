@@ -1,5 +1,5 @@
 /* ============================================================
-   LIFELESS SHOP · WebApp Logic
+   LIFELESS SHOP · WebApp Logic (v2)
    Демо-режим: FORCE_DEMO = true — всё работает локально.
    Продакшн:   FORCE_DEMO = false — подключается к /api/*.
    ============================================================ */
@@ -28,6 +28,11 @@ if (!tg) {
 }
 
 const API_BASE = location.origin;
+
+// ─── Ключ хранилища привязан к Telegram user_id ───
+// У каждого аккаунта — свой прогресс в demo-режиме.
+const TG_USER_ID = tg.initDataUnsafe?.user?.id || 0;
+const LS_KEY = `lifeless_demo_v3_u${TG_USER_ID}`;
 
 // ============================================================
 //                    STATE
@@ -88,7 +93,7 @@ function escapeHtml(s) {
     }[c]));
 }
 
-// SVG-аватар с инициалами (data URI) — если нет реальной аватарки
+// SVG-аватар с инициалами — фолбэк если нет реальной
 function makeInitialsAvatar(firstName, lastName, username) {
     let letters = "";
     if (firstName) letters += firstName.charAt(0);
@@ -115,10 +120,8 @@ function makeInitialsAvatar(firstName, lastName, username) {
 }
 
 // ============================================================
-//                    DEMO DB (localStorage)
+//                    DEMO DB (per-user localStorage)
 // ============================================================
-const LS_KEY = "lifeless_demo_v3";
-
 function loadDemo() {
     try {
         const raw = localStorage.getItem(LS_KEY);
@@ -158,18 +161,16 @@ function resetDemo() {
 // ============================================================
 const CASE_COSTS = { "10": 10, "50": 50, "250": 250, "1000": 1000, "5000": 5000, "10000": 10000 };
 
-// Множитель: индекс и вес
 const MULTIPLIERS = [0.0, 0.5, 1.0, 1.5, 2.0, 4.0];
 const MULT_WEIGHTS = [40, 20, 20, 12, 6, 2];
 
-// Рарити по индексу множителя — какое "качество" показать игроку
 const MULT_TO_RARITY = [
-    { key: "common",    label: "Пусто",     emoji: "💨" }, // x0
-    { key: "common",    label: "Обычный",   emoji: "📦" }, // x0.5
-    { key: "uncommon",  label: "Хороший",   emoji: "✨" }, // x1.0
-    { key: "rare",      label: "Редкий",    emoji: "💎" }, // x1.5
-    { key: "epic",      label: "Эпик",      emoji: "🔥" }, // x2.0
-    { key: "legendary", label: "ЛЕГЕНДА",   emoji: "👑" }, // x4.0
+    { key: "common",    label: "Пусто",     emoji: "💨" },
+    { key: "common",    label: "Обычный",   emoji: "📦" },
+    { key: "uncommon",  label: "Хороший",   emoji: "✨" },
+    { key: "rare",      label: "Редкий",    emoji: "💎" },
+    { key: "epic",      label: "Эпик",      emoji: "🔥" },
+    { key: "legendary", label: "ЛЕГЕНДА",   emoji: "👑" },
 ];
 
 function pickMultiplierIndex() {
@@ -218,7 +219,6 @@ async function apiCall(path, body = null) {
 //                    ЛОКАЛЬНЫЙ API (DEMO)
 // ============================================================
 async function demoApi(path, body) {
-    // имитация задержки сети — но меньше, чтобы не лагало
     await new Promise(r => setTimeout(r, 80));
 
     switch (path) {
@@ -260,13 +260,10 @@ async function demoApi(path, body) {
 
             currentUser.balance += reward;
             currentUser.cases_opened++;
-
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
 
             const label = CASE_LABEL[body.case_id] || `Кейс ${cost}`;
-            const delta = reward - cost;
-            addDrop(label, delta, mIdx === MULTIPLIERS.length - 1);
-
+            addDrop(label, reward - cost, mIdx === MULTIPLIERS.length - 1);
             saveDemo();
 
             return {
@@ -284,8 +281,6 @@ async function demoApi(path, body) {
             currentUser.total_wagered += cost;
 
             const rtp = getRtp(currentUser.cases_opened);
-
-            // Таблицы множителей под звёздные кейсы
             const starTables = {
                 1:   [0, 0.5, 1.0, 1.5, 2.0, 3.0],
                 3:   [0, 0.5, 1.0, 1.5, 2.0, 3.0],
@@ -299,7 +294,6 @@ async function demoApi(path, body) {
                 500: [0, 1.0, 1.5, 2.0, 4.0, 15.0],
             };
             const mults = starTables[stars] || starTables[10];
-
             const mIdx = pickMultiplierIndex();
             const m = mults[mIdx];
 
@@ -307,7 +301,6 @@ async function demoApi(path, body) {
             reward = applyHappy(reward);
             currentUser.balance += reward;
             currentUser.cases_opened++;
-
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
 
             const label = `⭐ ${STAR_LABEL[stars] || stars + "⭐"}`;
@@ -337,7 +330,6 @@ async function demoApi(path, body) {
             const reward = applyHappy(prizes[idx]);
             currentUser.balance += reward;
             currentUser.cases_opened++;
-
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
 
             addDrop("Колесо фортуны", reward - 10, reward >= 30);
@@ -355,7 +347,6 @@ async function demoApi(path, body) {
             const d2 = 1 + Math.floor(Math.random() * 6);
             const sum = d1 + d2;
 
-            // Таблица выплат на сумму двух кубиков
             const rewards = {
                 2: 40, 3: 15, 4: 10, 5: 8, 6: 6,
                 7: 30, 8: 6, 9: 8, 10: 10, 11: 15, 12: 40,
@@ -363,7 +354,6 @@ async function demoApi(path, body) {
             const reward = applyHappy(rewards[sum] || 0);
             currentUser.balance += reward;
             currentUser.cases_opened++;
-
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
 
             addDrop(`Кости ${d1}+${d2}`, reward - 10, sum === 2 || sum === 12);
@@ -385,7 +375,6 @@ async function demoApi(path, body) {
         }
 
         case "/api/saper/finish": {
-            // Теперь считаем на основе кол-ва открытых клеток и множителя
             const cellsOpened = body.cells_opened || 0;
             const config = state.saperConfig || { cost: 25 };
             const reward = Math.floor(cellsOpened * (config.cost * 0.28));
@@ -422,14 +411,13 @@ async function demoApi(path, body) {
 
         case "/api/free_case": {
             const now = Date.now();
-            const cooldown = 24 * 60 * 60 * 1000; // 24 часа
+            const cooldown = 24 * 60 * 60 * 1000;
             if (now - (currentUser.last_free_case || 0) < cooldown) throw new Error("Ещё не готов");
 
-            const reward = applyHappy(20 + Math.floor(Math.random() * 480)); // 20–500
+            const reward = applyHappy(20 + Math.floor(Math.random() * 480));
             currentUser.balance += reward;
             currentUser.cases_opened++;
             currentUser.last_free_case = now;
-
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
             addDrop("Бесплатный кейс", reward, reward >= 300);
             saveDemo();
@@ -457,7 +445,6 @@ function addDrop(label, delta, jackpot = false) {
     renderDropsFeed();
 }
 
-// Амбиент-лента (фейковые игроки) — для оживления главной
 const AMBIENT_NAMES = ["CryptoKing", "Lucky7", "Neon", "ZeroX", "MaxWin", "Flash", "Void", "Nova", "Titan",
                        "Ghost", "Ace", "Samurai", "Phantom", "Fury", "Blade", "Storm", "Venom", "Echo", "Frost", "Whale"];
 const AMBIENT_CASES = ["Пыль", "Пепел", "Мелл", "Telega", "Оникс", "Бездна", "Колесо", "Кости", "Сапёр"];
@@ -467,18 +454,19 @@ let ambientDrops = [];
 function seedAmbientDrops() {
     ambientDrops = [];
     const now = Date.now();
-    for (let i = 0; i < 12; i++) {
-        const name = AMBIENT_NAMES[Math.floor(Math.random() * AMBIENT_NAMES.length)];
-        const game = AMBIENT_CASES[Math.floor(Math.random() * AMBIENT_CASES.length)];
-        const win = Math.random() > 0.35;
+    for (let i = 0; i < 14; i++) {
+        const name = AMBIENT_NAMES[i % AMBIENT_NAMES.length];
+        const game = AMBIENT_CASES[(i * 7 + 3) % AMBIENT_CASES.length];
+        const winRoll = (i * 73) % 100;
+        const win = winRoll > 35;
         const delta = win
-            ? Math.floor(50 + Math.random() * 800)
-            : -Math.floor(10 + Math.random() * 200);
+            ? 80 + ((i * 137) % 820)
+            : -(30 + ((i * 53) % 180));
         ambientDrops.push({
             label: game,
             delta,
-            jackpot: win && Math.random() > 0.9,
-            ts: now - i * 1000 * 60 * (1 + Math.random() * 5),
+            jackpot: win && winRoll > 92,
+            ts: now - i * 1000 * 60 * (2 + (i % 5)),
             user: name,
             isMine: false,
         });
@@ -549,12 +537,10 @@ const STAR_CASES = [
 //                    BOOTSTRAP
 // ============================================================
 function bootstrap() {
-    // Подгружаем локальное состояние (в demo)
     if (DEMO) {
         Object.assign(currentUser, loadDemo());
     }
 
-    // Данные из Telegram
     const u = tg.initDataUnsafe?.user || {};
     currentUser.id = currentUser.id || u.id || 1;
     currentUser.first_name = currentUser.first_name || u.first_name || "Игрок";
@@ -565,7 +551,6 @@ function bootstrap() {
     currentUser.total_users = currentUser.total_users || 20;
     currentUser.ref_link = currentUser.ref_link || `https://t.me/demo_bot?start=${currentUser.id}`;
 
-    // Первичная отрисовка
     try {
         buildCases();
         buildStarCases();
@@ -600,7 +585,6 @@ function renderAll() {
 function renderProfile() {
     const u = tg.initDataUnsafe?.user || {};
 
-    // Аватарка
     const avatarEl = document.getElementById("profile-avatar");
     if (avatarEl) {
         if (currentUser.avatar_url) {
@@ -645,7 +629,6 @@ function renderProfile() {
     setText("home-wagered", formatNum(currentUser.total_wagered));
     setText("home-best", formatNum(currentUser.best_drop));
 
-    // Счастливые часы
     const happy = document.getElementById("happy-banner");
     if (happy) happy.style.display = isHappyHours() ? "flex" : "none";
 }
@@ -671,13 +654,14 @@ function setBalance(v, animate = true) {
 //                    ЛИДЕРБОРД
 // ============================================================
 function generateLeaderboard() {
-    const names = AMBIENT_NAMES.slice(0, 20);
-    const list = names.map((n, i) => ({
-        username: n,
-        balance: Math.floor(1_000_000 / (i + 1) + Math.random() * 50_000),
-        cases: Math.floor(100 + Math.random() * 900),
-        isMine: false,
-    }));
+    const list = AMBIENT_NAMES.slice(0, 20).map((name) => {
+        // Детерминированный баланс на основе имени
+        let seed = 0;
+        for (const ch of name) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+        const balance = 60_000 + (seed % 900_000);
+        const cases = 100 + (seed % 900);
+        return { username: name, balance, cases, isMine: false };
+    });
     list.push({
         username: currentUser.first_name || currentUser.username || "Ты",
         balance: currentUser.balance,
@@ -717,7 +701,6 @@ function switchTab(tabId) {
         btn.classList.toggle("active", btn.dataset.tab === tabId);
     });
 
-    // Если вкладка не games — закрываем игровые виды
     if (tabId !== "games") closeGameView();
 
     haptic("light");
@@ -890,7 +873,6 @@ async function runCaseAnimation(title, apiFn) {
     state.caseOpening = true;
     haptic("medium");
 
-    // СНАЧАЛА получаем результат от "сервера" — потом рисуем анимацию
     let result;
     try {
         result = await apiFn();
@@ -909,7 +891,6 @@ async function runCaseAnimation(title, apiFn) {
     reel.style.transition = "none";
     reel.style.transform = "translateX(0)";
 
-    // Лента из рандомных предметов, победитель — ровно под маркером
     const items = [];
     for (let i = 0; i < 60; i++) {
         items.push(MULT_TO_RARITY[Math.floor(Math.random() * MULT_TO_RARITY.length)]);
@@ -929,30 +910,40 @@ async function runCaseAnimation(title, apiFn) {
 
     const wrap = document.querySelector(".case-reel-wrap");
     const wrapWidth = wrap.clientWidth;
-    const itemWidth = 110 + 8; // width + gap
+    const itemWidth = 110 + 8;
     const targetX = -(WINNER_INDEX * itemWidth + itemWidth / 2 - wrapWidth / 2);
     const jitter = (Math.random() - 0.5) * (itemWidth * 0.5);
     const finalX = targetX + jitter;
 
-    // Кадр паузы, чтобы transition сработал
     await new Promise(r => requestAnimationFrame(() => setTimeout(r, 40)));
 
     reel.style.transition = "transform 5.5s cubic-bezier(0.12, 0.9, 0.15, 1)";
     reel.style.transform = `translateX(${finalX}px)`;
 
-    // Показываем результат через 5.5с
     setTimeout(() => {
         const resEl = document.getElementById("case-modal-result");
         const isJackpot = result.jackpot;
         if (result.win) {
+            const profit = result.reward - result.cost;
+            const profitColor = profit >= 0 ? "#22dd88" : "#ff3b5b";
+            const profitSign = profit >= 0 ? "+" : "";
             resEl.innerHTML = `
                 <span style="color:${isJackpot ? '#ff3b5b' : '#ffd700'};text-shadow:0 0 30px currentColor">
-                    ${isJackpot ? "🎉 JACKPOT!" : "🏆 ПОБЕДА!"}<br>
-                    +${result.reward.toLocaleString("ru-RU")} 🪙
-                </span>`;
+                    ${isJackpot ? "🎉 JACKPOT!" : "🏆 ПОБЕДА!"}
+                </span>
+                <div style="margin-top:14px;font-size:20px;color:#fff">
+                    Выигрыш: <b>${result.reward.toLocaleString("ru-RU")}</b> 🪙
+                </div>
+                <div style="margin-top:6px;font-size:15px;color:${profitColor}">
+                    Чистыми: <b>${profitSign}${profit.toLocaleString("ru-RU")}</b> 🪙
+                </div>`;
             hapticNotify("success");
         } else {
-            resEl.innerHTML = `<span style="color:#ff3b5b">💔 Проигрыш · 0 🪙</span>`;
+            resEl.innerHTML = `
+                <span style="color:#ff3b5b;font-size:22px">💔 Проигрыш</span>
+                <div style="margin-top:14px;font-size:15px;color:#ff3b5b">
+                    Чистыми: <b>-${result.cost.toLocaleString("ru-RU")}</b> 🪙
+                </div>`;
             hapticNotify("error");
         }
 
@@ -971,7 +962,7 @@ async function runCaseAnimation(title, apiFn) {
 //                    БЕСПЛАТНЫЙ КЕЙС
 // ============================================================
 let freeCaseTimerId = null;
-const FREE_CASE_COOLDOWN = 24 * 60 * 60 * 1000; // 24 часа
+const FREE_CASE_COOLDOWN = 24 * 60 * 60 * 1000;
 
 function startFreeCaseTimer() {
     if (freeCaseTimerId) clearInterval(freeCaseTimerId);
@@ -1051,7 +1042,6 @@ async function spinWheel() {
     try { result = await apiCall("/api/spin_wheel"); }
     catch (e) { toast(e.message, "error"); state.spinning = false; btn.disabled = false; return; }
 
-    // Вычисляем угол так, чтобы нужный сегмент встал под указателем
     const seg = 360 / WHEEL_PRIZES.length;
     const targetAngle = wheelRotation + 360 * 5 + (360 - (result.index * seg + seg / 2));
     wheelRotation = targetAngle;
@@ -1078,11 +1068,9 @@ async function spinWheel() {
 // ============================================================
 //                    КОСТИ (2 куба, 3D)
 // ============================================================
-// Карта: значение → (поворот кубика) + (эмодзи на гранях)
-// Ориентируем грань так, чтобы её центр смотрел на зрителя.
 const DICE_ROTATIONS = {
     1: { x: 0,   y: 0   }, // front  – ⚀
-    2: { x: 90,  y: 0   }, // bottom – ⚁  (поворачиваем так, чтобы bottom оказался спереди)
+    2: { x: 90,  y: 0   }, // bottom – ⚁
     3: { x: 0,   y: -90 }, // right  – ⚂
     4: { x: 0,   y: 90  }, // left   – ⚃
     5: { x: -90, y: 0   }, // top    – ⚄
@@ -1090,21 +1078,27 @@ const DICE_ROTATIONS = {
 };
 
 const DICE_FACE_EMOJI = {
-    front:  "⚀", // 1
-    bottom: "⚁", // 2
-    right:  "⚂", // 3
-    left:  "⚃", // 4
-    top:    "⚄", // 5
-    back:   "⚅", // 6
+    front:  "⚀",
+    bottom: "⚁",
+    right:  "⚂",
+    left:   "⚃",
+    top:    "⚄",
+    back:   "⚅",
 };
 
-function setDiceToValue(diceEl, value) {
+function setDiceToValue(diceEl, value, delay = 0) {
     const rot = DICE_ROTATIONS[value] || DICE_ROTATIONS[1];
-    const extra = 360 * 3;
-    diceEl.style.transition = "transform 2s cubic-bezier(0.22, 0.85, 0.25, 1)";
-    diceEl.style.transform = `rotateX(${rot.x + extra}deg) rotateY(${rot.y + extra}deg)`;
+    const spinsX = 3 + Math.floor(Math.random() * 3);
+    const spinsY = 3 + Math.floor(Math.random() * 3);
+    const extraX = 360 * spinsX;
+    const extraY = 360 * spinsY;
+    const extraZ = 90 * (Math.floor(Math.random() * 4) - 2);
 
-    // Гарантированно правильные эмодзи на гранях
+    const duration = 1.8 + Math.random() * 0.6;
+
+    diceEl.style.transition = `transform ${duration}s cubic-bezier(0.22, 0.85, 0.25, 1) ${delay}s`;
+    diceEl.style.transform = `rotateX(${rot.x + extraX}deg) rotateY(${rot.y + extraY}deg) rotateZ(${extraZ}deg)`;
+
     Object.entries(DICE_FACE_EMOJI).forEach(([face, emoji]) => {
         const el = diceEl.querySelector(`.dice-face.${face}`);
         if (el) el.textContent = emoji;
@@ -1127,12 +1121,19 @@ async function rollDice() {
     try { result = await apiCall("/api/roll_dice"); }
     catch (e) { toast(e.message, "error"); state.rolling = false; return; }
 
-    // Анимация на основе уже полученных значений
-    setDiceToValue(d1el, result.dice[0]);
-    setDiceToValue(d2el, result.dice[1]);
+    d1el.style.transition = "none";
+    d2el.style.transition = "none";
+    d1el.style.transform = "rotateX(0) rotateY(0) rotateZ(0)";
+    d2el.style.transform = "rotateX(0) rotateY(0) rotateZ(0)";
+
+    void d1el.offsetWidth;
+    void d2el.offsetWidth;
+
+    setDiceToValue(d1el, result.dice[0], 0);
+    setDiceToValue(d2el, result.dice[1], 0.12 + Math.random() * 0.15);
 
     setTimeout(() => {
-        const e1 = DICE_FACE_EMOJI[Object.keys(DICE_FACE_EMOJI).find(k => DICE_FACE_EMOJI[k] === Object.values(DICE_FACE_EMOJI)[result.dice[0] - 1])] || "⚀";
+        const e1 = ["⚀","⚁","⚂","⚃","⚄","⚅"][result.dice[0] - 1];
         const e2 = ["⚀","⚁","⚂","⚃","⚄","⚅"][result.dice[1] - 1];
 
         if (result.win) {
@@ -1148,7 +1149,7 @@ async function rollDice() {
         renderProfile();
         renderLeaderboard();
         state.rolling = false;
-    }, 2200);
+    }, 2600);
 }
 
 // ============================================================
@@ -1242,7 +1243,6 @@ async function handleSaperClick(cell, isMine, index, mines) {
         cell.classList.add("mine");
         hapticNotify("error");
 
-        // Открываем все мины
         document.querySelectorAll("#saper-grid .cell").forEach((c, idx) => {
             if (mines.has(idx) && c !== cell) {
                 c.textContent = "💣";
