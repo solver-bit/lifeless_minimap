@@ -1,199 +1,339 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LIFELESS SHOP</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="okey.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a1a">
+<title>LIFELESS SHOP</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="okey.css">
 </head>
 <body>
-    <div id="app">
-        <!-- Шапка: лого + название слева, баланс + плюс справа -->
-        <header class="header glass">
-            <div class="header-left">
-                <img src="https://raw.githubusercontent.com/solver-bit/lifeless_minimap/main/durov4.jpg" class="logo-img" alt="Logo">
-                <div class="header-title">
-                    <h1>LIFELESS</h1>
-                    <h2>SHOP</h2>
-                </div>
-            </div>
-            <div class="header-right">
-                <div class="balance-pill">
-                    <span class="coin-icon">🪙</span>
-                    <span id="coins">0</span>
-                </div>
-                <button class="add-btn" onclick="openTopUp()">+</button>
-            </div>
-        </header>
 
-        <!-- Контент -->
-        <main class="content">
-            <!-- ГЛАВНАЯ (карусель только здесь) -->
-            <section id="tab-home" class="tab active">
-                <div class="carousel glass">
-                    <div class="carousel-track" id="carousel-track">
-                        <div class="carousel-slide" onclick="switchTab('cases')">
-                            <img src="https://raw.githubusercontent.com/solver-bit/lifeless_minimap/main/durov2.jpg" alt="Кейсы">
-                            <div class="slide-overlay">
-                                <span>Кейсы</span>
-                                <button>Играть</button>
-                            </div>
-                        </div>
-                        <div class="carousel-slide" onclick="switchTab('games')">
-                            <img src="https://raw.githubusercontent.com/solver-bit/lifeless_minimap/main/durov1.jpg" alt="Игры">
-                            <div class="slide-overlay">
-                                <span>Игры</span>
-                                <button>Играть</button>
-                            </div>
-                        </div>
-                    </div>
-                    <button class="carousel-btn left" onclick="prevSlide()">‹</button>
-                    <button class="carousel-btn right" onclick="nextSlide()">›</button>
-                </div>
+<!-- ЗАГРУЗЧИК -->
+<div id="global-loader">
+    <div class="loader-spinner"></div>
+    <div class="loader-text">Загрузка...</div>
+</div>
 
-                <div class="quick-actions">
-                    <button onclick="switchTab('cases')">🎰 Кейсы</button>
-                    <button onclick="switchTab('games')">🎮 Игры</button>
-                    <button onclick="switchTab('shop')">🛒 Магазин</button>
-                    <button onclick="switchTab('bonuses')">🎁 Бонусы</button>
-                </div>
+<div id="app" class="hidden">
 
-                <div class="promo-banner glass">
-                    <p>🔥 Счастливые часы</p>
-                    <p class="promo-small">+20% к выигрышу</p>
-                </div>
-            </section>
-
-            <!-- КЕЙСЫ -->
-            <section id="tab-cases" class="tab">
-                <div class="section-title">🎰 Монетные кейсы</div>
-                <div class="cases-grid">
-                    <button class="case-btn" onclick="openCase('10')"><div class="case-icon">📦</div><div>Новичка</div><div class="case-price">10 🪙</div></button>
-                    <button class="case-btn" onclick="openCase('50')"><div class="case-icon">💼</div><div>Обычный</div><div class="case-price">50 🪙</div></button>
-                    <button class="case-btn" onclick="openCase('250')"><div class="case-icon">🔥</div><div>Хайроллер</div><div class="case-price">250 🪙</div></button>
-                    <button class="case-btn" onclick="openCase('1000')"><div class="case-icon">💎</div><div>Ультра</div><div class="case-price">1000 🪙</div></button>
-                    <button class="case-btn" onclick="openCase('5000')"><div class="case-icon">👑</div><div>Легендарный</div><div class="case-price">5000 🪙</div></button>
-                    <button class="case-btn" onclick="openCase('10000')"><div class="case-icon">🌌</div><div>Мифический</div><div class="case-price">10000 🪙</div></button>
-                </div>
-                <div class="section-title">⭐ Звёздные кейсы</div>
-                <div class="cases-grid">
-                    <button class="case-btn" onclick="openStarCase(1)"><div class="case-icon">🪙</div><div>Фарм</div><div class="case-price">1 ⭐</div></button>
-                    <button class="case-btn" onclick="openStarCase(3)"><div class="case-icon">🪙</div><div>Базовый</div><div class="case-price">3 ⭐</div></button>
-                    <button class="case-btn" onclick="openStarCase(5)"><div class="case-icon">🔥</div><div>Лёгкий</div><div class="case-price">5 ⭐</div></button>
-                    <button class="case-btn" onclick="openStarCase(10)"><div class="case-icon">🍀</div><div>Счастливый</div><div class="case-price">10 ⭐</div></button>
-                    <button class="case-btn" onclick="openStarCase(25)"><div class="case-icon">🎯</div><div>Средний</div><div class="case-price">25 ⭐</div></button>
-                    <button class="case-btn" onclick="openStarCase(50)"><div class="case-icon">💪</div><div>Удачный</div><div class="case-price">50 ⭐</div></button>
-                    <button class="case-btn" onclick="openStarCase(75)"><div class="case-icon">🏆</div><div>Победа</div><div class="case-price">75 ⭐</div></button>
-                    <button class="case-btn" onclick="openStarCase(100)"><div class="case-icon">⭐</div><div>Фортуна</div><div class="case-price">100 ⭐</div></button>
-                    <button class="case-btn" onclick="openStarCase(250)"><div class="case-icon">🔥</div><div>Джекпот</div><div class="case-price">250 ⭐</div></button>
-                    <button class="case-btn" onclick="openStarCase(500)"><div class="case-icon">💎</div><div>NFT</div><div class="case-price">500 ⭐</div></button>
-                </div>
-            </section>
-
-            <!-- ИГРЫ (фото) -->
-            <section id="tab-games" class="tab">
-                <div class="section-title">🎮 Игры</div>
-                <div class="games-grid">
-                    <div class="game-card" onclick="switchTab('wheel')">
-                        <img src="https://raw.githubusercontent.com/solver-bit/lifeless_minimap/main/durov1.jpg" alt="Колесо">
-                        <span>Колесо фортуны</span>
-                    </div>
-                    <div class="game-card" onclick="switchTab('saper')">
-                        <img src="https://raw.githubusercontent.com/solver-bit/lifeless_minimap/main/durov2.jpg" alt="Сапёр">
-                        <span>Сапёр</span>
-                    </div>
-                    <div class="game-card" onclick="switchTab('dice')">
-                        <img src="https://raw.githubusercontent.com/solver-bit/lifeless_minimap/main/durov4.jpg" alt="Кости">
-                        <span>Кости</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- КОЛЕСО ФОРТУНЫ -->
-            <section id="tab-wheel" class="tab">
-                <div class="section-title">🎡 Колесо фортуны</div>
-                <div class="wheel-container">
-                    <div class="wheel-pointer"></div>
-                    <div class="wheel" id="wheel"></div>
-                </div>
-                <button class="play-btn" onclick="spinWheel()">Крутить (10 🪙)</button>
-                <div id="wheel-result" class="game-result"></div>
-            </section>
-
-            <!-- САПЁР -->
-            <section id="tab-saper" class="tab">
-                <div class="section-title">💣 Сапёр</div>
-                <div class="saper-info">Ставка: 25 🪙</div>
-                <div id="saper-grid" class="saper-grid"></div>
-                <button class="play-btn" onclick="startSaper()">Новая игра</button>
-                <div id="saper-result" class="game-result"></div>
-            </section>
-
-            <!-- КОСТИ -->
-            <section id="tab-dice" class="tab">
-                <div class="section-title">🎲 Кости</div>
-                <div class="dice-container">
-                    <div id="dice1" class="dice">?</div>
-                    <div id="dice2" class="dice">?</div>
-                </div>
-                <button class="play-btn" onclick="rollDice()">Бросить (10 🪙)</button>
-                <div id="dice-result" class="game-result"></div>
-            </section>
-
-            <!-- МАГАЗИН -->
-            <section id="tab-shop" class="tab">
-                <div class="section-title">🛍️ Магазин</div>
-                <button class="shop-cat" onclick="openTopUp()">🪙 Купить монеты</button>
-            </section>
-
-            <!-- БОНУСЫ -->
-            <section id="tab-bonuses" class="tab">
-                <div class="section-title">🎁 Бонусы</div>
-                <div class="bonus-list">
-                    <div class="bonus-item" onclick="claimDaily()"><span>🎉</span><div><div>Ежедневный бонус</div><div class="bonus-reward">+20 🪙</div></div><button>Забрать</button></div>
-                    <div class="bonus-item" onclick="window.Telegram.WebApp.openTelegramLink('https://t.me/durvww')"><span>📢</span><div><div>Подпишись на канал</div><div class="bonus-reward">+150 🪙</div></div><button>Открыть</button></div>
-                    <div class="bonus-item" onclick="window.Telegram.WebApp.openTelegramLink('https://t.me/wwlifeless')"><span>💬</span><div><div>Вступи в чат</div><div class="bonus-reward">+50 🪙</div></div><button>Открыть</button></div>
-                </div>
-            </section>
-
-            <!-- ПРОФИЛЬ -->
-            <section id="tab-profile" class="tab">
-                <div class="section-title">👤 Профиль</div>
-                <div class="profile-block">
-                    <div class="profile-row"><span>ID</span><span id="user-id">—</span></div>
-                    <div class="profile-row"><span>Кейсов</span><span id="cases-opened">0</span></div>
-                    <div class="profile-row"><span>Баланс</span><span id="profile-balance">0 🪙</span></div>
-                </div>
-                <div class="ref-block">
-                    <p>Приглашай друзей и получай +25 🪙</p>
-                    <div class="ref-link-box"><span id="ref-link">Загрузка...</span><button onclick="copyRefLink()">📋</button></div>
-                </div>
-            </section>
-        </main>
-
-        <!-- Модалка пополнения -->
-        <div id="topup-modal" class="modal hidden">
-            <div class="modal-content glass">
-                <h3>Пополнить баланс</h3>
-                <div class="topup-options">
-                    <button onclick="buyCoins(100, 10)">100 🪙 за 10 ⭐</button>
-                    <button onclick="buyCoins(500, 50)">500 🪙 за 50 ⭐</button>
-                    <button onclick="buyCoins(2000, 200)">2000 🪙 за 200 ⭐</button>
-                    <button onclick="buyCoins(5000, 500)">5000 🪙 за 500 ⭐</button>
-                </div>
-                <button class="close-btn" onclick="closeTopUp()">Закрыть</button>
+    <!-- ШАПКА -->
+    <header class="header glass">
+        <div class="header-left">
+            <!-- ЗАГЛУШКА ЛОГОТИПА -->
+            <img src="https://placehold.co/80x80/0a0a1a/ffd700?text=L" class="logo-img" alt="Logo">
+            <div class="header-title">
+                <h1>LIFELESS</h1>
+                <h2>SHOP</h2>
             </div>
         </div>
+        <div class="header-right">
+            <div class="balance-pill" id="balance-pill">
+                <span class="coin-icon">🪙</span>
+                <span id="coins">0</span>
+            </div>
+            <button class="add-btn" onclick="openTopUp()">+</button>
+        </div>
+    </header>
 
-        <!-- Нижняя навигация -->
-        <nav class="bottom-nav glass">
-            <button class="nav-btn active" data-tab="home"><span>⌂</span><span class="nav-label">Главная</span></button>
-            <button class="nav-btn" data-tab="cases"><span>◈</span><span class="nav-label">Кейсы</span></button>
-            <button class="nav-btn" data-tab="games"><span>▣</span><span class="nav-label">Игры</span></button>
-            <button class="nav-btn" data-tab="profile"><span>◉</span><span class="nav-label">Профиль</span></button>
-        </nav>
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <main class="content">
+
+        <!-- ГЛАВНАЯ -->
+        <section id="tab-home" class="tab active">
+            <div class="carousel glass">
+                <div class="carousel-track" id="carousel-track">
+                    <div class="carousel-slide" onclick="switchTab('cases')">
+                        <!-- ЗАГЛУШКА ФОТО -->
+                        <img src="https://placehold.co/800x400/0d1b3e/ffd700?text=CASES" alt="Кейсы">
+                        <div class="slide-overlay">
+                            <span>Кейсы</span>
+                            <button>Играть</button>
+                        </div>
+                    </div>
+                    <div class="carousel-slide" onclick="switchTab('games')">
+                        <!-- ЗАГЛУШКА ФОТО -->
+                        <img src="https://placehold.co/800x400/1a0d3e/00aaff?text=GAMES" alt="Игры">
+                        <div class="slide-overlay">
+                            <span>Игры</span>
+                            <button>Играть</button>
+                        </div>
+                    </div>
+                    <div class="carousel-slide" onclick="switchTab('shop')">
+                        <img src="https://placehold.co/800x400/3e2a0d/ffd700?text=SHOP" alt="Магазин">
+                        <div class="slide-overlay">
+                            <span>Магазин</span>
+                            <button>Открыть</button>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-btn left" onclick="prevSlide()">‹</button>
+                <button class="carousel-btn right" onclick="nextSlide()">›</button>
+                <div class="carousel-dots" id="carousel-dots"></div>
+            </div>
+
+            <div class="quick-actions">
+                <button onclick="switchTab('cases')"><span>🎰</span>Кейсы</button>
+                <button onclick="switchTab('games')"><span>🎮</span>Игры</button>
+                <button onclick="switchTab('shop')"><span>🛒</span>Магазин</button>
+                <button onclick="switchTab('bonuses')"><span>🎁</span>Бонусы</button>
+            </div>
+
+            <div class="promo-banner glass" id="happy-banner" style="display:none">
+                <p>🔥 Счастливые часы</p>
+                <p class="promo-small">+20% к выигрышу до 22:00</p>
+            </div>
+
+            <div class="section-title">🏆 Топ игроков</div>
+            <div id="leaderboard-list" class="leaderboard"></div>
+        </section>
+
+        <!-- КЕЙСЫ -->
+        <section id="tab-cases" class="tab">
+            <div class="section-title">📦 Монетные кейсы</div>
+            <div class="cases-grid" id="cases-grid"></div>
+
+            <div class="section-title">⭐ Звёздные кейсы</div>
+            <div class="star-cases-note glass">
+                Звёздные кейсы доступны только в Telegram-боте →
+                <a href="https://t.me/" id="bot-link">Открыть бота</a>
+            </div>
+        </section>
+
+        <!-- ИГРЫ -->
+        <section id="tab-games" class="tab">
+            <div class="section-title">🎮 Игры</div>
+            <div class="games-grid">
+                <div class="game-card" onclick="switchTab('wheel')">
+                    <img src="https://placehold.co/400x400/1a0d3e/ffd700?text=WHEEL" alt="">
+                    <span>Колесо фортуны</span>
+                </div>
+                <div class="game-card" onclick="switchTab('dice')">
+                    <img src="https://placehold.co/400x400/0d1b3e/00aaff?text=DICE" alt="">
+                    <span>Кости</span>
+                </div>
+                <div class="game-card" onclick="switchTab('saper')">
+                    <img src="https://placehold.co/400x400/3e0d1b/ffd700?text=SAPER" alt="">
+                    <span>Сапёр</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- КОЛЕСО -->
+        <section id="tab-wheel" class="tab">
+            <div class="section-title">🎡 Колесо фортуны</div>
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel" id="wheel">
+                    <div class="wheel-inner" id="wheel-inner"></div>
+                </div>
+            </div>
+            <button class="play-btn" id="spin-btn" onclick="spinWheel()">
+                Крутить · <span id="wheel-cost">10</span> 🪙
+            </button>
+            <div id="wheel-result" class="game-result"></div>
+        </section>
+
+        <!-- КОСТИ -->
+        <section id="tab-dice" class="tab">
+            <div class="section-title">🎲 Кости</div>
+            <div class="scene-3d">
+                <div class="dice-3d" id="dice3d">
+                    <div class="dice-face front">⚀</div>
+                    <div class="dice-face back">⚅</div>
+                    <div class="dice-face right">⚂</div>
+                    <div class="dice-face left">⚃</div>
+                    <div class="dice-face top">⚄</div>
+                    <div class="dice-face bottom">⚁</div>
+                </div>
+            </div>
+            <button class="play-btn" onclick="rollDice()">
+                Бросить · <span>10</span> 🪙
+            </button>
+            <div id="dice-result" class="game-result"></div>
+        </section>
+
+        <!-- САПЁР -->
+        <section id="tab-saper" class="tab">
+            <div class="section-title">💣 Сапёр</div>
+            <div class="saper-info">Ставка: <b>25 🪙</b> · 6 монет за безопасную клетку</div>
+            <div id="saper-grid" class="saper-grid"></div>
+            <button class="play-btn" id="saper-btn" onclick="startSaper()">Новая игра</button>
+            <div id="saper-result" class="game-result"></div>
+        </section>
+
+        <!-- МАГАЗИН -->
+        <section id="tab-shop" class="tab">
+            <div class="section-title">🛍️ Купить монеты</div>
+            <div class="shop-grid">
+                <button class="shop-card" onclick="buyCoins(100)">
+                    <div class="shop-coin">🪙</div>
+                    <div class="shop-amount">100</div>
+                    <div class="shop-price">10 ⭐</div>
+                </button>
+                <button class="shop-card" onclick="buyCoins(500)">
+                    <div class="shop-coin">🪙</div>
+                    <div class="shop-amount">500</div>
+                    <div class="shop-price">50 ⭐</div>
+                </button>
+                <button class="shop-card" onclick="buyCoins(2000)">
+                    <div class="shop-coin">🪙</div>
+                    <div class="shop-amount">2000</div>
+                    <div class="shop-price">200 ⭐</div>
+                </button>
+                <button class="shop-card" onclick="buyCoins(5000)">
+                    <div class="shop-coin">🪙</div>
+                    <div class="shop-amount">5000</div>
+                    <div class="shop-price">500 ⭐</div>
+                </button>
+                <button class="shop-card gold" onclick="openCustomTopUp()">
+                    <div class="shop-coin">✨</div>
+                    <div class="shop-amount">Своя сумма</div>
+                    <div class="shop-price">от 100 🪙</div>
+                </button>
+            </div>
+        </section>
+
+        <!-- БОНУСЫ -->
+        <section id="tab-bonuses" class="tab">
+            <div class="section-title">🎁 Бонусы</div>
+            <div class="bonus-list">
+                <div class="bonus-item">
+                    <span>🎉</span>
+                    <div>
+                        <div>Ежедневный бонус</div>
+                        <div class="bonus-reward">15–50 🪙</div>
+                    </div>
+                    <button id="daily-btn" onclick="claimDaily()">Забрать</button>
+                </div>
+                <div class="bonus-item" onclick="openLink('https://t.me/durvww')">
+                    <span>📢</span>
+                    <div>
+                        <div>Подпишись на канал</div>
+                        <div class="bonus-reward">+150 🪙</div>
+                    </div>
+                    <button>Открыть</button>
+                </div>
+                <div class="bonus-item" onclick="openLink('https://t.me/wwlifeless')">
+                    <span>💬</span>
+                    <div>
+                        <div>Вступи в чат</div>
+                        <div class="bonus-reward">+50 🪙</div>
+                    </div>
+                    <button>Открыть</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ПРОФИЛЬ -->
+        <section id="tab-profile" class="tab">
+            <div class="profile-card glass">
+                <div class="profile-avatar-wrap">
+                    <img id="profile-avatar" class="profile-avatar"
+                         src="https://placehold.co/200x200/0a0a1a/ffd700?text=?"
+                         alt="avatar">
+                    <div class="profile-badge" id="profile-badge">#0</div>
+                </div>
+                <div class="profile-name" id="profile-name">Загрузка...</div>
+                <div class="profile-username" id="profile-username">@—</div>
+
+                <div class="profile-stats">
+                    <div class="stat">
+                        <div class="stat-value" id="profile-balance">0</div>
+                        <div class="stat-label">Монет</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="profile-cases">0</div>
+                        <div class="stat-label">Кейсов</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="profile-stars">0</div>
+                        <div class="stat-label">Stars</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="profile-refs">0</div>
+                        <div class="stat-label">Рефералов</div>
+                    </div>
+                </div>
+
+                <div class="ref-block">
+                    <p>🎁 Приглашай друзей и получай +25 🪙</p>
+                    <div class="ref-link-box">
+                        <span id="ref-link">Загрузка...</span>
+                        <button onclick="copyRef()">📋</button>
+                    </div>
+                </div>
+
+                <div class="profile-buttons">
+                    <button class="profile-btn primary" onclick="openSupport()">🆘 Поддержка</button>
+                    <button class="profile-btn" onclick="openTopUp()">🪙 Пополнить</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- МОДАЛКА ПОПОЛНЕНИЯ -->
+    <div id="topup-modal" class="modal hidden">
+        <div class="modal-content glass">
+            <h3>Пополнить баланс</h3>
+            <div class="topup-options" id="topup-options"></div>
+            <button class="close-btn" onclick="closeModal('topup-modal')">Закрыть</button>
+        </div>
     </div>
-    <script src="app.js"></script>
+
+    <!-- МОДАЛКА СВОЕЙ СУММЫ -->
+    <div id="custom-modal" class="modal hidden">
+        <div class="modal-content glass">
+            <h3>Своя сумма</h3>
+            <p style="color:#8a8aa0;margin:8px 0 14px;font-size:13px">от 100 до 100 000 монет</p>
+            <input id="custom-coins-input" type="number" min="100" max="100000" placeholder="Введите количество" class="modal-input">
+            <button class="close-btn primary" onclick="submitCustomTopUp()">Оплатить</button>
+            <button class="close-btn" onclick="closeModal('custom-modal')">Отмена</button>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА ПОДДЕРЖКИ -->
+    <div id="support-modal" class="modal hidden">
+        <div class="modal-content glass">
+            <h3>🆘 Поддержка</h3>
+            <select id="support-topic" class="modal-input">
+                <option value="Вопрос">Вопрос</option>
+                <option value="Жалоба">Жалоба</option>
+                <option value="Баг">Баг</option>
+                <option value="Идея">Идея</option>
+            </select>
+            <textarea id="support-text" class="modal-input" placeholder="Опишите подробно..." maxlength="2000"></textarea>
+            <button class="close-btn primary" onclick="submitSupport()">Отправить</button>
+            <button class="close-btn" onclick="closeModal('support-modal')">Отмена</button>
+        </div>
+    </div>
+
+    <!-- 3D-МОДАЛКА КЕЙСА -->
+    <div id="case-modal" class="modal hidden">
+        <div class="case-modal-inner">
+            <div class="case-reel-wrap glass">
+                <div class="case-marker"></div>
+                <div class="case-reel" id="case-reel"></div>
+            </div>
+            <div id="case-modal-result" class="case-modal-result"></div>
+        </div>
+    </div>
+
+    <!-- УВЕДОМЛЕНИЯ -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- НАВИГАЦИЯ -->
+    <nav class="bottom-nav glass">
+        <button class="nav-btn active" data-tab="home"><span>⌂</span><span class="nav-label">Главная</span></button>
+        <button class="nav-btn" data-tab="cases"><span>◈</span><span class="nav-label">Кейсы</span></button>
+        <button class="nav-btn" data-tab="games"><span>▣</span><span class="nav-label">Игры</span></button>
+        <button class="nav-btn" data-tab="shop"><span>◆</span><span class="nav-label">Магазин</span></button>
+        <button class="nav-btn" data-tab="profile"><span>◉</span><span class="nav-label">Профиль</span></button>
+    </nav>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
