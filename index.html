@@ -45,16 +45,8 @@
         </div>
     </header>
 
-    <!-- Мини-эквалайзер под хедером -->
-    <div class="eq-bar" id="eq-bar">
-        <span></span><span></span><span></span><span></span><span></span>
-        <span></span><span></span><span></span><span></span><span></span>
-        <span></span><span></span>
-    </div>
-
     <main class="content">
 
-        <!-- ГЛАВНАЯ -->
         <section id="tab-home" class="tab active">
             <div class="free-case-card" id="free-case-card" onclick="openFreeCase()">
                 <div class="free-case-img">
@@ -140,7 +132,6 @@
             <div id="drops-feed" class="drops-feed"></div>
         </section>
 
-        <!-- КЕЙСЫ -->
         <section id="tab-cases" class="tab">
             <div class="section-title">📦 Монетные кейсы</div>
             <div class="cases-grid" id="cases-grid"></div>
@@ -148,7 +139,6 @@
             <div class="cases-grid" id="star-cases-grid"></div>
         </section>
 
-        <!-- ИГРЫ -->
         <section id="tab-games" class="tab">
             <div id="games-menu">
                 <div class="section-title">🎮 Игры</div>
@@ -244,7 +234,6 @@
             </div>
         </section>
 
-        <!-- МАГАЗИН -->
         <section id="tab-shop" class="tab">
             <div class="shop-header glass">
                 <div class="shop-header-icon">💎</div>
@@ -260,7 +249,6 @@
             </div>
         </section>
 
-        <!-- БОНУСЫ -->
         <section id="tab-bonuses" class="tab">
             <div class="section-title">🎁 Бонусы</div>
             <div class="bonus-list">
@@ -291,7 +279,6 @@
             </div>
         </section>
 
-        <!-- ПРОФИЛЬ -->
         <section id="tab-profile" class="tab">
             <div class="profile-card glass-strong">
                 <div class="profile-avatar-wrap">
@@ -316,6 +303,16 @@
                     </div>
                 </div>
 
+                <div class="profile-music glass" onclick="event.stopPropagation()">
+                    <div class="music-icon" id="music-icon">🎵</div>
+                    <div class="music-info">
+                        <div class="music-title" id="music-current-title">Загрузка...</div>
+                        <div class="music-sub">Мой трек профиля</div>
+                    </div>
+                    <button class="music-play-btn" id="music-play-btn" onclick="toggleMusic()">▶</button>
+                    <button class="music-change-btn" onclick="openMusicPicker()">Сменить</button>
+                </div>
+
                 <div class="profile-buttons">
                     <button class="profile-btn primary" onclick="openSupport()">🆘 Поддержка</button>
                     <button class="profile-btn" onclick="openTopUp()">🪙 Пополнить</button>
@@ -330,7 +327,6 @@
 
     </main>
 
-    <!-- МОДАЛКИ -->
     <div id="topup-modal" class="modal hidden">
         <div class="modal-content glass-strong">
             <h3>💎 Пополнить баланс</h3>
@@ -364,7 +360,16 @@
         </div>
     </div>
 
+    <div id="music-modal" class="modal hidden">
+        <div class="modal-content glass-strong">
+            <h3>🎵 Выбери свой трек</h3>
+            <div class="music-list" id="music-list"></div>
+            <button class="close-btn" onclick="closeModal('music-modal')">Закрыть</button>
+        </div>
+    </div>
+
     <div id="case-modal" class="modal hidden">
+        <button class="case-modal-close" onclick="forceCloseCase()" aria-label="Закрыть">✕</button>
         <div class="case-modal-inner">
             <div class="case-modal-title" id="case-modal-title">Открытие кейса...</div>
             <div class="case-reel-wrap">

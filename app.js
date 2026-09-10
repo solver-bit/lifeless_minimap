@@ -1,5 +1,5 @@
 /* ============================================================
-   LIFELESS SHOP · WebApp Logic (v5)
+   LIFELESS SHOP · WebApp Logic (v6)
    ============================================================ */
 
 const FORCE_DEMO = true;
@@ -28,7 +28,7 @@ const API_BASE = location.origin;
 const BOT_USERNAME = "Solver_Life_bot";
 
 const TG_USER_ID = tg.initDataUnsafe?.user?.id || 0;
-const LS_KEY = `lifeless_demo_v5_u${TG_USER_ID}`;
+const LS_KEY = `lifeless_demo_v6_u${TG_USER_ID}`;
 
 const defaultUser = {
     id: 0, first_name: "", last_name: "", username: "", avatar_url: "",
@@ -43,7 +43,7 @@ const state = {
     saperActive: false, saperSafe: 0, saperTotal: 0, saperConfig: null,
 };
 
-/* ----------------------- УТИЛИТЫ ----------------------- */
+/* УТИЛИТЫ */
 function haptic(t = "light") { try { tg.HapticFeedback?.impactOccurred(t); } catch (_) {} }
 function hapticNotify(t = "success") { try { tg.HapticFeedback?.notificationOccurred(t); } catch (_) {} }
 
@@ -102,7 +102,7 @@ function makeInitialsAvatar(firstName, lastName, username) {
     return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
 
-/* ----------------------- DEMO DB ----------------------- */
+/* DEMO DB */
 function loadDemo() {
     try {
         const raw = localStorage.getItem(LS_KEY);
@@ -151,7 +151,7 @@ function resetDemo() {
     location.reload();
 }
 
-/* ----------------------- ЭКОНОМИКА ----------------------- */
+/* ЭКОНОМИКА */
 const CASE_COSTS = { "10": 10, "50": 50, "250": 250, "1000": 1000, "5000": 5000, "10000": 10000 };
 
 const MULTIPLIERS = [0.0, 0.5, 1.0, 1.5, 2.0, 4.0];
@@ -190,10 +190,9 @@ function applyHappy(x) {
     return isHappyHours() ? Math.floor(x * 1.2) : x;
 }
 
-/* ----------------------- API ----------------------- */
+/* API */
 async function apiCall(path, body = null) {
     if (DEMO) return demoApi(path, body);
-
     const headers = { "X-Init-Data": tg.initData || "" };
     if (body) headers["Content-Type"] = "application/json";
     const res = await fetch(`${API_BASE}${path}`, {
@@ -231,24 +230,18 @@ async function demoApi(path, body) {
             const cost = CASE_COSTS[body.case_id];
             if (!cost) throw new Error("Неверный кейс");
             if (currentUser.balance < cost) throw new Error("Недостаточно монет");
-
             currentUser.balance -= cost;
             currentUser.total_wagered += cost;
-
             const rtp = getRtp(currentUser.cases_opened);
             const mIdx = pickMultiplierIndex();
             const m = MULTIPLIERS[mIdx];
-
             let reward = Math.floor(cost * m * rtp);
             reward = applyHappy(reward);
-
             currentUser.balance += reward;
             currentUser.cases_opened++;
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-
             addDrop(CASE_LABEL[body.case_id] || `Кейс ${cost}`, reward - cost, mIdx === MULTIPLIERS.length - 1);
             saveDemo();
-
             return {
                 reward, cost, balance: currentUser.balance,
                 multiplier: m, multiplier_index: mIdx,
@@ -262,7 +255,6 @@ async function demoApi(path, body) {
             if (currentUser.balance < cost) throw new Error("Недостаточно монет");
             currentUser.balance -= cost;
             currentUser.total_wagered += cost;
-
             const rtp = getRtp(currentUser.cases_opened);
             const starTables = {
                 1:[0,0.5,1.0,1.5,2.0,3.0], 3:[0,0.5,1.0,1.5,2.0,3.0],
@@ -274,16 +266,13 @@ async function demoApi(path, body) {
             const mults = starTables[stars] || starTables[10];
             const mIdx = pickMultiplierIndex();
             const m = mults[mIdx];
-
             let reward = Math.floor(cost * m * rtp);
             reward = applyHappy(reward);
             currentUser.balance += reward;
             currentUser.cases_opened++;
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-
             addDrop(`⭐ ${STAR_LABEL[stars] || stars + "⭐"}`, reward - cost, mIdx === MULTIPLIERS.length - 1);
             saveDemo();
-
             return {
                 reward, cost, balance: currentUser.balance,
                 multiplier: m, multiplier_index: mIdx,
@@ -295,7 +284,6 @@ async function demoApi(path, body) {
             if (currentUser.balance < 10) throw new Error("Недостаточно монет");
             currentUser.balance -= 10;
             currentUser.total_wagered += 10;
-
             const prizes  = [0, 5, 10, 15, 20, 25, 30, 50];
             const weights = [25, 20, 18, 12, 10, 8, 5, 2];
             const total = weights.reduce((a, b) => a + b, 0);
@@ -308,10 +296,8 @@ async function demoApi(path, body) {
             currentUser.balance += reward;
             currentUser.cases_opened++;
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-
             addDrop("Колесо фортуны", reward - 10, reward >= 30);
             saveDemo();
-
             return { index: idx, reward, cost: 10, balance: currentUser.balance, win: reward > 0 };
         }
 
@@ -319,7 +305,6 @@ async function demoApi(path, body) {
             if (currentUser.balance < 10) throw new Error("Недостаточно монет");
             currentUser.balance -= 10;
             currentUser.total_wagered += 10;
-
             const d1 = 1 + Math.floor(Math.random() * 6);
             const d2 = 1 + Math.floor(Math.random() * 6);
             const sum = d1 + d2;
@@ -328,10 +313,8 @@ async function demoApi(path, body) {
             currentUser.balance += reward;
             currentUser.cases_opened++;
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-
             addDrop(`Кости ${d1}+${d2}`, reward - 10, sum === 2 || sum === 12);
             saveDemo();
-
             return { dice: [d1, d2], total: sum, reward, cost: 10, balance: currentUser.balance, win: reward >= 10 };
         }
 
@@ -349,14 +332,11 @@ async function demoApi(path, body) {
             const config = state.saperConfig || { cost: 25 };
             const reward = Math.floor(cellsOpened * (config.cost * 0.28));
             const finalReward = applyHappy(reward);
-
             currentUser.balance += finalReward;
             currentUser.cases_opened++;
             if (finalReward > currentUser.best_drop) currentUser.best_drop = finalReward;
-
             addDrop("Сапёр", finalReward - config.cost, finalReward > config.cost * 2);
             saveDemo();
-
             return { reward: finalReward, balance: currentUser.balance };
         }
 
@@ -383,7 +363,6 @@ async function demoApi(path, body) {
             const now = Date.now();
             const cooldown = 24 * 60 * 60 * 1000;
             if (now - (currentUser.last_free_case || 0) < cooldown) throw new Error("Ещё не готов");
-
             const reward = applyHappy(20 + Math.floor(Math.random() * 480));
             currentUser.balance += reward;
             currentUser.cases_opened++;
@@ -391,14 +370,13 @@ async function demoApi(path, body) {
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
             addDrop("Бесплатный кейс", reward, reward >= 300);
             saveDemo();
-
             return { reward, balance: currentUser.balance };
         }
     }
     throw new Error("Unknown endpoint: " + path);
 }
 
-/* ----------------------- ДРОПЫ ----------------------- */
+/* ДРОПЫ */
 function addDrop(label, delta, jackpot = false) {
     currentUser.drops.unshift({
         label, delta, jackpot, ts: Date.now(),
@@ -437,15 +415,12 @@ function seedAmbientDrops() {
 function renderDropsFeed() {
     const box = document.getElementById("drops-feed");
     if (!box) return;
-
     const myDrops = (currentUser.drops || []).map(d => ({ ...d, isMine: true }));
     const merged = [...myDrops, ...ambientDrops].sort((a, b) => b.ts - a.ts).slice(0, 15);
-
     if (!merged.length) {
         box.innerHTML = `<div class="drop-row"><div class="drop-text">Пока пусто. Открой первый кейс!</div></div>`;
         return;
     }
-
     box.innerHTML = merged.map(d => {
         const cls = d.delta > 0 ? (d.jackpot ? "jackpot" : "win") : "lose";
         const sign = d.delta > 0 ? "+" : "";
@@ -458,7 +433,7 @@ function renderDropsFeed() {
     }).join("");
 }
 
-/* ----------------------- СПРАВОЧНИКИ ----------------------- */
+/* СПРАВОЧНИКИ */
 const CASE_LABEL = {
     "10": "Кейс Пыль", "50": "Кейс Пепел", "250": "Кейс Мелл",
     "1000": "Кейс Telega", "5000": "Кейс Оникс", "10000": "Кейс Бездна",
@@ -490,7 +465,7 @@ const STAR_CASES = [
     { id: "500", name: "NFT",     price: 500, emoji: "🪐" },
 ];
 
-/* ----------------------- BOOTSTRAP ----------------------- */
+/* BOOTSTRAP */
 function bootstrap() {
     if (DEMO) Object.assign(currentUser, loadDemo());
 
@@ -516,6 +491,7 @@ function bootstrap() {
         seedAmbientDrops();
         renderAll();
         startFreeCaseTimer();
+        loadMusicPref();
     } catch (e) {
         console.error("Build error:", e);
         toast("Ошибка инициализации: " + e.message, "error", 5000);
@@ -530,9 +506,10 @@ function renderAll() {
     renderDropsFeed();
     renderLeaderboard();
     setBalance(currentUser.balance, false);
+    renderMusicCard();
 }
 
-/* ----------------------- ПРОФИЛЬ / БАЛАНС ----------------------- */
+/* ПРОФИЛЬ / БАЛАНС */
 function renderProfile() {
     const u = tg.initDataUnsafe?.user || {};
 
@@ -585,34 +562,23 @@ function animateBalance(from, to, duration = 700) {
     const el = document.getElementById("coins");
     const prof = document.getElementById("profile-balance");
     if (!el) return;
-
     if (balanceAnimFrame) cancelAnimationFrame(balanceAnimFrame);
     const start = performance.now();
-
     function tick(now) {
         const t = Math.min(1, (now - start) / duration);
         const eased = 1 - Math.pow(1 - t, 3);
         const current = Math.round(from + (to - from) * eased);
         el.textContent = current.toLocaleString("ru-RU");
         if (prof) prof.textContent = current.toLocaleString("ru-RU");
-        if (t < 1) {
-            balanceAnimFrame = requestAnimationFrame(tick);
-        } else {
-            balanceAnimFrame = null;
-        }
+        if (t < 1) balanceAnimFrame = requestAnimationFrame(tick);
+        else balanceAnimFrame = null;
     }
     balanceAnimFrame = requestAnimationFrame(tick);
 }
 
-/**
- * @param {number} v — новое значение
- * @param {boolean} animate
- * @param {number|null} fromValue — принудительно начальное значение
- */
 function setBalance(v, animate = true, fromValue = null) {
     const old = fromValue !== null ? fromValue : currentUser.balance;
     currentUser.balance = v;
-
     if (animate && old !== v) {
         animateBalance(old, v, 700);
         const pill = document.getElementById("balance-pill");
@@ -629,7 +595,7 @@ function setBalance(v, animate = true, fromValue = null) {
     saveDemo();
 }
 
-/* ----------------------- ЛИДЕРБОРД ----------------------- */
+/* ЛИДЕРБОРД */
 function generateLeaderboard() {
     const list = AMBIENT_NAMES.slice(0, 20).map((name) => {
         let seed = 0;
@@ -658,7 +624,6 @@ function generateLeaderboard() {
 function renderLeaderboard() {
     const box = document.getElementById("leaderboard-list");
     if (!box) return;
-
     const top = generateLeaderboard();
     box.innerHTML = top.map(u => {
         const cls = u.rank === 1 ? "gold" : u.rank === 2 ? "silver" : u.rank === 3 ? "bronze" : "";
@@ -668,23 +633,19 @@ function renderLeaderboard() {
             <div class="leader-balance">${u.balance.toLocaleString("ru-RU")} 🪙</div>
         </div>`;
     }).join("");
-
     const badge = document.getElementById("profile-badge");
     if (badge) badge.textContent = `#${currentUser.rank} из ${currentUser.total_users}`;
 }
 
-/* ----------------------- НАВИГАЦИЯ ----------------------- */
+/* НАВИГАЦИЯ */
 function switchTab(tabId) {
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
     const el = document.getElementById(`tab-${tabId}`);
     if (el) el.classList.add("active");
-
     document.querySelectorAll(".nav-btn").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.tab === tabId);
     });
-
     if (tabId !== "games") closeGameView();
-
     haptic("light");
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -693,7 +654,7 @@ document.querySelectorAll(".nav-btn").forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
 });
 
-/* ----------------------- ИГРЫ ----------------------- */
+/* ИГРЫ */
 function openGame(gameId) {
     const menu = document.getElementById("games-menu");
     if (menu) menu.classList.add("hidden");
@@ -711,7 +672,7 @@ function closeGameView() {
     resetSaperState();
 }
 
-/* ----------------------- КАРУСЕЛЬ ----------------------- */
+/* КАРУСЕЛЬ */
 let currentSlide = 0;
 let carouselTimer = null;
 
@@ -750,14 +711,12 @@ function bindCarouselSwipe() {
     const el = document.getElementById("carousel");
     if (!el) return;
     let startX = 0, startY = 0, dragging = false;
-
     const onStart = (e) => {
         const t = e.touches ? e.touches[0] : e;
         startX = t.clientX; startY = t.clientY;
         dragging = true;
         if (carouselTimer) clearInterval(carouselTimer);
     };
-
     const onEnd = (e) => {
         if (!dragging) return;
         dragging = false;
@@ -770,7 +729,6 @@ function bindCarouselSwipe() {
         }
         startCarouselAuto();
     };
-
     el.addEventListener("touchstart", onStart, { passive: true });
     el.addEventListener("touchend", onEnd, { passive: true });
     el.addEventListener("mousedown", onStart);
@@ -778,7 +736,7 @@ function bindCarouselSwipe() {
     el.addEventListener("mouseleave", () => { dragging = false; startCarouselAuto(); });
 }
 
-/* ----------------------- КЕЙСЫ ----------------------- */
+/* КЕЙСЫ */
 function buildCases() {
     const grid = document.getElementById("cases-grid");
     if (!grid) return;
@@ -826,7 +784,6 @@ async function openStarCase(starId) {
     if (state.caseOpening) return;
     const caseData = STAR_CASES.find(c => c.id === starId);
     if (!caseData) return;
-
     if (DEMO) {
         const coinsPrice = caseData.price * 10;
         if (currentUser.balance < coinsPrice) {
@@ -844,34 +801,29 @@ async function openStarCase(starId) {
 }
 
 async function runCaseAnimation(title, apiFn) {
+    if (state.caseOpening) return;
     state.caseOpening = true;
     haptic("medium");
 
-    const balanceBefore = currentUser.balance;
-
-    let result;
-    try { result = await apiFn(); }
-    catch (e) {
-        toast(e.message, "error");
-        state.caseOpening = false;
-        return;
-    }
-
-    const WINNER_INDEX = 50;
+    const modal = document.getElementById("case-modal");
     const reel = document.getElementById("case-reel");
     const titleEl = document.getElementById("case-modal-title");
+    const resEl = document.getElementById("case-modal-result");
+    const wrap = document.querySelector(".case-reel-wrap");
+
     if (titleEl) titleEl.textContent = title;
+    if (resEl) resEl.innerHTML = "&nbsp;";
 
     reel.innerHTML = "";
     reel.style.transition = "none";
     reel.style.transform = "translateX(0)";
 
+    const WINNER_INDEX = 50;
     const items = [];
     for (let i = 0; i < 60; i++) {
         items.push(MULT_TO_RARITY[Math.floor(Math.random() * MULT_TO_RARITY.length)]);
     }
-    const winnerRarity = MULT_TO_RARITY[result.multiplier_index] || MULT_TO_RARITY[0];
-    items[WINNER_INDEX] = winnerRarity;
+    items[WINNER_INDEX] = { key: "rare", label: "...", emoji: "❓" };
 
     items.forEach((it) => {
         const div = document.createElement("div");
@@ -880,60 +832,96 @@ async function runCaseAnimation(title, apiFn) {
         reel.appendChild(div);
     });
 
-    document.getElementById("case-modal").classList.remove("hidden");
-    document.getElementById("case-modal-result").innerHTML = "&nbsp;";
+    modal.classList.remove("hidden");
 
-    const wrap = document.querySelector(".case-reel-wrap");
-    const wrapWidth = wrap.clientWidth;
-    const itemWidth = 110 + 8;
-    const targetX = -(WINNER_INDEX * itemWidth + itemWidth / 2 - wrapWidth / 2);
-    const jitter = (Math.random() - 0.5) * (itemWidth * 0.5);
+    let result = null, apiError = null;
+    try { result = await apiFn(); }
+    catch (e) { apiError = e; }
+
+    if (apiError) {
+        toast(apiError.message || "Ошибка", "error");
+        modal.classList.add("hidden");
+        state.caseOpening = false;
+        return;
+    }
+
+    const winnerRarity = MULT_TO_RARITY[result.multiplier_index] || MULT_TO_RARITY[0];
+    const winnerEl = reel.children[WINNER_INDEX];
+    if (winnerEl) {
+        winnerEl.className = `case-item r-${winnerRarity.key}`;
+        winnerEl.innerHTML = `${winnerRarity.emoji}<small>${escapeHtml(winnerRarity.label)}</small>`;
+    }
+
+    await new Promise(r => setTimeout(r, 100));
+
+    let wrapWidth = wrap.getBoundingClientRect().width;
+    if (wrapWidth < 100) {
+        wrapWidth = modal.querySelector(".case-modal-inner")?.getBoundingClientRect().width || 340;
+    }
+
+    const ITEM_WIDTH = 90 + 6;
+    const targetX = -(WINNER_INDEX * ITEM_WIDTH + ITEM_WIDTH / 2 - wrapWidth / 2);
+    const jitter = (Math.random() - 0.5) * (ITEM_WIDTH * 0.4);
     const finalX = targetX + jitter;
 
-    await new Promise(r => requestAnimationFrame(() => setTimeout(r, 40)));
+    void reel.offsetWidth;
 
-    reel.style.transition = "transform 5.5s cubic-bezier(0.12, 0.9, 0.15, 1)";
+    reel.style.transition = "transform 3.5s cubic-bezier(0.15, 0.9, 0.15, 1)";
     reel.style.transform = `translateX(${finalX}px)`;
 
     setTimeout(() => {
-        const resEl = document.getElementById("case-modal-result");
-        const isJackpot = result.jackpot;
-        if (result.win) {
-            const profit = result.reward - result.cost;
-            const profitColor = profit >= 0 ? "#22dd88" : "#ff3b5b";
-            const profitSign = profit >= 0 ? "+" : "";
-            resEl.innerHTML = `
-                <span style="color:${isJackpot ? '#ff3b5b' : '#ffd700'};text-shadow:0 0 30px currentColor">
-                    ${isJackpot ? "🎉 JACKPOT!" : "🏆 ПОБЕДА!"}
-                </span>
-                <div style="margin-top:14px;font-size:20px;color:#fff">
-                    Выигрыш: <b>${result.reward.toLocaleString("ru-RU")}</b> 🪙
-                </div>
-                <div style="margin-top:6px;font-size:15px;color:${profitColor}">
-                    Чистыми: <b>${profitSign}${profit.toLocaleString("ru-RU")}</b> 🪙
-                </div>`;
-            hapticNotify("success");
-        } else {
-            resEl.innerHTML = `
-                <span style="color:#ff3b5b;font-size:22px">💔 Проигрыш</span>
-                <div style="margin-top:14px;font-size:15px;color:#ff3b5b">
-                    Чистыми: <b>-${result.cost.toLocaleString("ru-RU")}</b> 🪙
-                </div>`;
-            hapticNotify("error");
-        }
-
-        setBalance(result.balance, true, balanceBefore);
-        renderProfile();
-        renderLeaderboard();
-
-        setTimeout(() => {
-            document.getElementById("case-modal").classList.add("hidden");
-            state.caseOpening = false;
-        }, 2400);
-    }, 5600);
+        if (!state.caseOpening) return;
+        showCaseResult(result);
+    }, 3600);
 }
 
-/* ----------------------- БЕСПЛАТНЫЙ КЕЙС ----------------------- */
+function showCaseResult(result) {
+    if (!state.caseOpening) return;
+    state.caseOpening = false;
+    const modal = document.getElementById("case-modal");
+    const resEl = document.getElementById("case-modal-result");
+    if (!result) { modal.classList.add("hidden"); return; }
+
+    const isJackpot = result.jackpot;
+    if (result.win) {
+        const profit = result.reward - result.cost;
+        const profitColor = profit >= 0 ? "#22dd88" : "#ff3b5b";
+        const profitSign = profit >= 0 ? "+" : "";
+        resEl.innerHTML = `
+            <span style="color:${isJackpot ? '#ff3b5b' : '#ffd700'};text-shadow:0 0 30px currentColor">
+                ${isJackpot ? "🎉 JACKPOT!" : "🏆 ПОБЕДА!"}
+            </span>
+            <div style="margin-top:14px;font-size:20px;color:#fff">
+                Выигрыш: <b>${result.reward.toLocaleString("ru-RU")}</b> 🪙
+            </div>
+            <div style="margin-top:6px;font-size:15px;color:${profitColor}">
+                Чистыми: <b>${profitSign}${profit.toLocaleString("ru-RU")}</b> 🪙
+            </div>`;
+        hapticNotify("success");
+    } else {
+        resEl.innerHTML = `
+            <span style="color:#ff3b5b;font-size:22px">💔 Проигрыш</span>
+            <div style="margin-top:14px;font-size:15px;color:#ff3b5b">
+                Чистыми: <b>-${result.cost.toLocaleString("ru-RU")}</b> 🪙
+            </div>`;
+        hapticNotify("error");
+    }
+
+    const balanceBefore = result.balance - result.reward + result.cost;
+    setBalance(result.balance, true, balanceBefore);
+    renderProfile();
+    renderLeaderboard();
+
+    setTimeout(() => { modal.classList.add("hidden"); }, 2200);
+}
+
+function forceCloseCase() {
+    state.caseOpening = false;
+    const modal = document.getElementById("case-modal");
+    if (modal) modal.classList.add("hidden");
+}
+
+/* БЕСПЛАТНЫЙ КЕЙС */
 let freeCaseTimerId = null;
 const FREE_CASE_COOLDOWN = 24 * 60 * 60 * 1000;
 
@@ -947,9 +935,7 @@ function updateFreeCaseUI() {
     const card = document.getElementById("free-case-card");
     const timer = document.getElementById("free-case-timer");
     if (!card || !timer) return;
-
     const diff = Date.now() - (currentUser.last_free_case || 0);
-
     if (diff >= FREE_CASE_COOLDOWN) {
         card.classList.remove("disabled");
         timer.textContent = "Готов к открытию!";
@@ -976,7 +962,7 @@ async function openFreeCase() {
     renderLeaderboard();
 }
 
-/* ----------------------- КОЛЕСО ----------------------- */
+/* КОЛЕСО */
 const WHEEL_PRIZES = [0, 5, 10, 15, 20, 25, 30, 50];
 let wheelRotation = 0;
 
@@ -1009,7 +995,6 @@ async function spinWheel() {
     resultEl.textContent = "";
     resultEl.className = "game-result";
 
-    // ⚡ СНАЧАЛА СПИСЫВАЕМ — баланс перелистывается вниз
     const balanceBeforeSpin = currentUser.balance;
     setBalance(balanceBeforeSpin - 10, true, balanceBeforeSpin);
 
@@ -1042,20 +1027,18 @@ async function spinWheel() {
             resultEl.classList.add("lose");
             hapticNotify("error");
         }
-        // ⚡ После остановки — перелистываем от "списано" к "списано + выигрыш"
         setBalance(result.balance, true, balanceBeforeSpin - 10);
         renderProfile();
         renderLeaderboard();
         state.spinning = false;
         btn.disabled = false;
-
         wheelEl.style.transition = "none";
         wheelRotation = wheelRotation % 360;
         wheelEl.style.transform = `rotate(${wheelRotation}deg)`;
     }, 5100);
 }
 
-/* ----------------------- КОСТИ ----------------------- */
+/* КОСТИ */
 const DICE_ROTATIONS = {
     1: { x: 0,   y: 0   },
     2: { x: -90, y: 0   },
@@ -1073,7 +1056,6 @@ function setDiceToValue(diceEl, value, delay = 0) {
     const extraY = 360 * spinsY;
     const extraZ = 90 * (Math.floor(Math.random() * 4) - 2);
     const duration = 1.8 + Math.random() * 0.6;
-
     diceEl.style.transition = `transform ${duration}s cubic-bezier(0.22, 0.85, 0.25, 1) ${delay}s`;
     diceEl.style.transform = `rotateX(${rot.x + extraX}deg) rotateY(${rot.y + extraY}deg) rotateZ(${extraZ}deg)`;
 }
@@ -1109,7 +1091,6 @@ async function rollDice() {
     setTimeout(() => {
         const e1 = ["⚀","⚁","⚂","⚃","⚄","⚅"][result.dice[0] - 1];
         const e2 = ["⚀","⚁","⚂","⚃","⚄","⚅"][result.dice[1] - 1];
-
         if (result.win) {
             resultEl.innerHTML = `🎲 ${e1} + ${e2} = <b>${result.total}</b> · <span style="color:#22dd88">+${result.reward} 🪙</span>`;
             resultEl.classList.add("win");
@@ -1126,7 +1107,7 @@ async function rollDice() {
     }, 2600);
 }
 
-/* ----------------------- САПЁР ----------------------- */
+/* САПЁР */
 function bindSaperLevels() {
     document.querySelectorAll(".saper-level").forEach(btn => {
         btn.addEventListener("click", () => {
@@ -1144,12 +1125,10 @@ function bindSaperLevels() {
 async function startSaperGame() {
     const cfg = state.saperConfig;
     if (!cfg) return;
-
     if (currentUser.balance < cfg.cost) {
         toast(`Нужно ${cfg.cost} 🪙`, "error");
         return;
     }
-
     if (DEMO) {
         currentUser.balance -= cfg.cost;
         currentUser.total_wagered += cfg.cost;
@@ -1168,7 +1147,6 @@ async function startSaperGame() {
     const grid = document.getElementById("saper-grid");
     grid.style.gridTemplateColumns = `repeat(${cfg.size}, 1fr)`;
     grid.innerHTML = "";
-
     document.getElementById("saper-info").textContent =
         `${cfg.size}×${cfg.size} · ${cfg.mines} мин · ставка ${cfg.cost} 🪙`;
     const resEl = document.getElementById("saper-result");
@@ -1197,10 +1175,7 @@ function updateCashoutButton() {
     const valEl = document.getElementById("saper-cashout-value");
     if (!btn || !valEl) return;
     const cfg = state.saperConfig;
-    if (!cfg || state.saperSafe === 0) {
-        btn.style.display = "none";
-        return;
-    }
+    if (!cfg || state.saperSafe === 0) { btn.style.display = "none"; return; }
     const currentReward = Math.floor(state.saperSafe * (cfg.cost * 0.28));
     btn.style.display = "block";
     valEl.textContent = currentReward.toLocaleString("ru-RU");
@@ -1209,7 +1184,6 @@ function updateCashoutButton() {
 async function handleSaperClick(cell, isMine, index, mines) {
     if (!state.saperActive) return;
     if (cell.classList.contains("opened") || cell.classList.contains("mine")) return;
-
     if (isMine) {
         cell.textContent = "💣";
         cell.classList.add("mine");
@@ -1239,18 +1213,15 @@ async function saperCashOut() {
 
 async function finishSaper() {
     const cellsOpened = state.saperSafe;
-
     let result;
     try {
         if (DEMO) {
             const cfg = state.saperConfig;
             const reward = Math.floor(cellsOpened * (cfg.cost * 0.28));
             const finalReward = applyHappy(reward);
-
             currentUser.balance += finalReward;
             currentUser.cases_opened++;
             if (finalReward > currentUser.best_drop) currentUser.best_drop = finalReward;
-
             addDrop("Сапёр", finalReward - cfg.cost, finalReward > cfg.cost * 2);
             saveDemo();
             result = { reward: finalReward, balance: currentUser.balance };
@@ -1271,7 +1242,6 @@ async function finishSaper() {
     setBalance(result.balance, true, result.balance - result.reward);
     renderProfile();
     renderLeaderboard();
-
     document.getElementById("saper-cashout").style.display = "none";
     state.saperActive = false;
 }
@@ -1292,7 +1262,7 @@ function resetSaperState() {
     if (btn) btn.style.display = "none";
 }
 
-/* ----------------------- МАГАЗИН ----------------------- */
+/* МАГАЗИН */
 const TOPUP_OPTIONS = [
     { coins: 100,   stars: 10,   cls: "",        badge: null },
     { coins: 250,   stars: 25,   cls: "",        badge: "Популярный", badgeCls: "popular" },
@@ -1315,7 +1285,6 @@ function buildTopUpOptions() {
 function buildShopGrid() {
     const grid = document.getElementById("shop-grid");
     if (!grid) return;
-
     let html = "";
     TOPUP_OPTIONS.forEach(o => {
         if (o.cls === "mega") {
@@ -1338,14 +1307,12 @@ function buildShopGrid() {
                 </button>`;
         }
     });
-
     html += `
         <button class="shop-card gold" onclick="openCustomTopUp()">
             <div class="shop-coin">✨</div>
             <div class="shop-amount">Своя сумма</div>
             <div class="shop-price">от 100 🪙</div>
         </button>`;
-
     grid.innerHTML = html;
 }
 
@@ -1355,7 +1322,6 @@ async function buyCoins(coins) {
     try {
         const data = await apiCall("/api/invoice/coins", { coins });
         if (DEMO) {
-            // demoApi уже начислил монеты. НЕ начисляем повторно.
             setBalance(currentUser.balance, true, before);
             renderProfile();
             renderLeaderboard();
@@ -1404,7 +1370,7 @@ function closeModal(id) {
     if (el) el.classList.add("hidden");
 }
 
-/* ----------------------- ПОДДЕРЖКА ----------------------- */
+/* ПОДДЕРЖКА */
 let selectedTopic = "Вопрос";
 
 function selectTopic(btn) {
@@ -1428,7 +1394,7 @@ async function submitSupport() {
     } catch (e) { toast(e.message, "error"); }
 }
 
-/* ----------------------- DAILY / REF ----------------------- */
+/* DAILY / REF */
 async function claimDaily() {
     const btn = document.getElementById("daily-btn");
     btn.disabled = true;
@@ -1453,7 +1419,89 @@ function copyRef() {
         .catch(() => toast("Не удалось скопировать", "error"));
 }
 
-/* ----------------------- СТАРТ ----------------------- */
+/* МУЗЫКА */
+const MUSIC_TRACKS = [
+    { id: "t1", name: "🌃 Neon Dreams",     url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+    { id: "t2", name: "🚗 Midnight Drive",  url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
+    { id: "t3", name: "⚡ Cyber Pulse",      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
+    { id: "t4", name: "🌅 Golden Sunset",   url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" },
+    { id: "t5", name: "🌌 Deep Space",      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" },
+    { id: "t6", name: "💎 Lifeless Theme",  url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3" },
+];
+
+let musicAudio = null;
+let currentTrackId = null;
+let musicPlaying = false;
+
+function loadMusicPref() {
+    try {
+        const saved = localStorage.getItem(`lifeless_music_${TG_USER_ID}`);
+        if (saved && MUSIC_TRACKS.some(t => t.id === saved)) currentTrackId = saved;
+    } catch (_) {}
+    if (!currentTrackId) currentTrackId = MUSIC_TRACKS[0].id;
+    renderMusicCard();
+}
+
+function renderMusicCard() {
+    const titleEl = document.getElementById("music-current-title");
+    const btnEl = document.getElementById("music-play-btn");
+    if (!titleEl || !btnEl) return;
+    const track = MUSIC_TRACKS.find(t => t.id === currentTrackId) || MUSIC_TRACKS[0];
+    titleEl.textContent = track.name;
+    btnEl.textContent = musicPlaying ? "⏸" : "▶";
+}
+
+function toggleMusic() {
+    const track = MUSIC_TRACKS.find(t => t.id === currentTrackId);
+    if (!track) return;
+    if (!musicAudio) {
+        musicAudio = new Audio();
+        musicAudio.loop = true;
+        musicAudio.volume = 0.5;
+    }
+    if (musicPlaying) {
+        musicAudio.pause();
+        musicPlaying = false;
+    } else {
+        if (musicAudio.src !== track.url) musicAudio.src = track.url;
+        musicAudio.play().catch(() => {
+            toast("Не удалось воспроизвести", "error");
+            musicPlaying = false;
+        });
+        musicPlaying = true;
+    }
+    renderMusicCard();
+    haptic("light");
+}
+
+function openMusicPicker() {
+    const box = document.getElementById("music-list");
+    if (!box) return;
+    box.innerHTML = MUSIC_TRACKS.map(t => `
+        <button class="music-item ${t.id === currentTrackId ? 'active' : ''}" onclick="selectMusic('${t.id}')">
+            <span>🎵</span>
+            <span class="music-item-name">${t.name}</span>
+            ${t.id === currentTrackId ? '<span class="music-item-check">✓</span>' : ''}
+        </button>
+    `).join("");
+    document.getElementById("music-modal").classList.remove("hidden");
+    haptic("light");
+}
+
+function selectMusic(id) {
+    currentTrackId = id;
+    try { localStorage.setItem(`lifeless_music_${TG_USER_ID}`, id); } catch (_) {}
+    if (musicAudio) {
+        musicAudio.pause();
+        musicPlaying = false;
+    }
+    renderMusicCard();
+    closeModal("music-modal");
+    toast("🎵 Трек сохранён", "success");
+    haptic("light");
+}
+
+/* СТАРТ */
 if (document.readyState === "loading") {
     window.addEventListener("DOMContentLoaded", bootstrap);
 } else {
