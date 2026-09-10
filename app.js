@@ -1,10 +1,7 @@
 /* ============================================================
-   LIFELESS SHOP · WebApp Logic (v2)
-   Демо-режим: FORCE_DEMO = true — всё работает локально.
-   Продакшн:   FORCE_DEMO = false — подключается к /api/*.
+   LIFELESS SHOP · WebApp Logic (v3)
    ============================================================ */
 
-// ⚠️ Пока нет сервера — принудительно демо. После деплоя → false
 const FORCE_DEMO = true;
 
 let tg = window.Telegram?.WebApp;
@@ -28,15 +25,12 @@ if (!tg) {
 }
 
 const API_BASE = location.origin;
+const BOT_USERNAME = "Solver_Life_bot";
 
-// ─── Ключ хранилища привязан к Telegram user_id ───
-// У каждого аккаунта — свой прогресс в demo-режиме.
+// ─── Ключ хранилища: свой для каждого Telegram user_id ───
 const TG_USER_ID = tg.initDataUnsafe?.user?.id || 0;
 const LS_KEY = `lifeless_demo_v3_u${TG_USER_ID}`;
 
-// ============================================================
-//                    STATE
-// ============================================================
 const defaultUser = {
     id: 0, first_name: "", last_name: "", username: "", avatar_url: "",
     balance: 0, cases_opened: 0, referrals: 0, stars_spent: 0,
@@ -46,13 +40,8 @@ const defaultUser = {
 
 let currentUser = { ...defaultUser };
 const state = {
-    spinning: false,
-    rolling: false,
-    caseOpening: false,
-    saperActive: false,
-    saperSafe: 0,
-    saperTotal: 0,
-    saperConfig: null,
+    spinning: false, rolling: false, caseOpening: false,
+    saperActive: false, saperSafe: 0, saperTotal: 0, saperConfig: null,
 };
 
 // ============================================================
@@ -93,7 +82,6 @@ function escapeHtml(s) {
     }[c]));
 }
 
-// SVG-аватар с инициалами — фолбэк если нет реальной
 function makeInitialsAvatar(firstName, lastName, username) {
     let letters = "";
     if (firstName) letters += firstName.charAt(0);
@@ -120,17 +108,31 @@ function makeInitialsAvatar(firstName, lastName, username) {
 }
 
 // ============================================================
-//                    DEMO DB (per-user localStorage)
+//                    DEMO DB (per-user, только прогресс)
 // ============================================================
 function loadDemo() {
     try {
         const raw = localStorage.getItem(LS_KEY);
         if (raw) {
-            const parsed = JSON.parse(raw);
-            return { ...defaultUser, ...parsed };
+            const p = JSON.parse(raw);
+            return {
+                balance: typeof p.balance === "number" ? p.balance : 50000,
+                cases_opened: p.cases_opened || 0,
+                referrals: p.referrals || 0,
+                stars_spent: p.stars_spent || 0,
+                total_wagered: p.total_wagered || 0,
+                best_drop: p.best_drop || 0,
+                drops: Array.isArray(p.drops) ? p.drops : [],
+                last_free_case: p.last_free_case || 0,
+                last_daily: p.last_daily || "",
+            };
         }
     } catch (_) {}
-    return { ...defaultUser, balance: 50000 };
+    return {
+        balance: 50000, cases_opened: 0, referrals: 0, stars_spent: 0,
+        total_wagered: 0, best_drop: 0, drops: [],
+        last_free_case: 0, last_daily: "",
+    };
 }
 
 function saveDemo() {
@@ -215,28 +217,21 @@ async function apiCall(path, body = null) {
     return data;
 }
 
-// ============================================================
-//                    ЛОКАЛЬНЫЙ API (DEMO)
-// ============================================================
 async function demoApi(path, body) {
     await new Promise(r => setTimeout(r, 80));
 
     switch (path) {
         case "/api/me":
             return {
-                id: currentUser.id,
-                first_name: currentUser.first_name,
-                last_name: currentUser.last_name,
-                username: currentUser.username,
+                id: currentUser.id, first_name: currentUser.first_name,
+                last_name: currentUser.last_name, username: currentUser.username,
                 avatar_url: currentUser.avatar_url,
                 balance: currentUser.balance,
                 cases_opened: currentUser.cases_opened,
                 referrals: currentUser.referrals,
                 stars_spent: currentUser.stars_spent,
-                rank: currentUser.rank,
-                total_users: currentUser.total_users,
-                ref_link: currentUser.ref_link,
-                is_admin: true,
+                rank: currentUser.rank, total_users: currentUser.total_users,
+                ref_link: currentUser.ref_link, is_admin: true,
                 happy_hours: isHappyHours(),
             };
 
@@ -262,8 +257,7 @@ async function demoApi(path, body) {
             currentUser.cases_opened++;
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
 
-            const label = CASE_LABEL[body.case_id] || `Кейс ${cost}`;
-            addDrop(label, reward - cost, mIdx === MULTIPLIERS.length - 1);
+            addDrop(CASE_LABEL[body.case_id] || `Кейс ${cost}`, reward - cost, mIdx === MULTIPLIERS.length - 1);
             saveDemo();
 
             return {
@@ -282,16 +276,11 @@ async function demoApi(path, body) {
 
             const rtp = getRtp(currentUser.cases_opened);
             const starTables = {
-                1:   [0, 0.5, 1.0, 1.5, 2.0, 3.0],
-                3:   [0, 0.5, 1.0, 1.5, 2.0, 3.0],
-                5:   [0, 0.7, 1.0, 1.5, 2.0, 3.5],
-                10:  [0, 0.7, 1.0, 1.5, 2.0, 4.0],
-                25:  [0, 0.8, 1.0, 1.5, 2.5, 5.0],
-                50:  [0, 0.8, 1.0, 1.5, 3.0, 6.0],
-                75:  [0, 0.8, 1.0, 1.5, 3.0, 8.0],
-                100: [0, 1.0, 1.2, 1.5, 3.0, 10.0],
-                250: [0, 1.0, 1.2, 1.5, 3.5, 12.0],
-                500: [0, 1.0, 1.5, 2.0, 4.0, 15.0],
+                1:[0,0.5,1.0,1.5,2.0,3.0], 3:[0,0.5,1.0,1.5,2.0,3.0],
+                5:[0,0.7,1.0,1.5,2.0,3.5], 10:[0,0.7,1.0,1.5,2.0,4.0],
+                25:[0,0.8,1.0,1.5,2.5,5.0], 50:[0,0.8,1.0,1.5,3.0,6.0],
+                75:[0,0.8,1.0,1.5,3.0,8.0], 100:[0,1.0,1.2,1.5,3.0,10.0],
+                250:[0,1.0,1.2,1.5,3.5,12.0], 500:[0,1.0,1.5,2.0,4.0,15.0],
             };
             const mults = starTables[stars] || starTables[10];
             const mIdx = pickMultiplierIndex();
@@ -303,8 +292,7 @@ async function demoApi(path, body) {
             currentUser.cases_opened++;
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
 
-            const label = `⭐ ${STAR_LABEL[stars] || stars + "⭐"}`;
-            addDrop(label, reward - cost, mIdx === MULTIPLIERS.length - 1);
+            addDrop(`⭐ ${STAR_LABEL[stars] || stars + "⭐"}`, reward - cost, mIdx === MULTIPLIERS.length - 1);
             saveDemo();
 
             return {
@@ -346,11 +334,7 @@ async function demoApi(path, body) {
             const d1 = 1 + Math.floor(Math.random() * 6);
             const d2 = 1 + Math.floor(Math.random() * 6);
             const sum = d1 + d2;
-
-            const rewards = {
-                2: 40, 3: 15, 4: 10, 5: 8, 6: 6,
-                7: 30, 8: 6, 9: 8, 10: 10, 11: 15, 12: 40,
-            };
+            const rewards = { 2:40, 3:15, 4:10, 5:8, 6:6, 7:30, 8:6, 9:8, 10:10, 11:15, 12:40 };
             const reward = applyHappy(rewards[sum] || 0);
             currentUser.balance += reward;
             currentUser.cases_opened++;
@@ -359,10 +343,7 @@ async function demoApi(path, body) {
             addDrop(`Кости ${d1}+${d2}`, reward - 10, sum === 2 || sum === 12);
             saveDemo();
 
-            return {
-                dice: [d1, d2], total: sum, reward, cost: 10,
-                balance: currentUser.balance, win: reward >= 10,
-            };
+            return { dice: [d1, d2], total: sum, reward, cost: 10, balance: currentUser.balance, win: reward >= 10 };
         }
 
         case "/api/saper/start": {
@@ -404,6 +385,7 @@ async function demoApi(path, body) {
             return { ok: true, delivered: 1 };
 
         case "/api/invoice/coins": {
+            // ⚠️ Начисление — ТОЛЬКО здесь. В buyCoins больше не начисляем.
             currentUser.balance += body.coins;
             saveDemo();
             return { stars: Math.floor(body.coins / 10), coins: body.coins, demo: true };
@@ -428,19 +410,12 @@ async function demoApi(path, body) {
     throw new Error("Unknown endpoint: " + path);
 }
 
-// ============================================================
-//                    ЛЕНТА ДРОПОВ
-// ============================================================
 function addDrop(label, delta, jackpot = false) {
-    const row = {
-        label,
-        delta,
-        jackpot,
-        ts: Date.now(),
+    currentUser.drops.unshift({
+        label, delta, jackpot, ts: Date.now(),
         user: currentUser.first_name || currentUser.username || "Ты",
         isMine: true,
-    };
-    currentUser.drops.unshift(row);
+    });
     if (currentUser.drops.length > 30) currentUser.drops.length = 30;
     renderDropsFeed();
 }
@@ -459,16 +434,12 @@ function seedAmbientDrops() {
         const game = AMBIENT_CASES[(i * 7 + 3) % AMBIENT_CASES.length];
         const winRoll = (i * 73) % 100;
         const win = winRoll > 35;
-        const delta = win
-            ? 80 + ((i * 137) % 820)
-            : -(30 + ((i * 53) % 180));
+        const delta = win ? 80 + ((i * 137) % 820) : -(30 + ((i * 53) % 180));
         ambientDrops.push({
-            label: game,
-            delta,
+            label: game, delta,
             jackpot: win && winRoll > 92,
             ts: now - i * 1000 * 60 * (2 + (i % 5)),
-            user: name,
-            isMine: false,
+            user: name, isMine: false,
         });
     }
     ambientDrops.sort((a, b) => b.ts - a.ts);
@@ -490,12 +461,11 @@ function renderDropsFeed() {
         const cls = d.delta > 0 ? (d.jackpot ? "jackpot" : "win") : "lose";
         const sign = d.delta > 0 ? "+" : "";
         const prefix = d.isMine ? "⭐ " : "";
-        return `
-            <div class="drop-row">
-                <div class="drop-icon">${d.jackpot ? "🌟" : d.delta > 0 ? "🎉" : "💔"}</div>
-                <div class="drop-text">${prefix}<b>${escapeHtml(d.user)}</b> · ${escapeHtml(d.label)}</div>
-                <div class="drop-value ${cls}">${sign}${d.delta.toLocaleString("ru-RU")} 🪙</div>
-            </div>`;
+        return `<div class="drop-row">
+            <div class="drop-icon">${d.jackpot ? "🌟" : d.delta > 0 ? "🎉" : "💔"}</div>
+            <div class="drop-text">${prefix}<b>${escapeHtml(d.user)}</b> · ${escapeHtml(d.label)}</div>
+            <div class="drop-value ${cls}">${sign}${d.delta.toLocaleString("ru-RU")} 🪙</div>
+        </div>`;
     }).join("");
 }
 
@@ -537,20 +507,21 @@ const STAR_CASES = [
 //                    BOOTSTRAP
 // ============================================================
 function bootstrap() {
-    if (DEMO) {
-        Object.assign(currentUser, loadDemo());
-    }
+    // 1. Прогресс из LS (только баланс/статы)
+    if (DEMO) Object.assign(currentUser, loadDemo());
 
+    // 2. Данные пользователя — ВСЕГДА из Telegram, не из LS
     const u = tg.initDataUnsafe?.user || {};
-    currentUser.id = currentUser.id || u.id || 1;
-    currentUser.first_name = currentUser.first_name || u.first_name || "Игрок";
-    currentUser.last_name = currentUser.last_name || u.last_name || "";
-    currentUser.username = currentUser.username || u.username || "demo_user";
-    currentUser.avatar_url = currentUser.avatar_url || u.photo_url || "";
-    currentUser.rank = currentUser.rank || 4;
-    currentUser.total_users = currentUser.total_users || 20;
-    currentUser.ref_link = currentUser.ref_link || `https://t.me/demo_bot?start=${currentUser.id}`;
+    currentUser.id = u.id || 0;
+    currentUser.first_name = u.first_name || "";
+    currentUser.last_name = u.last_name || "";
+    currentUser.username = u.username || "";
+    currentUser.avatar_url = u.photo_url || "";
+    currentUser.rank = currentUser.rank || 1;
+    currentUser.total_users = currentUser.total_users || 1;
+    currentUser.ref_link = `https://t.me/${BOT_USERNAME}?start=${currentUser.id}`;
 
+    // 3. Первичная отрисовка
     try {
         buildCases();
         buildStarCases();
@@ -624,7 +595,6 @@ function renderProfile() {
     setText("profile-stars", currentUser.stars_spent);
     setText("profile-refs", currentUser.referrals);
     setText("ref-link", currentUser.ref_link || "—");
-
     setText("home-cases", currentUser.cases_opened);
     setText("home-wagered", formatNum(currentUser.total_wagered));
     setText("home-best", formatNum(currentUser.best_drop));
@@ -633,19 +603,47 @@ function renderProfile() {
     if (happy) happy.style.display = isHappyHours() ? "flex" : "none";
 }
 
-function setBalance(v, animate = true) {
-    currentUser.balance = v;
-    const coinsEl = document.getElementById("coins");
-    if (coinsEl) coinsEl.textContent = v.toLocaleString("ru-RU");
+// Плавная анимация баланса
+let balanceAnimFrame = null;
+function animateBalance(from, to, duration = 600) {
+    const el = document.getElementById("coins");
     const prof = document.getElementById("profile-balance");
-    if (prof) prof.textContent = v.toLocaleString("ru-RU");
+    if (!el) return;
 
-    if (animate) {
+    if (balanceAnimFrame) cancelAnimationFrame(balanceAnimFrame);
+    const start = performance.now();
+
+    function tick(now) {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        const current = Math.round(from + (to - from) * eased);
+        el.textContent = current.toLocaleString("ru-RU");
+        if (prof) prof.textContent = current.toLocaleString("ru-RU");
+        if (t < 1) {
+            balanceAnimFrame = requestAnimationFrame(tick);
+        } else {
+            balanceAnimFrame = null;
+        }
+    }
+    balanceAnimFrame = requestAnimationFrame(tick);
+}
+
+function setBalance(v, animate = true) {
+    const old = currentUser.balance;
+    currentUser.balance = v;
+
+    if (animate && old !== v) {
+        animateBalance(old, v, 600);
         const pill = document.getElementById("balance-pill");
         if (pill) {
             pill.classList.add("bump");
             setTimeout(() => pill.classList.remove("bump"), 300);
         }
+    } else {
+        const el = document.getElementById("coins");
+        if (el) el.textContent = v.toLocaleString("ru-RU");
+        const prof = document.getElementById("profile-balance");
+        if (prof) prof.textContent = v.toLocaleString("ru-RU");
     }
     saveDemo();
 }
@@ -655,7 +653,6 @@ function setBalance(v, animate = true) {
 // ============================================================
 function generateLeaderboard() {
     const list = AMBIENT_NAMES.slice(0, 20).map((name) => {
-        // Детерминированный баланс на основе имени
         let seed = 0;
         for (const ch of name) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
         const balance = 60_000 + (seed % 900_000);
@@ -669,7 +666,13 @@ function generateLeaderboard() {
         isMine: true,
     });
     list.sort((a, b) => b.balance - a.balance);
-    list.forEach((u, i) => u.rank = i + 1);
+    list.forEach((u, i) => {
+        u.rank = i + 1;
+        if (u.isMine) {
+            currentUser.rank = i + 1;
+            currentUser.total_users = list.length;
+        }
+    });
     return list;
 }
 
@@ -680,13 +683,16 @@ function renderLeaderboard() {
     const top = generateLeaderboard();
     box.innerHTML = top.map(u => {
         const cls = u.rank === 1 ? "gold" : u.rank === 2 ? "silver" : u.rank === 3 ? "bronze" : "";
-        return `
-            <div class="leader-row ${u.isMine ? 'me' : ''}">
-                <div class="leader-rank ${cls}">#${u.rank}</div>
-                <div class="leader-name">${u.isMine ? '⭐ ' : ''}${escapeHtml(u.username)}</div>
-                <div class="leader-balance">${u.balance.toLocaleString("ru-RU")} 🪙</div>
-            </div>`;
+        return `<div class="leader-row ${u.isMine ? 'me' : ''}">
+            <div class="leader-rank ${cls}">#${u.rank}</div>
+            <div class="leader-name">${u.isMine ? '⭐ ' : ''}${escapeHtml(u.username)}</div>
+            <div class="leader-balance">${u.balance.toLocaleString("ru-RU")} 🪙</div>
+        </div>`;
     }).join("");
+
+    // Обновим бейдж в профиле
+    const badge = document.getElementById("profile-badge");
+    if (badge) badge.textContent = `#${currentUser.rank} из ${currentUser.total_users}`;
 }
 
 // ============================================================
@@ -708,9 +714,7 @@ function switchTab(tabId) {
 }
 
 document.querySelectorAll(".nav-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        switchTab(btn.dataset.tab);
-    });
+    btn.addEventListener("click", () => switchTab(btn.dataset.tab));
 });
 
 // ============================================================
@@ -874,9 +878,8 @@ async function runCaseAnimation(title, apiFn) {
     haptic("medium");
 
     let result;
-    try {
-        result = await apiFn();
-    } catch (e) {
+    try { result = await apiFn(); }
+    catch (e) {
         toast(e.message, "error");
         state.caseOpening = false;
         return;
@@ -1018,8 +1021,9 @@ function buildWheel() {
     WHEEL_PRIZES.forEach((prize, i) => {
         const label = document.createElement("div");
         label.className = "wheel-seg-label";
+        // Сдвигаем на полсегмента, чтобы центр сегмента совпал с направлением "вверх"
         const angle = i * seg + seg / 2;
-        label.style.transform = `rotate(${angle}deg) translate(90px, 0)`;
+        label.style.transform = `rotate(${angle - 90}deg) translate(90px, 0)`;
         label.textContent = prize === 0 ? "💀" : prize + "🪙";
         inner.appendChild(label);
     });
@@ -1043,8 +1047,16 @@ async function spinWheel() {
     catch (e) { toast(e.message, "error"); state.spinning = false; btn.disabled = false; return; }
 
     const seg = 360 / WHEEL_PRIZES.length;
-    const targetAngle = wheelRotation + 360 * 5 + (360 - (result.index * seg + seg / 2));
-    wheelRotation = targetAngle;
+
+    // ⚠️ Формула: сбрасываем накопление. Стрелка на 0° (верх).
+    // conic-gradient начинается с 0° (верх), сегмент i занимает [i*seg, (i+1)*seg].
+    // Центр сегмента i = i*seg + seg/2. Чтобы он оказался на 0°, поворачиваем на -(i*seg + seg/2).
+    const normalizedCurrent = ((wheelRotation % 360) + 360) % 360;
+    const targetIn360 = (360 - (result.index * seg + seg / 2)) % 360;
+    const delta = (targetIn360 - normalizedCurrent + 360) % 360;
+    wheelRotation += 360 * 5 + delta;
+
+    wheelEl.style.transition = "transform 5s cubic-bezier(0.15, 0.9, 0.15, 1)";
     wheelEl.style.transform = `rotate(${wheelRotation}deg)`;
 
     setTimeout(() => {
@@ -1062,6 +1074,11 @@ async function spinWheel() {
         renderLeaderboard();
         state.spinning = false;
         btn.disabled = false;
+
+        // ⚠️ Сбрасываем накопление до 0..360 без transition
+        wheelEl.style.transition = "none";
+        wheelRotation = wheelRotation % 360;
+        wheelEl.style.transform = `rotate(${wheelRotation}deg)`;
     }, 5100);
 }
 
@@ -1069,12 +1086,12 @@ async function spinWheel() {
 //                    КОСТИ (2 куба, 3D)
 // ============================================================
 const DICE_ROTATIONS = {
-    1: { x: 0,   y: 0   }, // front  – ⚀
-    2: { x: 90,  y: 0   }, // bottom – ⚁
-    3: { x: 0,   y: -90 }, // right  – ⚂
-    4: { x: 0,   y: 90  }, // left   – ⚃
-    5: { x: -90, y: 0   }, // top    – ⚄
-    6: { x: 0,   y: 180 }, // back   – ⚅
+    1: { x: 0,   y: 0   },
+    2: { x: -90, y: 0   },
+    3: { x: 0,   y: -90 },
+    4: { x: 0,   y: 90  },
+    5: { x: 90,  y: 0   },
+    6: { x: 0,   y: 180 },
 };
 
 const DICE_FACE_EMOJI = {
@@ -1125,7 +1142,6 @@ async function rollDice() {
     d2el.style.transition = "none";
     d1el.style.transform = "rotateX(0) rotateY(0) rotateZ(0)";
     d2el.style.transform = "rotateX(0) rotateY(0) rotateZ(0)";
-
     void d1el.offsetWidth;
     void d2el.offsetWidth;
 
@@ -1368,7 +1384,7 @@ async function buyCoins(coins) {
     try {
         const data = await apiCall("/api/invoice/coins", { coins });
         if (DEMO) {
-            currentUser.balance += coins;
+            // ⚠️ demoApi уже начислил монеты. Здесь НЕ начисляем повторно.
             setBalance(currentUser.balance);
             renderProfile();
             renderLeaderboard();
