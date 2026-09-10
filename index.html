@@ -10,7 +10,35 @@
 </head>
 <body>
 
-<!-- ЗАГРУЗЧИК -->
+<!-- SVG-спрайт иконок -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="ic-home" viewBox="0 0 24 24">
+        <path d="M11.3 2.3a1 1 0 0 1 1.4 0l8 7.5a1 1 0 0 1 .3.7V20a2 2 0 0 1-2 2h-4.5v-6h-5v6H5a2 2 0 0 1-2-2v-9.5a1 1 0 0 1 .3-.7z" fill="currentColor"/>
+    </symbol>
+    <symbol id="ic-game" viewBox="0 0 24 24">
+        <path d="M17 6H7a5 5 0 0 0-5 5v2a5 5 0 0 0 5 5c1.5 0 2.8-.6 3.7-1.6L12 15l1.3 1.4c.9 1 2.2 1.6 3.7 1.6a5 5 0 0 0 5-5v-2a5 5 0 0 0-5-5zM8 13H6v-2H5v2H3v1h2v2h1v-2h2zM16.5 12.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm3 2a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" fill="currentColor"/>
+    </symbol>
+    <symbol id="ic-case" viewBox="0 0 24 24">
+        <path d="M3 9.5a2.5 2.5 0 0 1 2.5-2.5h13A2.5 2.5 0 0 1 21 9.5v9A2.5 2.5 0 0 1 18.5 21h-13A2.5 2.5 0 0 1 3 18.5zM5.6 7l1.4-3.3A2 2 0 0 1 8.8 2.5h6.4a2 2 0 0 1 1.8 1.2L18.4 7H5.6zM10 11.5a1 1 0 1 1 2 0v1h2v-1a1 1 0 1 1 2 0v1a3 3 0 1 1-6 0z" fill="currentColor"/>
+    </symbol>
+    <symbol id="ic-shop" viewBox="0 0 24 24">
+        <path d="M12 1.8l3.6 6.9 7.4 1.1-5.4 5.5 1.3 7.9L12 20l-6.9 3.2 1.3-7.9L1 9.8l7.4-1.1z" fill="currentColor"/>
+    </symbol>
+    <symbol id="ic-profile" viewBox="0 0 24 24">
+        <circle cx="12" cy="8" r="4.5" fill="currentColor"/>
+        <path d="M3.5 21a1.5 1.5 0 0 1-1.5-1.6c0-3.6 3.9-6.4 10-6.4s10 2.8 10 6.4A1.5 1.5 0 0 1 20.5 21z" fill="currentColor"/>
+    </symbol>
+    <symbol id="ic-bolt" viewBox="0 0 24 24">
+        <path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="currentColor"/>
+    </symbol>
+    <symbol id="ic-gift" viewBox="0 0 24 24">
+        <path d="M20 8h-3a3 3 0 0 0-5-2.2A3 3 0 0 0 7 8H4a1 1 0 0 0-1 1v3h9v-1h1v1h9V9a1 1 0 0 0-1-1zM11 13H3v7a1 1 0 0 0 1 1h7zm2 8h7a1 1 0 0 0 1-1v-7h-8z" fill="currentColor"/>
+    </symbol>
+    <symbol id="ic-trophy" viewBox="0 0 24 24">
+        <path d="M6 3h12v3a6 6 0 0 1-6 6 6 6 0 0 1-6-6zM4 4h2v2a4 4 0 0 1-2-3.5zM18 4h2a4 4 0 0 1-2 3.5zM11 12h2v4h3v2H8v-2h3z" fill="currentColor"/>
+    </symbol>
+</svg>
+
 <div id="global-loader">
     <div class="loader-spinner"></div>
     <div class="loader-text">LIFELESS</div>
@@ -18,10 +46,8 @@
 
 <div id="app" class="hidden">
 
-    <!-- ═══════════ HEADER ═══════════ -->
     <header class="header glass-strong">
         <div class="header-left">
-            <!-- ① ЛОГОТИП — замени ссылку на свою -->
             <img src="https://placehold.co/80x80/06060f/ffd700?text=L" class="logo-img" alt="Logo">
             <div class="header-title">
                 <h1>LIFELESS</h1>
@@ -33,20 +59,16 @@
                 <span class="coin-icon">🪙</span>
                 <span id="coins">0</span>
             </div>
-            <button class="add-btn" onclick="openTopUp()">+</button>
+            <button class="add-btn" onclick="openTopUp()" aria-label="Пополнить">+</button>
         </div>
     </header>
 
-    <!-- ═══════════ КОНТЕНТ ═══════════ -->
     <main class="content">
 
-        <!-- ─────── ГЛАВНАЯ ─────── -->
+        <!-- ═══ ГЛАВНАЯ ═══ -->
         <section id="tab-home" class="tab active">
-
-            <!-- Бесплатный кейс -->
             <div class="free-case-card" id="free-case-card" onclick="openFreeCase()">
                 <div class="free-case-img">
-                    <!-- ② КАРТИНКА БЕСПЛАТНОГО КЕЙСА — замени -->
                     <img src="https://placehold.co/300x300/1a0d3e/ffd700?text=%F0%9F%8E%81" alt="Free">
                 </div>
                 <div class="free-case-info">
@@ -57,32 +79,19 @@
                 <div class="free-case-arrow">›</div>
             </div>
 
-            <!-- Баннеры (свайп + стрелки) -->
             <div class="carousel glass" id="carousel">
                 <div class="carousel-track" id="carousel-track">
                     <div class="carousel-slide" onclick="switchTab('cases')">
-                        <!-- ③ БАННЕР 1 — КЕЙСЫ -->
                         <img src="https://placehold.co/800x400/0d1b3e/ffd700?text=CASES" alt="">
-                        <div class="slide-overlay">
-                            <span>🎰 Кейсы</span>
-                            <button type="button">Играть</button>
-                        </div>
+                        <div class="slide-overlay"><span>🎰 Кейсы</span><button type="button">Играть</button></div>
                     </div>
                     <div class="carousel-slide" onclick="switchTab('games')">
-                        <!-- ④ БАННЕР 2 — ИГРЫ -->
                         <img src="https://placehold.co/800x400/1a0d3e/00aaff?text=GAMES" alt="">
-                        <div class="slide-overlay">
-                            <span>🎮 Игры</span>
-                            <button type="button">Играть</button>
-                        </div>
+                        <div class="slide-overlay"><span>🎮 Игры</span><button type="button">Играть</button></div>
                     </div>
                     <div class="carousel-slide" onclick="switchTab('shop')">
-                        <!-- ⑤ БАННЕР 3 — МАГАЗИН -->
                         <img src="https://placehold.co/800x400/3e2a0d/ffd700?text=SHOP" alt="">
-                        <div class="slide-overlay">
-                            <span>🛒 Магазин</span>
-                            <button type="button">Открыть</button>
-                        </div>
+                        <div class="slide-overlay"><span>🛒 Магазин</span><button type="button">Открыть</button></div>
                     </div>
                 </div>
                 <button class="carousel-btn left" type="button" onclick="event.stopPropagation(); prevSlide()">‹</button>
@@ -90,15 +99,13 @@
                 <div class="carousel-dots" id="carousel-dots"></div>
             </div>
 
-            <!-- Быстрые действия -->
             <div class="quick-actions">
-                <button onclick="switchTab('cases')"><span class="qa-icon">🎰</span>Кейсы</button>
-                <button onclick="switchTab('games')"><span class="qa-icon">🎮</span>Игры</button>
-                <button onclick="switchTab('shop')"><span class="qa-icon">💎</span>Магазин</button>
-                <button onclick="switchTab('bonuses')"><span class="qa-icon">🎁</span>Бонусы</button>
+                <button onclick="switchTab('cases')"><svg class="qa-svg"><use href="#ic-case"/></svg>Кейсы</button>
+                <button onclick="switchTab('games')"><svg class="qa-svg"><use href="#ic-game"/></svg>Игры</button>
+                <button onclick="switchTab('shop')"><svg class="qa-svg"><use href="#ic-shop"/></svg>Магазин</button>
+                <button onclick="switchTab('bonuses')"><svg class="qa-svg"><use href="#ic-gift"/></svg>Бонусы</button>
             </div>
 
-            <!-- Промо -->
             <div class="promo-banner glass" id="happy-banner" style="display:none">
                 <div class="promo-icon">🔥</div>
                 <div>
@@ -107,60 +114,49 @@
                 </div>
             </div>
 
-            <!-- Мини-статы -->
             <div class="mini-stats">
                 <div class="mini-stat">
-                    <div class="mini-stat-icon">📦</div>
+                    <svg class="mini-stat-svg"><use href="#ic-case"/></svg>
                     <div class="mini-stat-value" id="home-cases">0</div>
                     <div class="mini-stat-label">Кейсов</div>
                 </div>
                 <div class="mini-stat">
-                    <div class="mini-stat-icon">💰</div>
+                    <svg class="mini-stat-svg"><use href="#ic-bolt"/></svg>
                     <div class="mini-stat-value" id="home-wagered">0</div>
                     <div class="mini-stat-label">Прокручено</div>
                 </div>
                 <div class="mini-stat">
-                    <div class="mini-stat-icon">🏆</div>
+                    <svg class="mini-stat-svg"><use href="#ic-trophy"/></svg>
                     <div class="mini-stat-value" id="home-best">0</div>
                     <div class="mini-stat-label">Лучший дроп</div>
                 </div>
             </div>
 
-            <!-- Лента последних дропов -->
             <div class="section-title">⚡ Последние дропы</div>
             <div id="drops-feed" class="drops-feed"></div>
-
         </section>
 
-        <!-- ─────── КЕЙСЫ ─────── -->
+        <!-- ═══ КЕЙСЫ ═══ -->
         <section id="tab-cases" class="tab">
             <div class="section-title">📦 Монетные кейсы</div>
             <div class="cases-grid" id="cases-grid"></div>
-
             <div class="section-title">⭐ Звёздные кейсы</div>
             <div class="cases-grid" id="star-cases-grid"></div>
         </section>
 
-        <!-- ─────── ИГРЫ ─────── -->
+        <!-- ═══ ИГРЫ ═══ -->
         <section id="tab-games" class="tab">
-
             <div id="games-menu">
                 <div class="section-title">🎮 Игры</div>
                 <div class="games-grid">
                     <div class="game-card" onclick="openGame('wheel')">
-                        <!-- ⑥ КАРТИНКА КОЛЕСА — замени -->
-                        <img src="https://placehold.co/400x400/1a0d3e/ffd700?text=%F0%9F%8E%A1" alt="">
-                        <span>Колесо</span>
+                        <img src="https://placehold.co/400x400/1a0d3e/ffd700?text=%F0%9F%8E%A1" alt=""><span>Колесо</span>
                     </div>
                     <div class="game-card" onclick="openGame('dice')">
-                        <!-- ⑦ КАРТИНКА КОСТЕЙ — замени -->
-                        <img src="https://placehold.co/400x400/0d1b3e/00aaff?text=%F0%9F%8E%B2" alt="">
-                        <span>Кости</span>
+                        <img src="https://placehold.co/400x400/0d1b3e/00aaff?text=%F0%9F%8E%B2" alt=""><span>Кости</span>
                     </div>
                     <div class="game-card" onclick="openGame('saper')">
-                        <!-- ⑧ КАРТИНКА САПЁРА — замени -->
-                        <img src="https://placehold.co/400x400/3e0d1b/ffd700?text=%F0%9F%92%A3" alt="">
-                        <span>Сапёр</span>
+                        <img src="https://placehold.co/400x400/3e0d1b/ffd700?text=%F0%9F%92%A3" alt=""><span>Сапёр</span>
                     </div>
                 </div>
             </div>
@@ -180,7 +176,7 @@
                 <button class="back-link" onclick="closeGameView()">← Назад к играм</button>
             </div>
 
-            <!-- КОСТИ (2 куба) -->
+            <!-- КОСТИ -->
             <div id="game-dice" class="game-view hidden">
                 <div class="section-title">🎲 Кости · сумма</div>
                 <div class="scene-3d">
@@ -209,51 +205,49 @@
             <!-- САПЁР -->
             <div id="game-saper" class="game-view hidden">
                 <div class="section-title">💣 Сапёр</div>
-
                 <div class="saper-setup" id="saper-setup">
                     <p>Выбери сложность:</p>
                     <div class="saper-levels">
-                        <button class="saper-level" data-size="3" data-mines="2" data-cost="10">
+                        <button class="saper-level" data-size="3" data-mines="2" data-cost="10" data-mult="1.5">
                             <div class="saper-level-icon">🟢</div>
                             <div class="saper-level-name">Лёгкий</div>
                             <div class="saper-level-info">3×3 · 2 мины · 10 🪙</div>
                         </button>
-                        <button class="saper-level" data-size="5" data-mines="5" data-cost="25">
+                        <button class="saper-level" data-size="5" data-mines="5" data-cost="25" data-mult="2.0">
                             <div class="saper-level-icon">🟡</div>
                             <div class="saper-level-name">Средний</div>
                             <div class="saper-level-info">5×5 · 5 мин · 25 🪙</div>
                         </button>
-                        <button class="saper-level" data-size="7" data-mines="10" data-cost="50">
+                        <button class="saper-level" data-size="7" data-mines="10" data-cost="50" data-mult="3.0">
                             <div class="saper-level-icon">🔴</div>
                             <div class="saper-level-name">Хард</div>
                             <div class="saper-level-info">7×7 · 10 мин · 50 🪙</div>
                         </button>
                     </div>
                 </div>
-
                 <div id="saper-play" class="hidden">
                     <div class="saper-info" id="saper-info"></div>
                     <div id="saper-grid" class="saper-grid"></div>
                     <div id="saper-result" class="game-result"></div>
+                    <button class="play-btn" id="saper-cashout" onclick="saperCashOut()" style="display:none;margin-top:10px">
+                        💰 Забрать <span id="saper-cashout-value">0</span> 🪙
+                    </button>
                 </div>
-
                 <button class="back-link" onclick="closeGameView()">← Назад к играм</button>
             </div>
-
         </section>
 
-        <!-- ─────── МАГАЗИН ─────── -->
+        <!-- ═══ МАГАЗИН ═══ -->
         <section id="tab-shop" class="tab">
             <div class="section-title">💎 Купить монеты</div>
             <div class="shop-grid" id="shop-grid"></div>
-
             <div class="shop-note glass">
-                ⭐ В Telegram Mini App оплата проходит через Stars и монеты зачисляются мгновенно.<br>
-                🧪 В демо-режиме монеты добавляются бесплатно для теста.
+                ⭐ Оплата через Telegram Stars — монеты зачисляются мгновенно.<br>
+                🧪 В демо-режиме монеты добавляются бесплатно.
             </div>
         </section>
 
-        <!-- ─────── БОНУСЫ ─────── -->
+        <!-- ═══ БОНУСЫ ═══ -->
         <section id="tab-bonuses" class="tab">
             <div class="section-title">🎁 Бонусы</div>
             <div class="bonus-list">
@@ -284,34 +278,21 @@
             </div>
         </section>
 
-        <!-- ─────── ПРОФИЛЬ ─────── -->
+        <!-- ═══ ПРОФИЛЬ ═══ -->
         <section id="tab-profile" class="tab">
             <div class="profile-card glass-strong">
                 <div class="profile-avatar-wrap">
-                    <img id="profile-avatar" class="profile-avatar"
-                         src="https://placehold.co/200x200/06060f/ffd700?text=%3F" alt="avatar">
+                    <img id="profile-avatar" class="profile-avatar" alt="">
                     <div class="profile-badge" id="profile-badge">#0</div>
                 </div>
                 <div class="profile-name" id="profile-name">Загрузка...</div>
                 <div class="profile-username" id="profile-username">@—</div>
 
                 <div class="profile-stats">
-                    <div class="stat">
-                        <div class="stat-value" id="profile-balance">0</div>
-                        <div class="stat-label">Монет</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="profile-cases">0</div>
-                        <div class="stat-label">Кейсов</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="profile-stars">0</div>
-                        <div class="stat-label">Stars</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="profile-refs">0</div>
-                        <div class="stat-label">Рефералов</div>
-                    </div>
+                    <div class="stat"><div class="stat-value" id="profile-balance">0</div><div class="stat-label">Монет</div></div>
+                    <div class="stat"><div class="stat-value" id="profile-cases">0</div><div class="stat-label">Кейсов</div></div>
+                    <div class="stat"><div class="stat-value" id="profile-stars">0</div><div class="stat-label">Stars</div></div>
+                    <div class="stat"><div class="stat-value" id="profile-refs">0</div><div class="stat-label">Рефералов</div></div>
                 </div>
 
                 <div class="ref-block">
@@ -336,7 +317,7 @@
 
     </main>
 
-    <!-- ═══════════ МОДАЛКА: ПОПОЛНЕНИЕ ═══════════ -->
+    <!-- МОДАЛКИ -->
     <div id="topup-modal" class="modal hidden">
         <div class="modal-content glass-strong">
             <h3>💎 Пополнить баланс</h3>
@@ -345,19 +326,16 @@
         </div>
     </div>
 
-    <!-- ═══════════ МОДАЛКА: СВОЯ СУММА ═══════════ -->
     <div id="custom-modal" class="modal hidden">
         <div class="modal-content glass-strong">
             <h3>✏️ Своя сумма</h3>
             <p class="modal-hint">от 100 до 100 000 монет</p>
-            <input id="custom-coins-input" type="number" min="100" max="100000"
-                   placeholder="Введите количество" class="modal-input">
+            <input id="custom-coins-input" type="number" min="100" max="100000" placeholder="Введите количество" class="modal-input">
             <button class="close-btn primary" onclick="submitCustomTopUp()">Пополнить</button>
             <button class="close-btn" onclick="closeModal('custom-modal')">Отмена</button>
         </div>
     </div>
 
-    <!-- ═══════════ МОДАЛКА: ПОДДЕРЖКА ═══════════ -->
     <div id="support-modal" class="modal hidden">
         <div class="modal-content glass-strong">
             <h3>🆘 Поддержка</h3>
@@ -373,7 +351,6 @@
         </div>
     </div>
 
-    <!-- ═══════════ МОДАЛКА: 3D-РУЛЕТКА КЕЙСА ═══════════ -->
     <div id="case-modal" class="modal hidden">
         <div class="case-modal-inner">
             <div class="case-modal-title" id="case-modal-title">Открытие кейса...</div>
@@ -385,16 +362,30 @@
         </div>
     </div>
 
-    <!-- ═══════════ УВЕДОМЛЕНИЯ ═══════════ -->
     <div id="toast-container" class="toast-container"></div>
 
-    <!-- ═══════════ НИЖНЯЯ НАВИГАЦИЯ ═══════════ -->
+    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
     <nav class="bottom-nav glass-strong">
-        <button class="nav-btn active" data-tab="home"><span>🏠</span><span class="nav-label">Главная</span></button>
-        <button class="nav-btn" data-tab="games"><span>🎮</span><span class="nav-label">Игры</span></button>
-        <button class="nav-btn nav-btn-cases" data-tab="cases"><span>🎰</span><span class="nav-label">Кейсы</span></button>
-        <button class="nav-btn" data-tab="shop"><span>💎</span><span class="nav-label">Магазин</span></button>
-        <button class="nav-btn" data-tab="profile"><span>👤</span><span class="nav-label">Профиль</span></button>
+        <button class="nav-btn active" data-tab="home">
+            <svg class="nav-icon"><use href="#ic-home"/></svg>
+            <span class="nav-label">Главная</span>
+        </button>
+        <button class="nav-btn" data-tab="games">
+            <svg class="nav-icon"><use href="#ic-game"/></svg>
+            <span class="nav-label">Игры</span>
+        </button>
+        <button class="nav-btn nav-btn-cases" data-tab="cases">
+            <svg class="nav-icon"><use href="#ic-case"/></svg>
+            <span class="nav-label">Кейсы</span>
+        </button>
+        <button class="nav-btn" data-tab="shop">
+            <svg class="nav-icon"><use href="#ic-shop"/></svg>
+            <span class="nav-label">Магазин</span>
+        </button>
+        <button class="nav-btn" data-tab="profile">
+            <svg class="nav-icon"><use href="#ic-profile"/></svg>
+            <span class="nav-label">Профиль</span>
+        </button>
     </nav>
 
 </div>
