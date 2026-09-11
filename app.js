@@ -1,5 +1,5 @@
 /* ============================================================
-   LIFELESS SHOP · v7
+   LIFELESS SHOP · v8 (Lottie edition)
    ============================================================ */
 
 const FORCE_DEMO = true;
@@ -26,9 +26,19 @@ if (!tg) {
 
 const API_BASE = location.origin;
 const BOT_USERNAME = "Solver_Life_bot";
+const BASE_URL = "https://solver-bit.github.io/lifeless_minimap";
+
+const LOTTIE_URLS = {
+    coin: `${BASE_URL}/finance-management.json`,
+    cat: `${BASE_URL}/Loadercat.json`,
+    catCry: `${BASE_URL}/CatCryingemojiStickeranimation.json`,
+    about: `${BASE_URL}/Businessplan.json`,
+};
+
 const TG_USER_ID = tg.initDataUnsafe?.user?.id || 0;
-const LS_KEY = `lifeless_demo_v7_u${TG_USER_ID}`;
-const LS_MUSIC_KEY = `lifeless_music_v7_u${TG_USER_ID}`;
+const LS_KEY = `lifeless_demo_v8_u${TG_USER_ID}`;
+const LS_MUSIC_KEY = `lifeless_music_v8_u${TG_USER_ID}`;
+const LS_PETS_KEY = `lifeless_pets_v8_u${TG_USER_ID}`;
 
 const defaultUser = {
     id: 0, first_name: "", last_name: "", username: "", avatar_url: "",
@@ -42,7 +52,10 @@ const state = {
     spinning: false, rolling: false, caseOpening: false,
     saperActive: false, saperSafe: 0, saperTotal: 0, saperConfig: null,
     currentShopCat: "coins", currentCaseCat: "coins",
+    ownedPets: [], petLottie: null, sidePetLottie: null, activePet: null,
 };
+
+const lottieInstances = {};
 
 /* ============ УТИЛИТЫ ============ */
 function haptic(t = "light") { try { tg.HapticFeedback?.impactOccurred(t); } catch (_) {} }
@@ -102,6 +115,38 @@ function makeInitialsAvatar(f, l, u) {
     return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
 
+/* ============ LOTTIE INIT (оптимизировано) ============ */
+function initLottie() {
+    if (typeof lottie === "undefined") return;
+
+    // Лоадер-кот
+    if (document.getElementById("loader-cat")) {
+        lottie.loadAnimation({
+            container: document.getElementById("loader-cat"),
+            renderer: "svg",
+            loop: true,
+            autoplay: true,
+            path: LOTTIE_URLS.cat,
+            rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: true },
+        });
+    }
+
+    // Монеты (только 2-3 инстанса, не в списках)
+    const coinSlots = ["header-coin-lottie", "side-coin-lottie"];
+    coinSlots.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        lottieInstances[id] = lottie.loadAnimation({
+            container: el,
+            renderer: "svg",
+            loop: true,
+            autoplay: true,
+            path: LOTTIE_URLS.coin,
+            rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: true },
+        });
+    });
+}
+
 /* ============ DEMO DB ============ */
 function loadDemo() {
     try {
@@ -143,8 +188,62 @@ function saveDemo() {
 
 function resetDemo() {
     if (!confirm("Сбросить весь прогресс?")) return;
-    try { localStorage.removeItem(LS_KEY); } catch (_) {}
+    try { localStorage.removeItem(LS_KEY); localStorage.removeItem(LS_PETS_KEY); } catch (_) {}
     location.reload();
+}
+
+/* ============ ПИТОМЦЫ ============ */
+function loadPets() {
+    try {
+        const raw = localStorage.getItem(LS_PETS_KEY);
+        if (raw) state.ownedPets = JSON.parse(raw);
+    } catch (_) {}
+}
+
+function savePets() {
+    try { localStorage.setItem(LS_PETS_KEY, JSON.stringify(state.ownedPets)); } catch (_) {}
+}
+
+const PETS_LIST = [
+    { id: "cat", name: "Кот", emoji: "🐱", price: 25, currency: "stars", url: LOTTIE_URLS.cat, desc: "Милый анимированный кот в профиле" },
+];
+
+function hasPet(id) { return state.ownedPets.includes(id); }
+
+function renderActivePet() {
+    const profileSlot = document.getElementById("profile-pet-slot");
+    const sideSlot = document.getElementById("side-pet-slot");
+    const hasCat = hasPet("cat");
+
+    // Очистить слоты
+    if (profileSlot) profileSlot.innerHTML = "";
+    if (sideSlot) sideSlot.innerHTML = "";
+    if (state.petLottie) { state.petLottie.destroy(); state.petLottie = null; }
+    if (state.sidePetLottie) { state.sidePetLottie.destroy(); state.sidePetLottie = null; }
+
+    if (!hasCat) return;
+    if (typeof lottie === "undefined") return;
+
+    if (profileSlot) {
+        state.petLottie = lottie.loadAnimation({
+            container: profileSlot,
+            renderer: "svg",
+            loop: true,
+            autoplay: true,
+            path: LOTTIE_URLS.cat,
+            rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: true },
+        });
+    }
+    if (sideSlot) {
+        state.sidePetLottie = lottie.loadAnimation({
+            container: sideSlot,
+            renderer: "svg",
+            loop: true,
+            autoplay: true,
+            path: LOTTIE_URLS.cat,
+            rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: true },
+        });
+    }
 }
 
 /* ============ ЭКОНОМИКА ============ */
@@ -334,11 +433,8 @@ async function demoApi(path, body) {
             saveDemo();
             return { reward, balance: currentUser.balance };
         }
-        /* Покупки из магазина */
         case "/api/buy_perk":
-        case "/api/buy_vip":
-        case "/api/buy_ticket": {
-            // Просто списание монет без эффекта (в демо)
+        case "/api/buy_pet": {
             const cost = body.cost || 0;
             if (currentUser.balance < cost) throw new Error("Недостаточно монет");
             currentUser.balance -= cost;
@@ -434,6 +530,8 @@ const STAR_CASES = [
 /* ============ BOOTSTRAP ============ */
 function bootstrap() {
     if (DEMO) Object.assign(currentUser, loadDemo());
+    loadPets();
+
     const u = tg.initDataUnsafe?.user || {};
     currentUser.id = u.id || 0;
     currentUser.first_name = u.first_name || "";
@@ -445,6 +543,7 @@ function bootstrap() {
     currentUser.ref_link = `https://t.me/${BOT_USERNAME}?start=${currentUser.id}`;
 
     try {
+        initLottie();
         buildCases();
         buildStarCases();
         buildCarouselDots();
@@ -452,21 +551,25 @@ function bootstrap() {
         buildShopGrid();
         buildPerksGrid();
         buildVipGrid();
-        buildTicketsGrid();
+        buildPetsGrid();
         buildWheel();
         bindCarouselSwipe();
+        bindEdgeSwipe();
         bindSaperLevels();
         seedAmbientDrops();
         loadMusic();
         renderAll();
+        renderActivePet();
         startFreeCaseTimer();
     } catch (e) {
         console.error("Build error:", e);
         toast("Ошибка инициализации: " + e.message, "error", 5000);
     }
 
-    document.getElementById("global-loader").classList.add("hidden");
-    document.getElementById("app").classList.remove("hidden");
+    setTimeout(() => {
+        document.getElementById("global-loader").classList.add("hidden");
+        document.getElementById("app").classList.remove("hidden");
+    }, 800);
 }
 
 function renderAll() {
@@ -518,6 +621,41 @@ function renderSideMenu() {
     if (unEl) unEl.textContent = (u.username || currentUser.username) ? `@${u.username || currentUser.username}` : `ID: ${currentUser.id}`;
     const balEl = document.getElementById("side-balance-val");
     if (balEl) balEl.textContent = currentUser.balance.toLocaleString("ru-RU");
+
+    const headerAvatar = document.getElementById("header-avatar");
+    if (headerAvatar) {
+        if (currentUser.avatar_url) {
+            headerAvatar.src = currentUser.avatar_url;
+            headerAvatar.onerror = () => { headerAvatar.src = makeInitialsAvatar(currentUser.first_name, currentUser.last_name, currentUser.username); headerAvatar.onerror = null; };
+        } else {
+            headerAvatar.src = makeInitialsAvatar(u.first_name || currentUser.first_name, u.last_name || currentUser.last_name, u.username || currentUser.username);
+        }
+    }
+}
+
+/* Edge swipe */
+function bindEdgeSwipe() {
+    const el = document.getElementById("edge-swipe");
+    if (!el) return;
+    let startX = 0, startY = 0, moved = false;
+
+    const onStart = (e) => {
+        const t = e.touches ? e.touches[0] : e;
+        startX = t.clientX; startY = t.clientY;
+        moved = false;
+    };
+    const onMove = (e) => {
+        const t = e.touches ? e.touches[0] : e;
+        const dx = t.clientX - startX;
+        const dy = t.clientY - startY;
+        if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy) && dx > 0) {
+            moved = true;
+            openSideMenu();
+        }
+    };
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchmove", onMove, { passive: true });
+    el.addEventListener("click", openSideMenu);
 }
 
 /* ============ ПРОФИЛЬ ============ */
@@ -625,13 +763,28 @@ function switchTab(tabId) {
     document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tabId));
     document.querySelectorAll(".side-item").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tabId));
     if (tabId !== "games") closeGameView();
+
+    // Ленивая загрузка "О нас"
+    if (tabId === "about" && !lottieInstances.about && typeof lottie !== "undefined") {
+        const slot = document.getElementById("about-lottie");
+        if (slot) {
+            lottieInstances.about = lottie.loadAnimation({
+                container: slot,
+                renderer: "svg",
+                loop: true,
+                autoplay: true,
+                path: LOTTIE_URLS.about,
+                rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: true },
+            });
+        }
+    }
+
     haptic("light");
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
 
-/* ============ КАТЕГОРИИ ============ */
 function switchShopCat(cat) {
     state.currentShopCat = cat;
     document.querySelectorAll("#tab-shop .cat-tab").forEach(b => b.classList.toggle("active", b.dataset.cat === cat));
@@ -666,7 +819,7 @@ function closeGameView() {
     resetSaperState();
 }
 
-/* ============ КАРУСЕЛЬ (оптимизировано) ============ */
+/* ============ КАРУСЕЛЬ ============ */
 let currentSlide = 0;
 let carouselTimer = null;
 
@@ -709,14 +862,12 @@ function bindCarouselSwipe() {
         if (!isDragging) return;
         const t = e.touches ? e.touches[0] : e;
         dx = t.clientX - startX;
-        const dy = t.clientY - startY;
-        if (Math.abs(dx) > Math.abs(dy)) e.preventDefault?.();
     };
     const onEnd = () => {
         if (!isDragging) return;
         isDragging = false;
         const dt = Date.now() - startT;
-        const speed = Math.abs(dx) / dt;
+        const speed = Math.abs(dx) / Math.max(dt, 1);
         if (Math.abs(dx) > 50 || (Math.abs(dx) > 20 && speed > 0.5)) {
             showSlide(dx > 0 ? currentSlide - 1 : currentSlide + 1);
             haptic("light");
@@ -725,7 +876,7 @@ function bindCarouselSwipe() {
     };
 
     el.addEventListener("touchstart", onStart, { passive: true });
-    el.addEventListener("touchmove", onMove, { passive: false });
+    el.addEventListener("touchmove", onMove, { passive: true });
     el.addEventListener("touchend", onEnd, { passive: true });
     el.addEventListener("touchcancel", onEnd, { passive: true });
 }
@@ -793,7 +944,6 @@ async function runCaseAnimation(title, apiFn) {
     if (titleEl) titleEl.textContent = title;
     if (resEl) resEl.innerHTML = "&nbsp;";
 
-    // Готовим ленту
     const WINNER_INDEX = 50;
     const items = [];
     for (let i = 0; i < 60; i++) items.push(MULT_TO_RARITY[Math.floor(Math.random() * MULT_TO_RARITY.length)]);
@@ -803,16 +953,17 @@ async function runCaseAnimation(title, apiFn) {
     reel.style.transition = "none";
     reel.style.transform = "translate3d(0, 0, 0)";
 
+    const fragment = document.createDocumentFragment();
     items.forEach((it) => {
         const div = document.createElement("div");
         div.className = `case-item r-${it.key}`;
         div.innerHTML = `${it.emoji}<small>${escapeHtml(it.label)}</small>`;
-        reel.appendChild(div);
+        fragment.appendChild(div);
     });
+    reel.appendChild(fragment);
 
     modal.classList.remove("hidden");
 
-    // Запрос
     let result = null, apiError = null;
     try { result = await apiFn(); }
     catch (e) { apiError = e; }
@@ -824,7 +975,6 @@ async function runCaseAnimation(title, apiFn) {
         return;
     }
 
-    // Подменяем победителя
     const winnerRarity = MULT_TO_RARITY[result.multiplier_index] || MULT_TO_RARITY[0];
     const winnerEl = reel.children[WINNER_INDEX];
     if (winnerEl) {
@@ -832,10 +982,8 @@ async function runCaseAnimation(title, apiFn) {
         winnerEl.innerHTML = `${winnerRarity.emoji}<small>${escapeHtml(winnerRarity.label)}</small>`;
     }
 
-    // Форсируем рендер
     void reel.offsetWidth;
 
-    // Размеры
     let wrapWidth = 340;
     const wrapEl = modal.querySelector(".case-reel-wrap");
     if (wrapEl) wrapWidth = wrapEl.getBoundingClientRect().width || 340;
@@ -848,7 +996,6 @@ async function runCaseAnimation(title, apiFn) {
     reel.style.transition = "transform 3.5s cubic-bezier(0.15, 0.9, 0.15, 1)";
     reel.style.transform = `translate3d(${finalX}px, 0, 0)`;
 
-    // Гарантированный показ результата
     const fallbackId = setTimeout(() => {
         if (state.caseOpening) showCaseResult(result);
     }, 4200);
@@ -1243,23 +1390,17 @@ const COIN_PACKS = [
 ];
 
 const PERKS = [
-    { id: "frame_gold",   name: "Золотая рамка",   emoji: "🖼️", cost: 5000,   currency: "coins" },
-    { id: "nick_color",   name: "Цветной ник",     emoji: "🎨", cost: 10000,  currency: "coins" },
-    { id: "badge_exp",    name: "Значок «Опытный»",emoji: "⭐", cost: 25000,  currency: "coins" },
-    { id: "badge_pro",    name: "Значок «Про»",    emoji: "💎", cost: 50000,  currency: "coins" },
+    { id: "frame_gold",   name: "Золотая рамка",   emoji: "🖼️", cost: 5000 },
+    { id: "nick_color",   name: "Цветной ник",     emoji: "🎨", cost: 10000 },
+    { id: "badge_exp",    name: "Значок «Опытный»",emoji: "⭐", cost: 25000 },
+    { id: "badge_pro",    name: "Значок «Про»",    emoji: "💎", cost: 50000 },
 ];
 
 const VIP_ITEMS = [
-    { id: "vip_day",   name: "VIP на 1 день",   emoji: "👑", cost: 25,  stars: true },
-    { id: "vip_week",  name: "VIP на неделю",   emoji: "👑", cost: 100, stars: true },
-    { id: "vip_month", name: "VIP на месяц",    emoji: "👑", cost: 300, stars: true },
-    { id: "no_ads",    name: "Без рекламы",     emoji: "🚫", cost: 50,  stars: true },
-];
-
-const TICKETS = [
-    { id: "ticket_wheel", name: "Билет на колесо x2", emoji: "🎡", cost: 2000,  currency: "coins" },
-    { id: "ticket_case",  name: "Билет на кейс −50%", emoji: "🎫", cost: 5000,  currency: "coins" },
-    { id: "ticket_lucky", name: "Билет удачи",        emoji: "🍀", cost: 15000, currency: "coins" },
+    { id: "vip_day",   name: "VIP на 1 день", emoji: "👑", cost: 25 },
+    { id: "vip_week",  name: "VIP на неделю", emoji: "👑", cost: 100 },
+    { id: "vip_month", name: "VIP на месяц",  emoji: "👑", cost: 300 },
+    { id: "no_ads",    name: "Без рекламы",   emoji: "🚫", cost: 50 },
 ];
 
 function buildTopUpOptions() {
@@ -1323,15 +1464,17 @@ function buildVipGrid() {
         </button>`).join("");
 }
 
-function buildTicketsGrid() {
-    const grid = document.getElementById("shop-tickets");
+function buildPetsGrid() {
+    const grid = document.getElementById("shop-pets");
     if (!grid) return;
-    grid.innerHTML = TICKETS.map(p => `
-        <button class="shop-card ticket" onclick="buyTicket('${p.id}', ${p.cost})">
+    grid.innerHTML = PETS_LIST.map(p => {
+        const owned = hasPet(p.id);
+        return `<button class="shop-card pet ${owned ? 'owned' : ''}" onclick="openPetModal('${p.id}')">
             <div class="shop-coin">${p.emoji}</div>
             <div class="shop-name">${p.name}</div>
-            <div class="shop-price">${p.cost.toLocaleString("ru-RU")} 🪙</div>
-        </button>`).join("");
+            <div class="shop-price">${owned ? "Уже у тебя" : p.price + " ⭐"}</div>
+        </button>`;
+    }).join("");
 }
 
 async function buyCoins(coins) {
@@ -1362,35 +1505,75 @@ async function buyCoins(coins) {
 async function buyPerk(id, cost) {
     if (currentUser.balance < cost) { toast("Недостаточно монет", "error"); return; }
     const before = currentUser.balance;
-    if (DEMO) {
-        currentUser.balance -= cost;
-        saveDemo();
-        setBalance(currentUser.balance, true, before);
-        renderProfile(); renderLeaderboard();
-        toast(`✅ Куплено: ${id}`, "success");
-        hapticNotify("success");
-    } else {
-        try {
-            await apiCall("/api/buy_perk", { id, cost });
-        } catch (e) { toast(e.message, "error"); }
-    }
+    currentUser.balance -= cost;
+    saveDemo();
+    setBalance(currentUser.balance, true, before);
+    renderProfile(); renderLeaderboard();
+    toast(`✅ Куплено!`, "success");
+    hapticNotify("success");
 }
 
 async function buyVip(id, cost) {
     toast("💎 VIP появится на сервере", "info");
 }
 
-async function buyTicket(id, cost) {
-    if (currentUser.balance < cost) { toast("Недостаточно монет", "error"); return; }
-    const before = currentUser.balance;
-    if (DEMO) {
-        currentUser.balance -= cost;
-        saveDemo();
-        setBalance(currentUser.balance, true, before);
-        renderProfile(); renderLeaderboard();
-        toast(`🎫 Куплен билет`, "success");
-        hapticNotify("success");
+/* Модалка питомца */
+let petToBuy = null;
+function openPetModal(petId) {
+    const pet = PETS_LIST.find(p => p.id === petId);
+    if (!pet) return;
+    petToBuy = pet;
+    const owned = hasPet(pet.id);
+
+    const titleEl = document.getElementById("pet-modal-title");
+    const descEl = document.getElementById("pet-modal-desc");
+    const btn = document.getElementById("pet-buy-btn");
+    const preview = document.getElementById("pet-preview");
+
+    if (titleEl) titleEl.textContent = `${pet.emoji} ${pet.name}`;
+    if (descEl) descEl.textContent = pet.desc;
+    if (btn) {
+        btn.textContent = owned ? "Уже куплено" : `Купить за ${pet.price} ⭐`;
+        btn.disabled = owned;
     }
+
+    // Предпросмотр
+    preview.innerHTML = "";
+    if (typeof lottie !== "undefined") {
+        if (state.petPreviewLottie) { state.petPreviewLottie.destroy(); state.petPreviewLottie = null; }
+        state.petPreviewLottie = lottie.loadAnimation({
+            container: preview,
+            renderer: "svg",
+            loop: true,
+            autoplay: true,
+            path: pet.url,
+            rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: true },
+        });
+    }
+
+    document.getElementById("pet-modal").classList.remove("hidden");
+    haptic("light");
+}
+
+function confirmBuyPet() {
+    if (!petToBuy) return;
+    const owned = hasPet(petToBuy.id);
+    if (owned) { toast("Уже куплено", "info"); return; }
+
+    // В демо — просто добавляем
+    if (DEMO) {
+        state.ownedPets.push(petToBuy.id);
+        savePets();
+        renderActivePet();
+        buildPetsGrid();
+        closeModal("pet-modal");
+        toast(`🐱 ${petToBuy.name} добавлен в профиль!`, "success", 3000);
+        hapticNotify("success");
+        return;
+    }
+
+    // На сервере — через Stars
+    toast("Оплата Stars будет на сервере", "info");
 }
 
 function openTopUp() {
@@ -1467,7 +1650,6 @@ let musicAudio = null;
 let currentTrackId = null;
 let musicPlaying = false;
 let myTracks = [];
-let musicProgressInterval = null;
 
 function loadMusic() {
     try {
@@ -1494,13 +1676,8 @@ function saveMusic() {
     } catch (_) {}
 }
 
-function allTracks() {
-    return [...DEFAULT_TRACKS, ...myTracks];
-}
-
-function findTrack(id) {
-    return allTracks().find(t => t.id === id);
-}
+function allTracks() { return [...DEFAULT_TRACKS, ...myTracks]; }
+function findTrack(id) { return allTracks().find(t => t.id === id); }
 
 function renderMusicPlayer() {
     const track = findTrack(currentTrackId);
@@ -1508,7 +1685,6 @@ function renderMusicPlayer() {
     const subEl = document.getElementById("music-track-sub");
     const btnEl = document.getElementById("music-main-btn");
     const coverImg = document.getElementById("music-cover-img");
-
     if (!track) {
         if (titleEl) titleEl.textContent = "Выбери трек";
         if (subEl) subEl.textContent = "Моя коллекция";
@@ -1535,9 +1711,7 @@ function toggleMusic() {
         musicPlaying = false;
     } else {
         if (musicAudio.src !== track.url) musicAudio.src = track.url;
-        musicAudio.play().then(() => {
-            musicPlaying = true;
-        }).catch(() => {
+        musicAudio.play().then(() => { musicPlaying = true; }).catch(() => {
             toast("Не удалось воспроизвести", "error");
             musicPlaying = false;
         });
