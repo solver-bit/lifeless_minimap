@@ -24,14 +24,15 @@
     <symbol id="ic-support" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4.9.7c-.1 1.5-1.4 2-2.4 2.3V14M12 17v.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></symbol>
     <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
     <symbol id="ic-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 16v-5M12 8v.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-    <symbol id="ic-settings" viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7zm7.4-2.6c.05-.3.1-.6.1-.9s-.05-.6-.1-.9l2-1.6c.2-.15.25-.4.15-.6l-1.9-3.3c-.15-.25-.4-.35-.65-.25l-2.4.95c-.5-.4-1.05-.7-1.65-.95l-.35-2.55c-.05-.25-.25-.45-.5-.45h-3.8c-.25 0-.45.2-.5.45l-.35 2.55c-.6.25-1.15.55-1.65.95l-2.4-.95c-.25-.1-.5 0-.65.25l-1.9 3.3c-.1.2-.05.45.15.6l2 1.6c-.05.3-.1.6-.1.9s.05.6.1.9l-2 1.6c-.2.15-.25.4-.15.6l1.9 3.3c.15.25.4.35.65.25l2.4-.95c.5.4 1.05.7 1.65.95l.35 2.55c.05.25.25.45.5.45h3.8c.25 0 .45-.2.5-.45l.35-2.55c.6-.25 1.15-.55 1.65-.95l2.4.95c.25.1.5 0 .65-.25l1.9-3.3c.1-.2.05-.45-.15-.6l-2-1.6z" fill="currentColor"/></symbol>
     <symbol id="ic-shuffle" viewBox="0 0 24 24"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="ic-repeat" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="ic-repeat-one" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><text x="12" y="15" font-size="8" font-weight="bold" fill="currentColor" text-anchor="middle">1</text></symbol>
     <symbol id="ic-prev" viewBox="0 0 24 24"><path d="M19 20L9 12l10-8v16zM5 19V5" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
     <symbol id="ic-next" viewBox="0 0 24 24"><path d="M5 4l10 8-10 8V4zM19 5v14" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
-    <symbol id="ic-pause" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z" fill="currentColor"/></symbol>
-    <symbol id="ic-play-mini" viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z" fill="currentColor"/></symbol>
+    <symbol id="ic-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor"/><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor"/></symbol>
+    <symbol id="ic-play-mini" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="currentColor"/></symbol>
+    <symbol id="ic-star" viewBox="0 0 24 24"><path d="M12 2l3 7 7 .9-5.3 4.9 1.4 7.2L12 18.5 5.9 22l1.4-7.2L2 9.9 9 9z" fill="currentColor"/></symbol>
+    <symbol id="ic-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M12 7v10M9 10h6M9 14h6" stroke="#06060f" stroke-width="2" stroke-linecap="round" fill="none"/></symbol>
 </svg>
 
 <div id="global-loader">
@@ -73,10 +74,11 @@
     <header class="header glass-strong">
         <div class="header-left">
             <button class="avatar-menu-btn" id="avatar-menu-btn" onclick="openSideMenu()" aria-label="Меню">
-                <img id="header-avatar" class="header-avatar" alt="">
+                <span class="brand-L">L</span>
             </button>
             <div class="header-title"><h1>LIFELESS</h1><h2>SHOP</h2></div>
         </div>
+        <div class="header-pet-slot" id="header-pet-slot" style="display:none"></div>
         <div class="header-right">
             <div class="balance-pill" id="balance-pill">
                 <div class="lottie-coin-slot lottie-coin-lg" id="header-coin-lottie"></div>
@@ -188,14 +190,37 @@
                     <div class="games-hero-text"><div class="games-hero-title">Игровая зона</div><div class="games-hero-sub">Крути, бросай, открывай клетки</div></div>
                 </div>
                 <div class="games-grid">
-                    <div class="game-card" onclick="openGame('wheel')"><img src="https://solver-bit.github.io/lifeless_minimap/durov6.jpg" alt=""><div class="game-card-overlay"><span class="game-card-name">Колесо</span><span class="game-card-price">10 🪙</span></div></div>
-                    <div class="game-card" onclick="openGame('dice')"><img src="https://solver-bit.github.io/lifeless_minimap/durov8.jpg" alt=""><div class="game-card-overlay"><span class="game-card-name">Кости</span><span class="game-card-price">10 🪙</span></div></div>
-                    <div class="game-card" onclick="openGame('saper')"><img src="https://solver-bit.github.io/lifeless_minimap/dorov9.jpg" alt=""><div class="game-card-overlay"><span class="game-card-name">Сапёр</span><span class="game-card-price">10–50 🪙</span></div></div>
+                    <div class="game-card" onclick="openGame('wheel')">
+                        <img src="https://solver-bit.github.io/lifeless_minimap/durov6.jpg" alt="">
+                        <div class="game-card-overlay"><span class="game-card-name">🎡 Колесо</span><span class="game-card-price">10 🪙</span></div>
+                    </div>
+                    <div class="game-card" onclick="openGame('wheel-free')">
+                        <img src="https://solver-bit.github.io/lifeless_minimap/durov1.jpg" alt="">
+                        <div class="game-card-overlay"><span class="game-card-name">🎁 Бесплатное</span><span class="game-card-price">Раз в час</span></div>
+                    </div>
+                    <div class="game-card" onclick="openGame('wheel-vip')">
+                        <img src="https://solver-bit.github.io/lifeless_minimap/durov7.jpg" alt="">
+                        <div class="game-card-overlay"><span class="game-card-name">💎 VIP-колесо</span><span class="game-card-price">50 ⭐</span></div>
+                    </div>
+                    <div class="game-card" onclick="openGame('coin')">
+                        <img src="https://solver-bit.github.io/lifeless_minimap/durov4.jpg" alt="">
+                        <div class="game-card-overlay"><span class="game-card-name">🪙 Монетка</span><span class="game-card-price">10 🪙</span></div>
+                    </div>
+                    <div class="game-card" onclick="openGame('dice')">
+                        <img src="https://solver-bit.github.io/lifeless_minimap/durov8.jpg" alt="">
+                        <div class="game-card-overlay"><span class="game-card-name">🎲 Кости</span><span class="game-card-price">10 🪙</span></div>
+                    </div>
+                    <div class="game-card" onclick="openGame('saper')">
+                        <img src="https://solver-bit.github.io/lifeless_minimap/dorov9.jpg" alt="">
+                        <div class="game-card-overlay"><span class="game-card-name">💣 Сапёр</span><span class="game-card-price">10–50 🪙</span></div>
+                    </div>
                 </div>
             </div>
+
+            <!-- КОЛЕСО (обычное) -->
             <div id="game-wheel" class="game-view hidden">
                 <button class="back-link" onclick="closeGameView()">← Назад</button>
-                <div class="section-title">🎡 Колесо фортуны</div>
+                <div class="section-title">🎡 Колесо фортуны · 10 🪙</div>
                 <div class="wheel-container">
                     <div class="wheel-pointer"></div>
                     <div class="wheel" id="wheel"><div class="wheel-inner" id="wheel-inner"></div><div class="wheel-hub">🎯</div></div>
@@ -203,9 +228,71 @@
                 <button class="play-btn" id="spin-btn" onclick="spinWheel()">Крутить · 10 🪙</button>
                 <div id="wheel-result" class="game-result"></div>
             </div>
+
+            <!-- БЕСПЛАТНОЕ КОЛЕСО -->
+            <div id="game-wheel-free" class="game-view hidden">
+                <button class="back-link" onclick="closeGameView()">← Назад</button>
+                <div class="section-title">🎁 Бесплатное колесо</div>
+                <div class="free-wheel-info glass">
+                    <div class="free-wheel-icon">🎁</div>
+                    <div class="free-wheel-text">
+                        <b>Раз в час — бесплатно!</b><br>
+                        Призы: 5–100 🪙
+                    </div>
+                </div>
+                <div class="wheel-container">
+                    <div class="wheel-pointer"></div>
+                    <div class="wheel wheel-theme-free" id="wheel-free"><div class="wheel-inner" id="wheel-free-inner"></div><div class="wheel-hub">🎁</div></div>
+                </div>
+                <button class="play-btn" id="spin-free-btn" onclick="spinWheelFree()">Крутить бесплатно</button>
+                <div id="wheel-free-result" class="game-result"></div>
+            </div>
+
+            <!-- VIP-КОЛЕСО -->
+            <div id="game-wheel-vip" class="game-view hidden">
+                <button class="back-link" onclick="closeGameView()">← Назад</button>
+                <div class="section-title">💎 VIP-колесо · 50 ⭐</div>
+                <div class="vip-wheel-info glass">
+                    <div class="vip-wheel-icon">💎</div>
+                    <div class="vip-wheel-text">
+                        <b>VIP-призы: 500–5000 🪙</b><br>
+                        Плюс шанс на подарок
+                    </div>
+                </div>
+                <div class="wheel-container">
+                    <div class="wheel-pointer"></div>
+                    <div class="wheel wheel-theme-vip" id="wheel-vip"><div class="wheel-inner" id="wheel-vip-inner"></div><div class="wheel-hub">💎</div></div>
+                </div>
+                <button class="play-btn play-btn-vip" id="spin-vip-btn" onclick="spinWheelVip()">Купить за 50 ⭐</button>
+                <div id="wheel-vip-result" class="game-result"></div>
+            </div>
+
+            <!-- МОНЕТКА -->
+            <div id="game-coin" class="game-view hidden">
+                <button class="back-link" onclick="closeGameView()">← Назад</button>
+                <div class="section-title">🪙 Монетка · 10 🪙</div>
+                <div class="coin-scene">
+                    <div class="coin-3d" id="coin3d">
+                        <div class="coin-face coin-front">🦅</div>
+                        <div class="coin-face coin-back">👑</div>
+                    </div>
+                </div>
+                <div class="coin-choices">
+                    <button class="coin-choice-btn" id="coin-eagle" onclick="playCoin('eagle')">🦅 Орёл ×2</button>
+                    <button class="coin-choice-btn" id="coin-king" onclick="playCoin('king')">👑 Решка ×2</button>
+                </div>
+                <div id="coin-result" class="game-result"></div>
+            </div>
+
+            <!-- КОСТИ (улучшенные) -->
             <div id="game-dice" class="game-view hidden">
                 <button class="back-link" onclick="closeGameView()">← Назад</button>
                 <div class="section-title">🎲 Кости · сумма</div>
+                <div class="dice-info glass">
+                    <div>🎯 Победа: <b>7, 11</b> · ×2.5</div>
+                    <div>💥 Джекпот: <b>12</b> · ×4</div>
+                    <div>🎯 Близко: <b>2, 8, 10</b> · ×1.5</div>
+                </div>
                 <div class="scene-3d">
                     <div class="dice-wrap"><div class="dice-shadow"></div>
                         <div class="dice-3d" id="dice1"><div class="dice-face front"></div><div class="dice-face back"></div><div class="dice-face right"></div><div class="dice-face left"></div><div class="dice-face top"></div><div class="dice-face bottom"></div></div>
@@ -217,19 +304,31 @@
                 <button class="play-btn" onclick="rollDice()">Бросить · 10 🪙</button>
                 <div id="dice-result" class="game-result"></div>
             </div>
+
+            <!-- САПЁР (улучшенный) -->
             <div id="game-saper" class="game-view hidden">
                 <button class="back-link" onclick="closeGameView()">← Назад</button>
                 <div class="section-title">💣 Сапёр</div>
                 <div class="saper-setup" id="saper-setup">
                     <p>Выбери сложность:</p>
                     <div class="saper-levels">
-                        <button class="saper-level" data-size="3" data-mines="2" data-cost="10"><div class="saper-level-icon">🟢</div><div><div class="saper-level-name">Лёгкий</div><div class="saper-level-info">3×3 · 2 мины · 10 🪙</div></div></button>
-                        <button class="saper-level" data-size="5" data-mines="5" data-cost="25"><div class="saper-level-icon">🟡</div><div><div class="saper-level-name">Средний</div><div class="saper-level-info">5×5 · 5 мин · 25 🪙</div></div></button>
-                        <button class="saper-level" data-size="7" data-mines="10" data-cost="50"><div class="saper-level-icon">🔴</div><div><div class="saper-level-name">Хард</div><div class="saper-level-info">7×7 · 10 мин · 50 🪙</div></div></button>
+                        <button class="saper-level" data-size="3" data-mines="2" data-cost="10">
+                            <div class="saper-level-icon">🟢</div>
+                            <div><div class="saper-level-name">Лёгкий</div><div class="saper-level-info">3×3 · 2 мины · 10 🪙 · ×1.5</div></div>
+                        </button>
+                        <button class="saper-level" data-size="5" data-mines="5" data-cost="25">
+                            <div class="saper-level-icon">🟡</div>
+                            <div><div class="saper-level-name">Средний</div><div class="saper-level-info">5×5 · 5 мин · 25 🪙 · ×2</div></div>
+                        </button>
+                        <button class="saper-level" data-size="7" data-mines="10" data-cost="50">
+                            <div class="saper-level-icon">🔴</div>
+                            <div><div class="saper-level-name">Хард</div><div class="saper-level-info">7×7 · 10 мин · 50 🪙 · ×3</div></div>
+                        </button>
                     </div>
                 </div>
                 <div id="saper-play" class="hidden">
                     <div class="saper-info" id="saper-info"></div>
+                    <div class="saper-hint">🎯 Каждая открытая клетка — <b>+5% к множителю</b></div>
                     <div id="saper-grid" class="saper-grid"></div>
                     <div id="saper-result" class="game-result"></div>
                     <button class="play-btn" id="saper-cashout" onclick="saperCashOut()" style="display:none;margin-top:10px">💰 Забрать <span id="saper-cashout-value">0</span> 🪙</button>
@@ -240,12 +339,18 @@
         <section id="tab-shop" class="tab">
             <div class="cat-tabs">
                 <button class="cat-tab active" data-cat="coins" onclick="switchShopCat('coins')">🪙 Монеты</button>
-                <button class="cat-tab" data-cat="perks" onclick="switchShopCat('perks')">🎨 Перки</button>
+                <button class="cat-tab" data-cat="perks" onclick="switchShopCat('perks')">🎨 Украшения</button>
                 <button class="cat-tab" data-cat="vip" onclick="switchShopCat('vip')">💎 VIP</button>
                 <button class="cat-tab" data-cat="pets" onclick="switchShopCat('pets')">🐱 Питомцы</button>
             </div>
             <div id="shop-panel-coins" class="shop-panel active"><div class="shop-grid" id="shop-grid"></div></div>
-            <div id="shop-panel-perks" class="shop-panel"><div class="shop-grid" id="shop-perks"></div></div>
+            <div id="shop-panel-perks" class="shop-panel">
+                <div class="decor-tabs">
+                    <button class="decor-tab active" onclick="switchDecorTab('color', this)">🎨 Цвет имени</button>
+                    <button class="decor-tab" onclick="switchDecorTab('frame', this)">🖼️ Рамка</button>
+                </div>
+                <div id="shop-perks-content"></div>
+            </div>
             <div id="shop-panel-vip" class="shop-panel"><div class="shop-grid" id="shop-vip"></div></div>
             <div id="shop-panel-pets" class="shop-panel"><div class="shop-grid" id="shop-pets"></div></div>
         </section>
@@ -262,9 +367,12 @@
         <section id="tab-profile" class="tab">
             <div class="profile-card glass-strong">
                 <div class="profile-avatar-wrap">
+                    <div class="pet-slot-abs pet-pos-tr pet-size-md" id="profile-pet-tr" style="display:none"></div>
+                    <div class="pet-slot-abs pet-pos-tl pet-size-md" id="profile-pet-tl" style="display:none"></div>
                     <img id="profile-avatar" class="profile-avatar" alt="">
+                    <div class="pet-slot-abs pet-pos-br pet-size-md" id="profile-pet-br" style="display:none"></div>
+                    <div class="pet-slot-abs pet-pos-bl pet-size-md" id="profile-pet-bl" style="display:none"></div>
                     <div class="profile-badge" id="profile-badge">#0</div>
-                    <div class="pet-slot-abs" id="profile-pet-abs" style="display:none"></div>
                 </div>
 
                 <div class="profile-name" id="profile-name">Загрузка...</div>
@@ -278,26 +386,14 @@
                         <div class="mini-title" id="mini-track-title">Выбери трек</div>
                     </div>
                     <div class="mini-progress-wrap" id="mini-progress-wrap">
-                        <div class="mini-progress">
-                            <div class="mini-progress-bar" id="mini-progress-bar"></div>
-                        </div>
+                        <div class="mini-progress"><div class="mini-progress-bar" id="mini-progress-bar"></div></div>
                     </div>
                     <div class="mini-controls">
-                        <button class="mini-ctrl" onclick="musicShuffle()" title="Перемешать">
-                            <svg><use href="#ic-shuffle"/></svg>
-                        </button>
-                        <button class="mini-ctrl" onclick="musicPrev()" title="Назад">
-                            <svg><use href="#ic-prev"/></svg>
-                        </button>
-                        <button class="mini-ctrl mini-ctrl-main" id="mini-play-btn" onclick="toggleMusic()" title="Play/Pause">
-                            <svg id="mini-play-icon"><use href="#ic-play-mini"/></svg>
-                        </button>
-                        <button class="mini-ctrl" onclick="musicNext()" title="Вперёд">
-                            <svg><use href="#ic-next"/></svg>
-                        </button>
-                        <button class="mini-ctrl" id="mini-repeat-btn" onclick="musicToggleRepeat()" title="Повтор">
-                            <svg id="mini-repeat-icon"><use href="#ic-repeat"/></svg>
-                        </button>
+                        <button class="mini-ctrl" onclick="musicShuffle()" title="Перемешать"><svg><use href="#ic-shuffle"/></svg></button>
+                        <button class="mini-ctrl" onclick="musicPrev()" title="Назад"><svg><use href="#ic-prev"/></svg></button>
+                        <button class="mini-ctrl mini-ctrl-main" id="mini-play-btn" onclick="toggleMusic()"><svg id="mini-play-icon"><use href="#ic-play-mini"/></svg></button>
+                        <button class="mini-ctrl" onclick="musicNext()" title="Вперёд"><svg><use href="#ic-next"/></svg></button>
+                        <button class="mini-ctrl" id="mini-repeat-btn" onclick="musicToggleRepeat()" title="Повтор"><svg id="mini-repeat-icon"><use href="#ic-repeat"/></svg></button>
                     </div>
                 </div>
 
@@ -333,21 +429,16 @@
                 <div class="music-cover"><img id="music-cover-img" src="https://placehold.co/400x400/1a0d3e/ffd700?text=%F0%9F%8E%B5" alt=""><div class="music-cover-overlay"></div></div>
                 <div class="music-track-title" id="music-track-title">Выбери трек</div>
                 <div class="music-track-sub" id="music-track-sub">Моя коллекция</div>
-                <div class="music-time-row">
-                    <span id="music-current-time">0:00</span>
-                    <span id="music-duration">0:00</span>
-                </div>
+                <div class="music-time-row"><span id="music-current-time">0:00</span><span id="music-duration">0:00</span></div>
                 <div class="music-progress-click" id="music-progress-click">
-                    <div class="music-progress">
-                        <div class="music-progress-bar" id="music-progress-bar"></div>
-                    </div>
+                    <div class="music-progress"><div class="music-progress-bar" id="music-progress-bar"></div></div>
                 </div>
                 <div class="music-controls">
-                    <button class="music-ctrl" onclick="musicShuffle()" title="Перемешать"><svg><use href="#ic-shuffle"/></svg></button>
-                    <button class="music-ctrl" onclick="musicPrev()" title="Назад"><svg><use href="#ic-prev"/></svg></button>
+                    <button class="music-ctrl" onclick="musicShuffle()"><svg><use href="#ic-shuffle"/></svg></button>
+                    <button class="music-ctrl" onclick="musicPrev()"><svg><use href="#ic-prev"/></svg></button>
                     <button class="music-ctrl music-ctrl-main" id="music-main-btn" onclick="toggleMusic()"><svg id="music-main-icon"><use href="#ic-play-mini"/></svg></button>
-                    <button class="music-ctrl" onclick="musicNext()" title="Вперёд"><svg><use href="#ic-next"/></svg></button>
-                    <button class="music-ctrl" id="music-repeat-btn" onclick="musicToggleRepeat()" title="Повтор"><svg id="music-repeat-icon"><use href="#ic-repeat"/></svg></button>
+                    <button class="music-ctrl" onclick="musicNext()"><svg><use href="#ic-next"/></svg></button>
+                    <button class="music-ctrl" id="music-repeat-btn" onclick="musicToggleRepeat()"><svg id="music-repeat-icon"><use href="#ic-repeat"/></svg></button>
                 </div>
                 <div class="music-actions">
                     <button class="music-action-btn" onclick="openMusicPicker()">📚 Библиотека</button>
@@ -362,45 +453,42 @@
             <div class="about-hero glass"><div class="about-lottie" id="about-lottie"></div></div>
             <div class="about-card glass">
                 <h2 class="about-title">О Lifeless Shop</h2>
-                <p class="about-text">Lifeless Shop — игровая экосистема внутри Telegram. Здесь можно испытать азарт, выиграть редкие подарки и стать частью комьюнити.</p>
+                <p class="about-text">Lifeless Shop — независимая игровая экосистема внутри Telegram. Мы не связаны с крупными платформами и работаем самостоятельно, чтобы дать вам лучший опыт.</p>
                 <div class="about-photos">
                     <img src="https://solver-bit.github.io/lifeless_minimap/durov1.jpg" alt="">
                     <img src="https://solver-bit.github.io/lifeless_minimap/durov4.jpg" alt="">
                 </div>
-                <p class="about-text">Мы работаем каждый день, чтобы игра не надоедала. Обновления, события, кейсы — всё бесплатно, всё доступно каждому.</p>
+                <p class="about-text">Мы работаем каждый день, чтобы игра была интересной. Обновления, события, кейсы — всё бесплатно, всё доступно каждому.</p>
                 <div class="about-highlights">
                     <div class="about-highlight"><span>🎰</span><div><b>16 кейсов</b><br>от 10 🪙 до 500 ⭐</div></div>
-                    <div class="about-highlight"><span>🎮</span><div><b>3 игры</b><br>колесо, кости, сапёр</div></div>
+                    <div class="about-highlight"><span>🎮</span><div><b>6 игр</b><br>колёса, кости, сапёр, монетка</div></div>
                     <div class="about-highlight"><span>💎</span><div><b>Реальные призы</b><br>NFT, Premium, +888</div></div>
                     <div class="about-highlight"><span>🐱</span><div><b>Питомцы</b><br>анимированные</div></div>
                     <div class="about-highlight"><span>🎵</span><div><b>Музыка</b><br>свой плейлист</div></div>
                     <div class="about-highlight"><span>🎨</span><div><b>Украшения</b><br>рамки и цвет ника</div></div>
                 </div>
-                <div class="about-text">
+                <p class="about-text">
                     <b>Что внутри:</b><br>
                     • 6 монетных кейсов + 10 звёздных<br>
-                    • Колесо фортуны, кости, сапёр<br>
+                    • 2 колеса фортуны + VIP-колесо<br>
+                    • Кости, сапёр, монетка<br>
                     • Ежедневный бонус и бесплатный кейс<br>
                     • Счастливые часы каждый вечер (20:00–22:00)<br>
                     • Питомцы, украшения профиля, статусы
-                </div>
-                <div class="about-text">
-                    <b>Наша цель</b> — сделать казино, которое не надоедает. Мы добавляем что-то новое каждую неделю. Следи за обновлениями в канале.
-                </div>
+                </p>
+                <p class="about-text">
+                    <b>Мы также предлагаем другие услуги</b> — анонимные номера +888, NFT-подарки, Telegram Premium. Всё через проверенных партнёров. Следи за обновлениями в канале.
+                </p>
                 <div class="about-signature">— Команда Lifeless</div>
             </div>
         </section>
     </main>
 
-    <!-- МОДАЛКА ПОПОЛНЕНИЯ (+) -->
     <div id="topup-modal" class="modal hidden">
         <div class="modal-content glass-strong topup-content">
             <div class="topup-header">
                 <div class="topup-header-icon">💎</div>
-                <div>
-                    <div class="topup-header-title">Пополнить баланс</div>
-                    <div class="topup-header-sub">1 ⭐ = 10 🪙 · моментально</div>
-                </div>
+                <div><div class="topup-header-title">Пополнить баланс</div><div class="topup-header-sub">1 ⭐ = 10 🪙 · моментально</div></div>
             </div>
             <div class="topup-grid" id="topup-options"></div>
             <button class="close-btn" onclick="closeModal('topup-modal')">Закрыть</button>
@@ -467,18 +555,6 @@
             <h3>🐱 Мои питомцы</h3>
             <div id="pets-manager-content"></div>
             <button class="close-btn" onclick="closeModal('pets-manager-modal')">Закрыть</button>
-        </div>
-    </div>
-
-    <div id="decor-modal" class="modal hidden">
-        <div class="modal-content glass-strong">
-            <h3>🎨 Украшения</h3>
-            <div class="decor-tabs">
-                <button class="decor-tab active" onclick="switchDecorTab('color', this)">Цвет имени</button>
-                <button class="decor-tab" onclick="switchDecorTab('frame', this)">Рамка</button>
-            </div>
-            <div id="decor-content"></div>
-            <button class="close-btn" onclick="closeModal('decor-modal')">Закрыть</button>
         </div>
     </div>
 

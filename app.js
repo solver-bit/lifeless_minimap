@@ -1,4 +1,4 @@
-/* LIFELESS SHOP · v10 */
+/* LIFELESS SHOP · v11 */
 const FORCE_DEMO = true;
 let tg = window.Telegram?.WebApp;
 const DEMO = FORCE_DEMO || !tg?.initData;
@@ -20,39 +20,44 @@ const LOTTIE_URLS = {
 };
 
 const TG_USER_ID = tg.initDataUnsafe?.user?.id || 0;
-const LS_KEY = `lifeless_demo_v10_u${TG_USER_ID}`;
-const LS_MUSIC_KEY = `lifeless_music_v10_u${TG_USER_ID}`;
-const LS_PETS_KEY = `lifeless_pets_v10_u${TG_USER_ID}`;
-const LS_DECOR_KEY = `lifeless_decor_v10_u${TG_USER_ID}`;
+const LS_KEY = `lifeless_demo_v11_u${TG_USER_ID}`;
+const LS_MUSIC_KEY = `lifeless_music_v11_u${TG_USER_ID}`;
+const LS_PETS_KEY = `lifeless_pets_v11_u${TG_USER_ID}`;
+const LS_DECOR_KEY = `lifeless_decor_v11_u${TG_USER_ID}`;
 
 const defaultUser = { id: 0, first_name: "", last_name: "", username: "", avatar_url: "", balance: 0,
     cases_opened: 0, referrals: 0, stars_spent: 0, total_wagered: 0, best_drop: 0, drops: [],
-    rank: 1, total_users: 1, ref_link: "", last_free_case: 0, last_daily: "" };
+    rank: 1, total_users: 1, ref_link: "", last_free_case: 0, last_daily: "", last_free_wheel: 0 };
 
 let currentUser = { ...defaultUser };
 const state = {
     spinning: false, rolling: false, caseOpening: false,
     saperActive: false, saperSafe: 0, saperTotal: 0, saperConfig: null,
     currentShopCat: "coins", currentCaseCat: "coins", currentDecorTab: "color",
-    ownedPets: [], petPos: "br", petSize: "md",
+    ownedPets: [], petPos: "br", petSize: "md", petInHeader: false,
     nameColor: "", frameId: "",
-    petLottie: null, sidePetLottie: null, previewLottie: null,
-    musicShuffle: false, musicRepeat: "off", // off | all | one
+    petLottie: null, sidePetLottie: null, headerPetLottie: null, previewLottie: null,
+    musicShuffle: false, musicRepeat: "off",
+    coinPlaying: false,
 };
 const lottieInstances = {};
 
 function haptic(t = "light") { try { tg.HapticFeedback?.impactOccurred(t); } catch (_) {} }
 function hapticNotify(t = "success") { try { tg.HapticFeedback?.notificationOccurred(t); } catch (_) {} }
 
-function toast(msg, type = "info", ms = 2500) {
+function toast(msg, type = "info", ms = 2800) {
     const cont = document.getElementById("toast-container");
     if (!cont) return;
     const el = document.createElement("div");
     el.className = `toast ${type}`;
     el.textContent = msg;
     cont.appendChild(el);
-    setTimeout(() => { el.style.opacity = "0"; el.style.transform = "translate3d(120%,0,0)"; el.style.transition = "0.3s"; }, ms);
-    setTimeout(() => el.remove(), ms + 400);
+    setTimeout(() => {
+        el.style.opacity = "0";
+        el.style.transform = "translate3d(120%,0,0)";
+        el.style.transition = "opacity 0.5s ease, transform 0.5s cubic-bezier(0.32, 0.72, 0, 1)";
+    }, ms);
+    setTimeout(() => el.remove(), ms + 600);
 }
 function openLink(url) { if (tg.openTelegramLink) tg.openTelegramLink(url); else window.open(url, "_blank"); }
 function formatNum(n) { if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(".0", "") + "M"; if (n >= 1_000) return (n / 1_000).toFixed(1).replace(".0", "") + "K"; return String(n); }
@@ -98,7 +103,8 @@ function loadDemo() {
                 cases_opened: p.cases_opened || 0, referrals: p.referrals || 0,
                 stars_spent: p.stars_spent || 0, total_wagered: p.total_wagered || 0,
                 best_drop: p.best_drop || 0, drops: Array.isArray(p.drops) ? p.drops : [],
-                last_free_case: p.last_free_case || 0, last_daily: p.last_daily || "" };
+                last_free_case: p.last_free_case || 0, last_daily: p.last_daily || "",
+                last_free_wheel: p.last_free_wheel || 0 };
         }
     } catch (_) {}
     return { ...defaultUser, balance: 50000 };
@@ -111,7 +117,7 @@ function saveDemo() {
             referrals: currentUser.referrals, stars_spent: currentUser.stars_spent,
             total_wagered: currentUser.total_wagered, best_drop: currentUser.best_drop,
             drops: currentUser.drops.slice(0, 30), last_free_case: currentUser.last_free_case,
-            last_daily: currentUser.last_daily,
+            last_daily: currentUser.last_daily, last_free_wheel: currentUser.last_free_wheel,
         }));
     } catch (_) {}
 }
@@ -125,12 +131,11 @@ function resetDemo() {
 function loadPetsState() {
     try {
         const raw = localStorage.getItem(LS_PETS_KEY);
-        if (raw) { const p = JSON.parse(raw); state.ownedPets = p.owned || []; state.petPos = p.pos || "br"; state.petSize = p.size || "md"; }
+        if (raw) { const p = JSON.parse(raw); state.ownedPets = p.owned || []; state.petPos = p.pos || "br"; state.petSize = p.size || "md"; state.petInHeader = p.inHeader || false; }
     } catch (_) {}
 }
-function savePetsState() { try { localStorage.setItem(LS_PETS_KEY, JSON.stringify({ owned: state.ownedPets, pos: state.petPos, size: state.petSize })); } catch (_) {} }
+function savePetsState() { try { localStorage.setItem(LS_PETS_KEY, JSON.stringify({ owned: state.ownedPets, pos: state.petPos, size: state.petSize, inHeader: state.petInHeader })); } catch (_) {} }
 function hasPet(id) { return state.ownedPets.includes(id); }
-
 const PETS_LIST = [
     { id: "cat", name: "Кот", emoji: "🐱", price: 25, url: LOTTIE_URLS.cat, desc: "Милый анимированный кот" },
 ];
@@ -188,6 +193,7 @@ async function apiCall(path, body = null) {
     if (!res.ok) throw new Error(data.detail || "Ошибка запроса");
     return data;
 }
+
 async function demoApi(path, body) {
     await new Promise(r => setTimeout(r, 60));
     switch (path) {
@@ -240,18 +246,54 @@ async function demoApi(path, body) {
             saveDemo();
             return { index: idx, reward, cost: 10, balance: currentUser.balance, win: reward > 0 };
         }
+        case "/api/spin_wheel_free": {
+            const now = Date.now();
+            if (now - (currentUser.last_free_wheel || 0) < 3600000) throw new Error("Раз в час");
+            currentUser.last_free_wheel = now;
+            const prizes = [5, 10, 15, 20, 25, 30, 40, 50];
+            const reward = applyHappy(prizes[Math.floor(Math.random() * prizes.length)]);
+            currentUser.balance += reward; currentUser.cases_opened++;
+            if (reward > currentUser.best_drop) currentUser.best_drop = reward;
+            addDrop("Бесплатное колесо", reward, reward >= 30);
+            saveDemo();
+            return { index: Math.floor(Math.random() * 8), reward, balance: currentUser.balance };
+        }
+        case "/api/spin_wheel_vip": {
+            const prizes = [500, 750, 1000, 1500, 2000, 2500, 3000, 5000];
+            const reward = applyHappy(prizes[Math.floor(Math.random() * prizes.length)]);
+            currentUser.balance += reward; currentUser.cases_opened++;
+            if (reward > currentUser.best_drop) currentUser.best_drop = reward;
+            addDrop("VIP-колесо", reward, reward >= 2500);
+            saveDemo();
+            return { index: Math.floor(Math.random() * 8), reward, balance: currentUser.balance };
+        }
         case "/api/roll_dice": {
             if (currentUser.balance < 10) throw new Error("Недостаточно монет");
             currentUser.balance -= 10; currentUser.total_wagered += 10;
             const d1 = 1 + Math.floor(Math.random() * 6), d2 = 1 + Math.floor(Math.random() * 6);
             const sum = d1 + d2;
-            const rewards = { 2:40, 3:15, 4:10, 5:8, 6:6, 7:30, 8:6, 9:8, 10:10, 11:15, 12:40 };
-            const reward = applyHappy(rewards[sum] || 0);
+            let reward = 0;
+            if (sum === 12) reward = 40;
+            else if (sum === 7 || sum === 11) reward = 25;
+            else if (sum === 2 || sum === 8 || sum === 10) reward = 15;
+            reward = applyHappy(reward);
             currentUser.balance += reward; currentUser.cases_opened++;
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-            addDrop(`Кости ${d1}+${d2}`, reward - 10, sum === 2 || sum === 12);
+            addDrop(`Кости ${d1}+${d2}`, reward - 10, sum === 12);
             saveDemo();
-            return { dice: [d1, d2], total: sum, reward, cost: 10, balance: currentUser.balance, win: reward >= 10 };
+            return { dice: [d1, d2], total: sum, reward, cost: 10, balance: currentUser.balance, win: reward >= 15 };
+        }
+        case "/api/play_coin": {
+            if (currentUser.balance < 10) throw new Error("Недостаточно монет");
+            currentUser.balance -= 10; currentUser.total_wagered += 10;
+            const side = Math.random() < 0.5 ? "eagle" : "king";
+            const win = side === body.choice;
+            const reward = win ? applyHappy(20) : 0;
+            currentUser.balance += reward; currentUser.cases_opened++;
+            if (reward > currentUser.best_drop) currentUser.best_drop = reward;
+            addDrop(`Монетка (${win ? "победа" : "проигрыш"})`, reward - 10, false);
+            saveDemo();
+            return { side, choice: body.choice, win, reward, balance: currentUser.balance };
         }
         case "/api/saper/start": {
             const cost = body.cost || 25;
@@ -262,12 +304,16 @@ async function demoApi(path, body) {
         }
         case "/api/saper/finish": {
             const cellsOpened = body.cells_opened || 0;
-            const config = state.saperConfig || { cost: 25 };
-            const reward = Math.floor(cellsOpened * (config.cost * 0.28));
+            const config = state.saperConfig || { cost: 25, size: 5, mines: 5 };
+            const totalCells = config.size * config.size;
+            const safe = totalCells - config.mines;
+            const pct = safe > 0 ? cellsOpened / safe : 0;
+            const mult = 1 + pct * 1.5;
+            const reward = Math.floor(config.cost * mult);
             const finalReward = applyHappy(reward);
             currentUser.balance += finalReward; currentUser.cases_opened++;
             if (finalReward > currentUser.best_drop) currentUser.best_drop = finalReward;
-            addDrop("Сапёр", finalReward - config.cost, finalReward > config.cost * 2);
+            addDrop("Сапёр", finalReward - config.cost, finalReward > config.cost * 2.5);
             saveDemo();
             return { reward: finalReward, balance: currentUser.balance };
         }
@@ -303,7 +349,7 @@ function addDrop(label, delta, jackpot = false) {
     renderDropsFeed();
 }
 const AMBIENT_NAMES = ["CryptoKing", "Lucky7", "Neon", "ZeroX", "MaxWin", "Flash", "Void", "Nova", "Titan", "Ghost", "Ace", "Samurai", "Phantom", "Fury", "Blade", "Storm", "Venom", "Echo", "Frost", "Whale"];
-const AMBIENT_CASES = ["Пыль", "Пепел", "Мелл", "Telega", "Оникс", "Бездна", "Колесо", "Кости", "Сапёр"];
+const AMBIENT_CASES = ["Пыль", "Пепел", "Мелл", "Telega", "Оникс", "Бездна", "Колесо", "Кости", "Сапёр", "Монетка"];
 let ambientDrops = [];
 function seedAmbientDrops() {
     ambientDrops = []; const now = Date.now();
@@ -371,10 +417,14 @@ function bootstrap() {
     try {
         initLottie();
         buildCases(); buildStarCases(); buildCarouselDots(); buildTopUpOptions();
-        buildShopGrid(); buildPerksGrid(); buildVipGrid(); buildPetsGrid();
-        buildWheel(); bindCarouselSwipe(); bindEdgeSwipe(); bindSaperLevels();
+        buildShopGrid(); buildVipGrid(); buildPetsGrid(); renderDecorShopPanel();
+        buildWheel("wheel", [0, 5, 10, 15, 20, 25, 30, 50]);
+        buildWheel("wheel-free", [5, 10, 15, 20, 25, 30, 40, 50]);
+        buildWheel("wheel-vip", [500, 750, 1000, 1500, 2000, 2500, 3000, 5000]);
+        bindCarouselSwipe(); bindEdgeSwipe(); bindSaperLevels();
         seedAmbientDrops(); initMusic();
         renderAll(); renderActivePet(); startFreeCaseTimer(); startHappyTimer(); renderTopToday();
+        startFreeWheelTimer();
     } catch (e) { console.error(e); toast("Ошибка: " + e.message, "error", 5000); }
 
     setTimeout(() => {
@@ -382,13 +432,11 @@ function bootstrap() {
         document.getElementById("app").classList.remove("hidden");
     }, 800);
 }
-
 function renderAll() {
     renderProfile(); renderSideMenu(); renderDropsFeed();
     renderLeaderboard(); setBalance(currentUser.balance, false);
     renderMusicPlayer(); renderMyMusic(); renderMiniPlayer();
 }
-
 function renderTopToday() {
     const top = generateLeaderboard();
     const winner = top[0];
@@ -423,12 +471,7 @@ function renderSideMenu() {
     if (unEl) unEl.textContent = (u.username || currentUser.username) ? `@${u.username || currentUser.username}` : `ID: ${currentUser.id}`;
     const balEl = document.getElementById("side-balance-val");
     if (balEl) balEl.textContent = currentUser.balance.toLocaleString("ru-RU");
-    const headerAvatar = document.getElementById("header-avatar");
-    if (headerAvatar) {
-        if (currentUser.avatar_url) { headerAvatar.src = currentUser.avatar_url; headerAvatar.onerror = () => { headerAvatar.src = makeInitialsAvatar(currentUser.first_name, currentUser.last_name, currentUser.username); headerAvatar.onerror = null; }; }
-        else headerAvatar.src = makeInitialsAvatar(u.first_name || currentUser.first_name, u.last_name || currentUser.last_name, u.username || currentUser.username);
-    }
-    // Питомец в сайдбаре
+
     const sidePetSlot = document.getElementById("side-pet-slot");
     const sidePetBtn = document.getElementById("side-pet-btn");
     if (sidePetSlot && hasPet("cat")) {
@@ -491,22 +534,40 @@ function renderProfile() {
     if (happy) happy.style.display = isHappyHours() ? "flex" : "none";
 }
 
-/* ПИТОМЕЦ В ПРОФИЛЕ */
+/* ПИТОМЕЦ */
 function renderActivePet() {
-    const absSlot = document.getElementById("profile-pet-abs");
-    if (!absSlot) return;
+    // Очищаем все слоты
+    const positions = ["tl", "tr", "bl", "br"];
+    positions.forEach(p => { const el = document.getElementById(`profile-pet-${p}`); if (el) { el.style.display = "none"; el.innerHTML = ""; } });
+    const headerSlot = document.getElementById("header-pet-slot");
+    if (headerSlot) { headerSlot.style.display = "none"; headerSlot.innerHTML = ""; }
+
     if (state.petLottie) { state.petLottie.destroy(); state.petLottie = null; }
-    if (!hasPet("cat")) { absSlot.style.display = "none"; return; }
-    absSlot.style.display = "block";
-    absSlot.className = `pet-slot-abs pet-pos-${state.petPos} pet-size-${state.petSize}`;
-    absSlot.innerHTML = "";
-    setTimeout(() => { state.petLottie = loadLottie(absSlot, LOTTIE_URLS.cat, "profilePet"); }, 50);
+    if (state.headerPetLottie) { state.headerPetLottie.destroy(); state.headerPetLottie = null; }
+
+    if (!hasPet("cat")) return;
+
+    // Определяем куда ставить
+    if (state.petInHeader) {
+        if (headerSlot) {
+            headerSlot.style.display = "block";
+            setTimeout(() => { state.headerPetLottie = loadLottie(headerSlot, LOTTIE_URLS.cat, "headerPet"); }, 50);
+        }
+    } else {
+        const pos = state.petPos; // tl | tr | bl | br
+        const slot = document.getElementById(`profile-pet-${pos}`);
+        if (slot) {
+            slot.style.display = "block";
+            slot.className = `pet-slot-abs pet-pos-${pos} pet-size-${state.petSize}`;
+            setTimeout(() => { state.petLottie = loadLottie(slot, LOTTIE_URLS.cat, "profilePet"); }, 50);
+        }
+    }
     renderSideMenu();
 }
 
 /* БАЛАНС */
 let balanceAnimFrame = null;
-function animateBalance(from, to, duration = 600) {
+function animateBalance(from, to, duration = 700) {
     const els = ["coins", "profile-balance", "side-balance-val"].map(id => document.getElementById(id)).filter(Boolean);
     if (!els.length) return;
     if (balanceAnimFrame) cancelAnimationFrame(balanceAnimFrame);
@@ -525,9 +586,9 @@ function setBalance(v, animate = true, fromValue = null) {
     const old = fromValue !== null ? fromValue : currentUser.balance;
     currentUser.balance = v;
     if (animate && old !== v) {
-        animateBalance(old, v, 600);
+        animateBalance(old, v, 700);
         const pill = document.getElementById("balance-pill");
-        if (pill) { pill.classList.add("bump"); setTimeout(() => pill.classList.remove("bump"), 300); }
+        if (pill) { pill.classList.add("bump"); setTimeout(() => pill.classList.remove("bump"), 400); }
     } else {
         ["coins", "profile-balance", "side-balance-val"].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = v.toLocaleString("ru-RU"); });
     }
@@ -594,6 +655,7 @@ function openGame(gameId) {
     document.querySelectorAll(".game-view").forEach(v => v.classList.add("hidden"));
     const view = document.getElementById(`game-${gameId}`);
     if (view) view.classList.remove("hidden");
+    if (gameId === "wheel-free") updateFreeWheelButton();
     haptic("light");
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -623,7 +685,7 @@ function showSlide(i) {
     track.style.transform = `translate3d(-${currentSlide * 100}%, 0, 0)`;
     document.querySelectorAll("#carousel-dots i").forEach((d, idx) => d.classList.toggle("active", idx === currentSlide));
 }
-function startCarouselAuto() { if (carouselTimer) clearInterval(carouselTimer); carouselTimer = setInterval(() => showSlide(currentSlide + 1), 6000); }
+function startCarouselAuto() { if (carouselTimer) clearInterval(carouselTimer); carouselTimer = setInterval(() => showSlide(currentSlide + 1), 6500); }
 function bindCarouselSwipe() {
     const el = document.getElementById("carousel");
     if (!el) return;
@@ -661,8 +723,7 @@ function startHappyTimer() {
             el.textContent = `через ${hh}ч ${String(mm).padStart(2, "0")}м`;
         }
     }
-    update();
-    setInterval(update, 60000);
+    update(); setInterval(update, 60000);
 }
 
 /* КЕЙСЫ */
@@ -727,10 +788,10 @@ async function runCaseAnimation(title, apiFn) {
     const ITEM_WIDTH = 90 + 6;
     const targetX = -(WINNER_INDEX * ITEM_WIDTH + ITEM_WIDTH / 2 - wrapWidth / 2);
     const jitter = (Math.random() - 0.5) * (ITEM_WIDTH * 0.4);
-    reel.style.transition = "transform 3.5s cubic-bezier(0.15, 0.9, 0.15, 1)";
+    reel.style.transition = "transform 3.6s var(--ease-smooth)";
     reel.style.transform = `translate3d(${targetX + jitter}px, 0, 0)`;
-    const fallbackId = setTimeout(() => { if (state.caseOpening) showCaseResult(result); }, 4200);
-    setTimeout(() => { clearTimeout(fallbackId); if (state.caseOpening) showCaseResult(result); }, 3600);
+    const fallbackId = setTimeout(() => { if (state.caseOpening) showCaseResult(result); }, 4300);
+    setTimeout(() => { clearTimeout(fallbackId); if (state.caseOpening) showCaseResult(result); }, 3700);
 }
 function showCaseResult(result) {
     if (!state.caseOpening || !result) return;
@@ -751,7 +812,7 @@ function showCaseResult(result) {
     const balanceBefore = result.balance - result.reward + result.cost;
     setBalance(result.balance, true, balanceBefore);
     renderProfile(); renderLeaderboard();
-    setTimeout(() => modal.classList.add("hidden"), 2200);
+    setTimeout(() => modal.classList.add("hidden"), 2400);
 }
 function forceCloseCase() { state.caseOpening = false; const modal = document.getElementById("case-modal"); if (modal) modal.classList.add("hidden"); }
 
@@ -780,63 +841,144 @@ async function openFreeCase() {
     renderProfile(); renderLeaderboard();
 }
 
-/* КОЛЕСО */
-const WHEEL_PRIZES = [0, 5, 10, 15, 20, 25, 30, 50];
-let wheelRotation = 0;
-function buildWheel() {
-    const inner = document.getElementById("wheel-inner");
+/* КОЛЁСА */
+const WHEEL_PRIZES = {
+    "wheel": [0, 5, 10, 15, 20, 25, 30, 50],
+    "wheel-free": [5, 10, 15, 20, 25, 30, 40, 50],
+    "wheel-vip": [500, 750, 1000, 1500, 2000, 2500, 3000, 5000],
+};
+let wheelRotations = { "wheel": 0, "wheel-free": 0, "wheel-vip": 0 };
+
+function buildWheel(wheelId, prizes) {
+    const inner = document.getElementById(`${wheelId}-inner`);
     if (!inner) return;
     inner.innerHTML = "";
-    const total = WHEEL_PRIZES.length, seg = 360 / total;
-    WHEEL_PRIZES.forEach((prize, i) => {
+    const total = prizes.length, seg = 360 / total;
+    prizes.forEach((prize, i) => {
         const label = document.createElement("div");
         label.className = "wheel-seg-label";
         const angle = i * seg + seg / 2;
         label.style.transform = `rotate(${angle - 90}deg) translate(90px, 0)`;
-        label.textContent = prize === 0 ? "💀" : prize + "🪙";
+        label.textContent = prize === 0 ? "💀" : prize >= 1000 ? `${Math.floor(prize/1000)}K` : prize + "🪙";
         inner.appendChild(label);
     });
 }
-async function spinWheel() {
-    if (state.spinning) return;
-    if (currentUser.balance < 10) { toast("Нужно 10 🪙", "error"); return; }
-    state.spinning = true; haptic("medium");
-    const wheelEl = document.getElementById("wheel");
-    const resultEl = document.getElementById("wheel-result");
-    const btn = document.getElementById("spin-btn");
-    const coinsEl = document.getElementById("coins");
-    btn.disabled = true; resultEl.textContent = ""; resultEl.className = "game-result";
-    const balanceBefore = currentUser.balance;
-    if (coinsEl) coinsEl.textContent = (balanceBefore - 10).toLocaleString("ru-RU");
+
+async function spinWheelGeneric(wheelId, apiPath, btnId, resultId) {
+    const btn = document.getElementById(btnId);
+    if (btn.disabled) return;
+    btn.disabled = true;
+    haptic("medium");
+    const wheelEl = document.getElementById(wheelId);
+    const resultEl = document.getElementById(resultId);
+    resultEl.textContent = ""; resultEl.className = "game-result";
+
     let result;
-    try { result = await apiCall("/api/spin_wheel"); }
-    catch (e) { if (coinsEl) coinsEl.textContent = balanceBefore.toLocaleString("ru-RU"); toast(e.message, "error"); state.spinning = false; btn.disabled = false; return; }
-    const seg = 360 / WHEEL_PRIZES.length;
-    const normalizedCurrent = ((wheelRotation % 360) + 360) % 360;
+    try { result = await apiCall(apiPath, {}); }
+    catch (e) { toast(e.message, "error"); btn.disabled = false; return; }
+
+    const prizes = WHEEL_PRIZES[wheelId];
+    const seg = 360 / prizes.length;
+    const current = wheelRotations[wheelId];
+    const normalizedCurrent = ((current % 360) + 360) % 360;
     const targetIn360 = (360 - (result.index * seg + seg / 2)) % 360;
     const delta = (targetIn360 - normalizedCurrent + 360) % 360;
-    wheelRotation += 360 * 5 + delta;
-    wheelEl.style.transition = "transform 5s cubic-bezier(0.15, 0.9, 0.15, 1)";
-    wheelEl.style.transform = `rotate(${wheelRotation}deg)`;
+    wheelRotations[wheelId] += 360 * 5 + delta;
+    wheelEl.style.transform = `rotate(${wheelRotations[wheelId]}deg)`;
+
     setTimeout(() => {
-        animateBalance(balanceBefore - 10, result.balance, 600);
-        currentUser.balance = result.balance; saveDemo();
-        if (result.win) { resultEl.textContent = `🎉 +${result.reward} 🪙`; resultEl.classList.add("win"); hapticNotify("success"); }
-        else { resultEl.textContent = "💀 Пусто"; resultEl.classList.add("lose"); hapticNotify("error"); }
-        renderProfile(); renderLeaderboard(); state.spinning = false; btn.disabled = false;
-        wheelEl.style.transition = "none"; wheelRotation = wheelRotation % 360; wheelEl.style.transform = `rotate(${wheelRotation}deg)`;
+        if (result.reward > 0) {
+            resultEl.textContent = `🎉 +${result.reward.toLocaleString("ru-RU")} 🪙`;
+            resultEl.classList.add("win");
+            hapticNotify("success");
+        } else {
+            resultEl.textContent = "💀 Пусто";
+            resultEl.classList.add("lose");
+            hapticNotify("error");
+        }
+        animateBalance(currentUser.balance, result.balance, 700);
+        currentUser.balance = result.balance;
+        saveDemo();
+        renderProfile(); renderLeaderboard();
+        btn.disabled = false;
+        wheelEl.style.transition = "none";
+        wheelRotations[wheelId] = wheelRotations[wheelId] % 360;
+        wheelEl.style.transform = `rotate(${wheelRotations[wheelId]}deg)`;
+        setTimeout(() => { wheelEl.style.transition = "transform 5s var(--ease-smooth)"; }, 50);
     }, 5100);
+}
+
+function spinWheel() { return spinWheelGeneric("wheel", "/api/spin_wheel", "spin-btn", "wheel-result"); }
+function spinWheelFree() { return spinWheelGeneric("wheel-free", "/api/spin_wheel_free", "spin-free-btn", "wheel-free-result"); }
+function spinWheelVip() { return spinWheelGeneric("wheel-vip", "/api/spin_wheel_vip", "spin-vip-btn", "wheel-vip-result"); }
+
+/* Таймер бесплатного колеса */
+let freeWheelTimer = null;
+function startFreeWheelTimer() {
+    if (freeWheelTimer) clearInterval(freeWheelTimer);
+    updateFreeWheelButton();
+    freeWheelTimer = setInterval(updateFreeWheelButton, 1000);
+}
+function updateFreeWheelButton() {
+    const btn = document.getElementById("spin-free-btn");
+    if (!btn) return;
+    const diff = Date.now() - (currentUser.last_free_wheel || 0);
+    const cooldown = 60 * 60 * 1000;
+    if (diff >= cooldown) { btn.disabled = false; btn.textContent = "Крутить бесплатно"; }
+    else {
+        const left = cooldown - diff;
+        const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
+        btn.disabled = true; btn.textContent = `Через ${m}м ${String(s).padStart(2,"0")}с`;
+    }
+}
+
+/* МОНЕТКА */
+async function playCoin(choice) {
+    if (state.coinPlaying) return;
+    state.coinPlaying = true;
+    haptic("medium");
+    const coinEl = document.getElementById("coin3d");
+    const resultEl = document.getElementById("coin-result");
+    const btnEagle = document.getElementById("coin-eagle");
+    const btnKing = document.getElementById("coin-king");
+    btnEagle.disabled = true; btnKing.disabled = true;
+    resultEl.textContent = ""; resultEl.className = "game-result";
+
+    let result;
+    try { result = await apiCall("/api/play_coin", { choice }); }
+    catch (e) { toast(e.message, "error"); btnEagle.disabled = false; btnKing.disabled = false; state.coinPlaying = false; return; }
+
+    // Вращение монеты: орёл = 0deg, решка = 180deg
+    const finalRotation = (result.side === "eagle" ? 0 : 180) + 360 * 8;
+    coinEl.style.transition = "transform 2.5s var(--ease-smooth)";
+    coinEl.style.transform = `rotateY(${finalRotation}deg)`;
+
+    setTimeout(() => {
+        if (result.win) {
+            resultEl.innerHTML = `🎉 ${result.side === "eagle" ? "🦅 Орёл" : "👑 Решка"} — победа! <b>+${result.reward}</b> 🪙`;
+            resultEl.classList.add("win"); hapticNotify("success");
+        } else {
+            resultEl.innerHTML = `💔 ${result.side === "eagle" ? "🦅 Орёл" : "👑 Решка"} — проигрыш`;
+            resultEl.classList.add("lose"); hapticNotify("error");
+        }
+        const before = result.balance - result.reward + 10;
+        animateBalance(before, result.balance, 700);
+        currentUser.balance = result.balance; saveDemo();
+        renderProfile(); renderLeaderboard();
+        btnEagle.disabled = false; btnKing.disabled = false;
+        state.coinPlaying = false;
+    }, 2600);
 }
 
 /* КОСТИ */
 const DICE_ROTATIONS = { 1:{x:0,y:0}, 2:{x:-90,y:0}, 3:{x:0,y:-90}, 4:{x:0,y:90}, 5:{x:90,y:0}, 6:{x:0,y:180} };
 function setDiceToValue(diceEl, value, delay = 0) {
     const rot = DICE_ROTATIONS[value] || DICE_ROTATIONS[1];
-    const extraX = 360 * (3 + Math.floor(Math.random() * 3));
-    const extraY = 360 * (3 + Math.floor(Math.random() * 3));
+    const extraX = 360 * (4 + Math.floor(Math.random() * 3));
+    const extraY = 360 * (4 + Math.floor(Math.random() * 3));
     const extraZ = 90 * (Math.floor(Math.random() * 4) - 2);
-    const duration = 1.8 + Math.random() * 0.6;
-    diceEl.style.transition = `transform ${duration}s cubic-bezier(0.22, 0.85, 0.25, 1) ${delay}s`;
+    const duration = 2.2 + Math.random() * 0.5;
+    diceEl.style.transition = `transform ${duration}s var(--ease-smooth) ${delay}s`;
     diceEl.style.transform = `rotateX(${rot.x + extraX}deg) rotateY(${rot.y + extraY}deg) rotateZ(${extraZ}deg)`;
 }
 async function rollDice() {
@@ -845,27 +987,28 @@ async function rollDice() {
     state.rolling = true; haptic("medium");
     const d1el = document.getElementById("dice1"), d2el = document.getElementById("dice2");
     const resultEl = document.getElementById("dice-result");
-    const coinsEl = document.getElementById("coins");
     resultEl.textContent = ""; resultEl.className = "game-result";
     const balanceBefore = currentUser.balance;
-    if (coinsEl) coinsEl.textContent = (balanceBefore - 10).toLocaleString("ru-RU");
+
     let result;
     try { result = await apiCall("/api/roll_dice"); }
-    catch (e) { if (coinsEl) coinsEl.textContent = balanceBefore.toLocaleString("ru-RU"); toast(e.message, "error"); state.rolling = false; return; }
+    catch (e) { toast(e.message, "error"); state.rolling = false; return; }
+
     d1el.style.transition = "none"; d2el.style.transition = "none";
     d1el.style.transform = "rotateX(0) rotateY(0) rotateZ(0)"; d2el.style.transform = "rotateX(0) rotateY(0) rotateZ(0)";
     void d1el.offsetWidth; void d2el.offsetWidth;
     setDiceToValue(d1el, result.dice[0], 0);
-    setDiceToValue(d2el, result.dice[1], 0.12 + Math.random() * 0.15);
+    setDiceToValue(d2el, result.dice[1], 0.1 + Math.random() * 0.15);
+
     setTimeout(() => {
         const e1 = ["⚀","⚁","⚂","⚃","⚄","⚅"][result.dice[0] - 1];
         const e2 = ["⚀","⚁","⚂","⚃","⚄","⚅"][result.dice[1] - 1];
         if (result.win) { resultEl.innerHTML = `🎲 ${e1} + ${e2} = <b>${result.total}</b> · <span style="color:#22dd88">+${result.reward} 🪙</span>`; resultEl.classList.add("win"); hapticNotify("success"); }
         else { resultEl.innerHTML = `🎲 ${e1} + ${e2} = <b>${result.total}</b> · <span style="color:#ff3b5b">проигрыш</span>`; resultEl.classList.add("lose"); hapticNotify("error"); }
-        animateBalance(balanceBefore - 10, result.balance, 600);
+        animateBalance(balanceBefore - 10, result.balance, 700);
         currentUser.balance = result.balance; saveDemo();
         renderProfile(); renderLeaderboard(); state.rolling = false;
-    }, 2600);
+    }, 2900);
 }
 
 /* САПЁР */
@@ -909,8 +1052,11 @@ function updateCashoutButton() {
     if (!btn || !valEl) return;
     const cfg = state.saperConfig;
     if (!cfg || state.saperSafe === 0) { btn.style.display = "none"; return; }
-    const currentReward = Math.floor(state.saperSafe * (cfg.cost * 0.28));
-    btn.style.display = "block"; valEl.textContent = currentReward.toLocaleString("ru-RU");
+    const pct = state.saperSafe / state.saperTotal;
+    const mult = 1 + pct * 1.5;
+    const reward = Math.floor(cfg.cost * mult);
+    btn.style.display = "block";
+    valEl.textContent = reward.toLocaleString("ru-RU");
 }
 async function handleSaperClick(cell, isMine, index, mines) {
     if (!state.saperActive) return;
@@ -933,12 +1079,14 @@ async function finishSaper() {
     try {
         if (DEMO) {
             const cfg = state.saperConfig;
-            const reward = Math.floor(cellsOpened * (cfg.cost * 0.28));
+            const pct = state.saperTotal > 0 ? cellsOpened / state.saperTotal : 0;
+            const mult = 1 + pct * 1.5;
+            const reward = Math.floor(cfg.cost * mult);
             const finalReward = applyHappy(reward);
             const before = currentUser.balance;
             currentUser.balance += finalReward; currentUser.cases_opened++;
             if (finalReward > currentUser.best_drop) currentUser.best_drop = finalReward;
-            addDrop("Сапёр", finalReward - cfg.cost, finalReward > cfg.cost * 2); saveDemo();
+            addDrop("Сапёр", finalReward - cfg.cost, finalReward > cfg.cost * 2.5); saveDemo();
             result = { reward: finalReward, balance: currentUser.balance, _before: before };
         } else { result = await apiCall("/api/saper/finish", { cells_opened: cellsOpened }); }
     } catch (e) { toast(e.message, "error"); return; }
@@ -970,12 +1118,6 @@ const COIN_PACKS = [
     { coins: 10000, stars: 1000, cls: "epic", bonus: "+25%" },
     { coins: 25000, stars: 2500, cls: "mega", bonus: "+30%" },
 ];
-const PERKS = [
-    { id: "frame_gold", name: "Золотая рамка", emoji: "🖼️", cost: 5000 },
-    { id: "nick_color", name: "Цветной ник", emoji: "🎨", cost: 10000 },
-    { id: "badge_exp", name: "Значок «Опытный»", emoji: "⭐", cost: 25000 },
-    { id: "badge_pro", name: "Значок «Про»", emoji: "💎", cost: 50000 },
-];
 const VIP_ITEMS = [
     { id: "vip_day", name: "VIP на 1 день", emoji: "👑", cost: 25 },
     { id: "vip_week", name: "VIP на неделю", emoji: "👑", cost: 100 },
@@ -994,15 +1136,7 @@ function buildTopUpOptions() {
             <div class="topup-card-amount">${o.coins.toLocaleString("ru-RU")}</div>
             <div class="topup-card-price">${o.stars} ⭐</div>
         </div>
-    `).join("") + `
-        <div class="topup-card custom" onclick="openCustomTopUp()">
-            <div class="topup-card-coin">✨</div>
-            <div>
-                <div class="topup-card-amount">Своя сумма</div>
-                <div class="topup-card-price">от 100 🪙</div>
-            </div>
-        </div>
-    `;
+    `).join("") + `<div class="topup-card custom" onclick="openCustomTopUp()"><div class="topup-card-coin">✨</div><div><div class="topup-card-amount">Своя сумма</div><div class="topup-card-price">от 100 🪙</div></div></div>`;
 }
 function buildShopGrid() {
     const grid = document.getElementById("shop-grid");
@@ -1010,29 +1144,62 @@ function buildShopGrid() {
     let html = "";
     COIN_PACKS.forEach(o => {
         if (o.cls === "mega") {
-            html += `<button class="shop-card coins mega" onclick="buyCoins(${o.coins})">
-                ${o.bonus ? `<div class="shop-badge best">${o.bonus}</div>` : ''}
-                <div class="coin-big">💎</div>
-                <div class="coin-info">
-                    <div class="coin-amount">${o.coins.toLocaleString("ru-RU")} монет</div>
-                    <div class="coin-stars">${o.stars} ⭐</div>
-                </div>
-            </button>`;
+            html += `<button class="shop-card coins mega" onclick="buyCoins(${o.coins})">${o.bonus ? `<div class="shop-badge best">${o.bonus}</div>` : ''}<div class="coin-big">💎</div><div class="coin-info"><div class="coin-amount">${o.coins.toLocaleString("ru-RU")} монет</div><div class="coin-stars">${o.stars} ⭐</div></div></button>`;
         } else {
-            html += `<button class="shop-card coins ${o.cls}" onclick="buyCoins(${o.coins})">
-                ${o.bonus ? `<div class="coin-bonus">${o.bonus}</div>` : ''}
-                <div class="coin-big">🪙</div>
-                <div class="coin-amount">${o.coins.toLocaleString("ru-RU")}</div>
-                <div class="coin-stars">${o.stars} ⭐</div>
-            </button>`;
+            html += `<button class="shop-card coins ${o.cls}" onclick="buyCoins(${o.coins})">${o.bonus ? `<div class="coin-bonus">${o.bonus}</div>` : ''}<div class="coin-big">🪙</div><div class="coin-amount">${o.coins.toLocaleString("ru-RU")}</div><div class="coin-stars">${o.stars} ⭐</div></button>`;
         }
     });
     grid.innerHTML = html;
 }
-function buildPerksGrid() {
-    const grid = document.getElementById("shop-perks");
-    if (!grid) return;
-    grid.innerHTML = PERKS.map(p => `<button class="shop-card perk" onclick="buyPerk('${p.id}', ${p.cost})"><div class="shop-coin">${p.emoji}</div><div class="shop-name">${p.name}</div><div class="shop-price">${p.cost.toLocaleString("ru-RU")} 🪙</div></button>`).join("");
+function renderDecorShopPanel() {
+    const content = document.getElementById("shop-perks-content");
+    if (!content) return;
+    const items = state.currentDecorTab === "color" ? NAME_COLORS : FRAMES;
+    const current = state.currentDecorTab === "color" ? state.nameColor : state.frameId;
+    content.innerHTML = items.map(it => {
+        const isActive = current === it.id;
+        const isFree = it.price === 0;
+        const priceText = isFree ? "Бесплатно" : `${it.price} ${it.currency === 'stars' ? '⭐' : '🪙'}`;
+        let previewStyle = "";
+        if (state.currentDecorTab === "color") {
+            const colors = { "": "#fff", gold: "#ffd700", blue: "#00aaff", pink: "#ff3b8b", purple: "#c04cff" };
+            if (it.id === "rainbow") previewStyle = "background: linear-gradient(90deg, #ff3b5b, #ffd700, #22dd88, #00aaff, #c04cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;";
+            else previewStyle = `color: ${colors[it.id] || "#fff"};`;
+        } else {
+            const borders = { "": "#8a8aa0", gold: "#ffd700", blue: "#00aaff", fire: "#ff3b5b", legendary: "#c04cff" };
+            previewStyle = `border-color: ${borders[it.id] || "#8a8aa0"};`;
+        }
+        return `<div class="decor-item ${isActive ? 'active' : ''}" onclick="selectDecor('${it.id}')"><div class="decor-preview" style="${previewStyle}">Aa</div><div class="decor-info"><div class="decor-name">${it.name}</div><div class="decor-price">${priceText}</div></div>${isActive ? '<div class="decor-status">✓</div>' : ''}</div>`;
+    }).join("");
+}
+function switchDecorTab(tab, btn) {
+    state.currentDecorTab = tab;
+    document.querySelectorAll(".decor-tab").forEach(b => b.classList.remove("active"));
+    if (btn) btn.classList.add("active");
+    renderDecorShopPanel();
+}
+function selectDecor(id) {
+    const items = state.currentDecorTab === "color" ? NAME_COLORS : FRAMES;
+    const item = items.find(x => x.id === id);
+    if (!item) return;
+    if (item.price > 0) {
+        if (item.currency === "coins") {
+            if (currentUser.balance < item.price) { toast(`Нужно ${item.price} 🪙`, "error"); return; }
+            const before = currentUser.balance;
+            currentUser.balance -= item.price; saveDemo();
+            setBalance(currentUser.balance, true, before);
+        } else {
+            toast(`Оплата ${item.price} ⭐ будет на сервере`, "info");
+        }
+    }
+    if (state.currentDecorTab === "color") state.nameColor = id;
+    else state.frameId = id;
+    saveDecorState(); renderProfile(); renderDecorShopPanel();
+    toast("✅ Применено", "success"); hapticNotify("success");
+}
+function openDecorShop() {
+    switchTab("shop");
+    switchShopCat("perks");
 }
 function buildVipGrid() {
     const grid = document.getElementById("shop-vip");
@@ -1057,14 +1224,6 @@ async function buyCoins(coins) {
         else tg.openLink(data.invoice_link);
         closeModal("topup-modal");
     } catch (e) { toast(e.message, "error"); }
-}
-async function buyPerk(id, cost) {
-    if (currentUser.balance < cost) { toast("Недостаточно монет", "error"); return; }
-    const before = currentUser.balance;
-    currentUser.balance -= cost; saveDemo();
-    setBalance(currentUser.balance, true, before);
-    renderProfile(); renderLeaderboard();
-    toast(`✅ Куплено!`, "success"); hapticNotify("success");
 }
 async function buyVip(id, cost) { toast("💎 VIP появится на сервере", "info"); }
 
@@ -1092,9 +1251,7 @@ function confirmBuyPet() {
     if (hasPet(petToBuy.id)) { toast("Уже куплено", "info"); return; }
     if (DEMO) {
         state.ownedPets.push(petToBuy.id);
-        savePetsState();
-        renderActivePet();
-        buildPetsGrid();
+        savePetsState(); renderActivePet(); buildPetsGrid();
         closeModal("pet-modal");
         toast(`🐱 ${petToBuy.name} добавлен!`, "success", 3000);
         hapticNotify("success");
@@ -1115,22 +1272,27 @@ function openPetsManager() {
         return;
     }
     const positions = [
-        { id: "tl", name: "↖ Сверху-слева" },
-        { id: "tr", name: "↗ Сверху-справа" },
-        { id: "bl", name: "↙ Снизу-слева" },
-        { id: "br", name: "↘ Снизу-справа" },
+        { id: "tl", name: "↖ Верх-лево" },
+        { id: "tr", name: "↗ Верх-право" },
+        { id: "bl", name: "↙ Низ-лево" },
+        { id: "br", name: "↘ Низ-право" },
     ];
     const sizes = [
-        { id: "sm", name: "Малый" },
-        { id: "md", name: "Средний" },
-        { id: "lg", name: "Большой" },
+        { id: "sm", name: "S" },
+        { id: "md", name: "M" },
+        { id: "lg", name: "L" },
     ];
     content.innerHTML = `
         <div class="pm-item">
-            <div class="pm-item-header">
-                <div class="pm-item-emoji">🐱</div>
-                <div class="pm-item-name">Кот</div>
+            <div class="pm-item-header"><div class="pm-item-emoji">🐱</div><div class="pm-item-name">Кот</div></div>
+            <div class="pm-row">
+                <div class="pm-row-label">Место</div>
+                <div class="pm-btns">
+                    <button class="pm-btn ${!state.petInHeader ? 'active' : ''}" onclick="setPetInHeader(false)">Возле аватарки</button>
+                    <button class="pm-btn ${state.petInHeader ? 'active' : ''}" onclick="setPetInHeader(true)">Верхний бар</button>
+                </div>
             </div>
+            ${!state.petInHeader ? `
             <div class="pm-row">
                 <div class="pm-row-label">Позиция</div>
                 <div class="pm-btns">
@@ -1143,6 +1305,7 @@ function openPetsManager() {
                     ${sizes.map(s => `<button class="pm-btn ${state.petSize === s.id ? 'active' : ''}" onclick="setPetSize('${s.id}')">${s.name}</button>`).join("")}
                 </div>
             </div>
+            ` : ''}
             <button class="pm-btn pm-remove" onclick="removePet('cat')">Убрать питомца</button>
         </div>
     `;
@@ -1151,69 +1314,12 @@ function openPetsManager() {
 }
 function setPetPos(pos) { state.petPos = pos; savePetsState(); renderActivePet(); openPetsManager(); haptic("light"); }
 function setPetSize(size) { state.petSize = size; savePetsState(); renderActivePet(); openPetsManager(); haptic("light"); }
+function setPetInHeader(v) { state.petInHeader = !!v; savePetsState(); renderActivePet(); openPetsManager(); haptic("light"); }
 function removePet(id) {
     state.ownedPets = state.ownedPets.filter(x => x !== id);
     savePetsState(); renderActivePet(); buildPetsGrid();
     closeModal("pets-manager-modal");
     toast("Питомец убран", "info");
-}
-
-/* УКРАШЕНИЯ */
-function openDecorShop() {
-    state.currentDecorTab = "color";
-    renderDecorModal();
-    document.getElementById("decor-modal").classList.remove("hidden");
-    haptic("light");
-}
-function switchDecorTab(tab, btn) {
-    state.currentDecorTab = tab;
-    document.querySelectorAll(".decor-tab").forEach(b => b.classList.remove("active"));
-    if (btn) btn.classList.add("active");
-    renderDecorModal();
-}
-function renderDecorModal() {
-    const content = document.getElementById("decor-content");
-    if (!content) return;
-    const items = state.currentDecorTab === "color" ? NAME_COLORS : FRAMES;
-    const current = state.currentDecorTab === "color" ? state.nameColor : state.frameId;
-    content.innerHTML = items.map(it => {
-        const isActive = current === it.id;
-        const isFree = it.price === 0;
-        const priceText = isFree ? "Бесплатно" : `${it.price} ${it.currency === 'stars' ? '⭐' : '🪙'}`;
-        let previewStyle = "";
-        if (state.currentDecorTab === "color") {
-            const colors = { "": "#fff", gold: "#ffd700", blue: "#00aaff", pink: "#ff3b8b", purple: "#c04cff" };
-            if (it.id === "rainbow") previewStyle = "background: linear-gradient(90deg, #ff3b5b, #ffd700, #22dd88, #00aaff, #c04cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;";
-            else previewStyle = `color: ${colors[it.id] || "#fff"};`;
-        } else {
-            const borders = { "": "#8a8aa0", gold: "#ffd700", blue: "#00aaff", fire: "#ff3b5b", legendary: "#c04cff" };
-            previewStyle = `border-color: ${borders[it.id] || "#8a8aa0"};`;
-        }
-        return `<div class="decor-item ${isActive ? 'active' : ''}" onclick="selectDecor('${it.id}')">
-            <div class="decor-preview" style="${previewStyle}">Aa</div>
-            <div class="decor-info"><div class="decor-name">${it.name}</div><div class="decor-price">${priceText}</div></div>
-            ${isActive ? '<div class="decor-status">✓</div>' : ''}
-        </div>`;
-    }).join("");
-}
-function selectDecor(id) {
-    const items = state.currentDecorTab === "color" ? NAME_COLORS : FRAMES;
-    const item = items.find(x => x.id === id);
-    if (!item) return;
-    if (item.price > 0) {
-        if (item.currency === "coins") {
-            if (currentUser.balance < item.price) { toast(`Нужно ${item.price} 🪙`, "error"); return; }
-            const before = currentUser.balance;
-            currentUser.balance -= item.price; saveDemo();
-            setBalance(currentUser.balance, true, before);
-        } else {
-            toast(`Оплата ${item.price} ⭐ будет на сервере`, "info");
-        }
-    }
-    if (state.currentDecorTab === "color") state.nameColor = id;
-    else state.frameId = id;
-    saveDecorState(); renderProfile(); renderDecorModal();
-    toast("✅ Применено", "success"); hapticNotify("success");
 }
 
 /* МОДАЛКИ */
@@ -1267,23 +1373,19 @@ const DEFAULT_TRACKS = [
 let musicAudio = null, currentTrackId = null, musicPlaying = false, myTracks = [];
 
 function loadMusicState() {
-    try {
-        const raw = localStorage.getItem(LS_MUSIC_KEY);
-        if (raw) { const p = JSON.parse(raw); myTracks = Array.isArray(p.tracks) ? p.tracks : []; currentTrackId = p.current || null; }
-    } catch (_) {}
+    try { const raw = localStorage.getItem(LS_MUSIC_KEY); if (raw) { const p = JSON.parse(raw); myTracks = Array.isArray(p.tracks) ? p.tracks : []; currentTrackId = p.current || null; } } catch (_) {}
     if (!currentTrackId && DEFAULT_TRACKS.length) currentTrackId = DEFAULT_TRACKS[0].id;
 }
 function initMusic() {
     if (!musicAudio) {
-        musicAudio = new Audio();
-        musicAudio.loop = false;
-        musicAudio.volume = 0.5;
+        musicAudio = new Audio(); musicAudio.loop = false; musicAudio.volume = 0.5;
         musicAudio.addEventListener("timeupdate", updateMusicProgress);
         musicAudio.addEventListener("ended", onMusicEnded);
         musicAudio.addEventListener("loadedmetadata", updateMusicProgress);
+        musicAudio.addEventListener("play", () => { musicPlaying = true; updatePlayButtons(); });
+        musicAudio.addEventListener("pause", () => { musicPlaying = false; updatePlayButtons(); });
     }
-    bindMusicProgressBar();
-    renderMusicPlayer(); renderMyMusic(); renderMiniPlayer();
+    bindMusicProgressBar(); renderMusicPlayer(); renderMyMusic(); renderMiniPlayer();
 }
 function bindMusicProgressBar() {
     const mainBar = document.getElementById("music-progress-click");
@@ -1303,7 +1405,6 @@ function saveMusic() { try { localStorage.setItem(LS_MUSIC_KEY, JSON.stringify({
 function allTracks() { return [...DEFAULT_TRACKS, ...myTracks]; }
 function findTrack(id) { return allTracks().find(t => t.id === id); }
 function fmtTime(s) { if (!s || isNaN(s)) return "0:00"; const m = Math.floor(s / 60); const sec = Math.floor(s % 60); return `${m}:${String(sec).padStart(2, "0")}`; }
-
 function renderMusicPlayer() {
     const track = findTrack(currentTrackId);
     const titleEl = document.getElementById("music-track-title");
@@ -1313,33 +1414,27 @@ function renderMusicPlayer() {
     if (titleEl) titleEl.textContent = track.name;
     if (subEl) subEl.textContent = track.builtin ? "Библиотека Lifeless" : "Мой трек";
     if (coverImg) coverImg.src = `https://placehold.co/400x400/1a0d3e/ffd700?text=${encodeURIComponent(track.name.split(" ")[0] || "🎵")}`;
-    updatePlayButtons();
-    updateRepeatIcon();
+    updatePlayButtons(); updateRepeatIcon();
 }
 function renderMiniPlayer() {
     const track = findTrack(currentTrackId);
     const titleEl = document.getElementById("mini-track-title");
-    const eq = document.getElementById("mini-eq");
     if (titleEl) titleEl.textContent = track ? track.name : "Выбери трек";
-    if (eq) eq.classList.toggle("playing", musicPlaying);
     updatePlayButtons();
 }
 function updatePlayButtons() {
-    const miniBtn = document.getElementById("mini-play-btn");
-    const mainBtn = document.getElementById("music-main-btn");
-    const miniIcon = document.getElementById("mini-play-icon");
-    const mainIcon = document.getElementById("music-main-icon");
     const useId = musicPlaying ? "#ic-pause" : "#ic-play-mini";
-    if (miniIcon) miniIcon.innerHTML = `<use href="${useId}"/>`;
-    if (mainIcon) mainIcon.innerHTML = `<use href="${useId}"/>`;
-    // Эквалайзер в профиле
+    ["mini-play-icon", "music-main-icon"].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = `<use href="${useId}"/>`; });
+    const mini = document.getElementById("mini-player");
+    const main = document.querySelector(".music-player-card");
+    if (mini) mini.classList.toggle("playing", musicPlaying);
+    if (main) main.classList.toggle("playing", musicPlaying);
     const eq = document.getElementById("mini-eq");
     if (eq) eq.classList.toggle("playing", musicPlaying);
 }
 function updateRepeatIcon() {
-    const ids = ["mini-repeat-icon", "music-repeat-icon"];
     const useId = state.musicRepeat === "one" ? "#ic-repeat-one" : "#ic-repeat";
-    ids.forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = `<use href="${useId}"/>`; });
+    ["mini-repeat-icon", "music-repeat-icon"].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = `<use href="${useId}"/>`; });
     const mini = document.getElementById("mini-repeat-btn");
     const main = document.getElementById("music-repeat-btn");
     if (mini) mini.classList.toggle("active", state.musicRepeat !== "off");
@@ -1360,47 +1455,44 @@ function updateMusicProgress() {
 function toggleMusic() {
     const track = findTrack(currentTrackId);
     if (!track) return;
-    if (musicPlaying) { musicAudio.pause(); musicPlaying = false; }
+    if (musicPlaying) { musicAudio.pause(); }
     else {
         if (musicAudio.src !== track.url) musicAudio.src = track.url;
-        musicAudio.play().then(() => { musicPlaying = true; }).catch(() => { toast("Не удалось воспроизвести", "error"); musicPlaying = false; });
+        musicAudio.play().catch(() => { toast("Не удалось воспроизвести", "error"); });
     }
-    renderMusicPlayer(); renderMiniPlayer();
     haptic("light");
 }
 function musicPrev() {
     const tracks = allTracks(); if (!tracks.length) return;
     let idx = tracks.findIndex(t => t.id === currentTrackId);
-    if (state.musicShuffle) {
-        idx = Math.floor(Math.random() * tracks.length);
-    } else {
-        idx = (idx - 1 + tracks.length) % tracks.length;
-    }
+    if (state.musicShuffle) idx = Math.floor(Math.random() * tracks.length);
+    else idx = (idx - 1 + tracks.length) % tracks.length;
     currentTrackId = tracks[idx].id;
-    if (musicPlaying) { musicAudio.pause(); musicPlaying = false; toggleMusic(); } else { renderMusicPlayer(); renderMiniPlayer(); }
-    saveMusic();
+    const wasPlaying = musicPlaying;
+    if (wasPlaying) { musicAudio.pause(); }
+    renderMusicPlayer(); renderMiniPlayer();
+    if (wasPlaying) setTimeout(() => toggleMusic(), 50);
+    else saveMusic();
 }
 function musicNext() {
     const tracks = allTracks(); if (!tracks.length) return;
     let idx = tracks.findIndex(t => t.id === currentTrackId);
     if (state.musicShuffle) {
-        let next;
-        do { next = Math.floor(Math.random() * tracks.length); } while (tracks.length > 1 && next === idx);
+        let next; do { next = Math.floor(Math.random() * tracks.length); } while (tracks.length > 1 && next === idx);
         idx = next;
-    } else {
-        idx = (idx + 1) % tracks.length;
-    }
+    } else idx = (idx + 1) % tracks.length;
     currentTrackId = tracks[idx].id;
-    if (musicPlaying) { musicAudio.pause(); musicPlaying = false; toggleMusic(); } else { renderMusicPlayer(); renderMiniPlayer(); }
-    saveMusic();
+    const wasPlaying = musicPlaying;
+    if (wasPlaying) musicAudio.pause();
+    renderMusicPlayer(); renderMiniPlayer();
+    if (wasPlaying) setTimeout(() => toggleMusic(), 50);
+    else saveMusic();
 }
 function musicShuffle() {
     state.musicShuffle = !state.musicShuffle;
     toast(state.musicShuffle ? "🔀 Перемешать: вкл" : "🔀 Перемешать: выкл", "info", 1500);
     haptic("light");
-    const mini = document.querySelector('[onclick="musicShuffle()"]');
-    const main = document.querySelector('.music-ctrl[onclick="musicShuffle()"]');
-    [mini, main].forEach(el => { if (el) el.classList.toggle("active", state.musicShuffle); });
+    document.querySelectorAll('[onclick="musicShuffle()"]').forEach(el => el.classList.toggle("active", state.musicShuffle));
 }
 function musicToggleRepeat() {
     if (state.musicRepeat === "off") state.musicRepeat = "all";
@@ -1408,21 +1500,11 @@ function musicToggleRepeat() {
     else state.musicRepeat = "off";
     updateRepeatIcon();
     const labels = { off: "🔁 Повтор: выкл", all: "🔁 Повтор: всё", one: "🔂 Повтор: один" };
-    toast(labels[state.musicRepeat], "info", 1500);
-    haptic("light");
+    toast(labels[state.musicRepeat], "info", 1500); haptic("light");
 }
 function onMusicEnded() {
-    if (state.musicRepeat === "one") {
-        musicAudio.currentTime = 0;
-        musicAudio.play();
-    } else if (state.musicRepeat === "all") {
-        musicNext();
-    } else {
-        // off — просто переключаем трек
-        musicNext();
-        musicPlaying = false;
-        renderMiniPlayer();
-    }
+    if (state.musicRepeat === "one") { musicAudio.currentTime = 0; musicAudio.play(); }
+    else musicNext();
 }
 function renderMyMusic() {
     const box = document.getElementById("music-my-list");
@@ -1431,18 +1513,17 @@ function renderMyMusic() {
     box.innerHTML = all.map(t => `<div class="music-item ${t.id === currentTrackId ? 'active' : ''}" onclick="selectMusic('${t.id}')"><span class="music-item-emoji">🎵</span><span class="music-item-name">${escapeHtml(t.name)}</span>${!t.builtin ? `<button class="music-item-del" onclick="event.stopPropagation();deleteTrack('${t.id}')">✕</button>` : ''}</div>`).join("");
 }
 function selectMusic(id) {
-    const track = findTrack(id);
-    if (!track) return;
+    const track = findTrack(id); if (!track) return;
     currentTrackId = id;
-    if (musicPlaying) { musicAudio.pause(); musicPlaying = false; toggleMusic(); }
-    else { renderMusicPlayer(); renderMiniPlayer(); }
-    renderMyMusic(); saveMusic();
-    haptic("light");
+    const wasPlaying = musicPlaying;
+    if (wasPlaying) musicAudio.pause();
+    renderMusicPlayer(); renderMiniPlayer();
+    if (wasPlaying) setTimeout(() => toggleMusic(), 50);
+    renderMyMusic(); saveMusic(); haptic("light");
 }
 function openMusicPicker() { renderMusicLibrary(); document.getElementById("music-modal").classList.remove("hidden"); }
 function renderMusicLibrary() {
-    const box = document.getElementById("music-list");
-    if (!box) return;
+    const box = document.getElementById("music-list"); if (!box) return;
     const query = (document.getElementById("music-search")?.value || "").toLowerCase();
     const all = [...DEFAULT_TRACKS, ...myTracks].filter(t => t.name.toLowerCase().includes(query));
     if (!all.length) { box.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-dim)">Ничего не найдено</div>`; return; }
@@ -1463,7 +1544,7 @@ function submitAddMusic() {
 }
 function deleteTrack(id) {
     myTracks = myTracks.filter(t => t.id !== id);
-    if (currentTrackId === id) { currentTrackId = DEFAULT_TRACKS[0].id; if (musicPlaying) { musicAudio.pause(); musicPlaying = false; } }
+    if (currentTrackId === id) { currentTrackId = DEFAULT_TRACKS[0].id; if (musicPlaying) { musicAudio.pause(); } }
     saveMusic(); renderMyMusic(); renderMusicPlayer(); renderMiniPlayer(); toast("Удалено", "info");
 }
 
