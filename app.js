@@ -1,4 +1,4 @@
-/* LIFELESS SHOP · v11 */
+/* LIFELESS SHOP · v12 */
 const FORCE_DEMO = true;
 let tg = window.Telegram?.WebApp;
 const DEMO = FORCE_DEMO || !tg?.initData;
@@ -20,10 +20,10 @@ const LOTTIE_URLS = {
 };
 
 const TG_USER_ID = tg.initDataUnsafe?.user?.id || 0;
-const LS_KEY = `lifeless_demo_v11_u${TG_USER_ID}`;
-const LS_MUSIC_KEY = `lifeless_music_v11_u${TG_USER_ID}`;
-const LS_PETS_KEY = `lifeless_pets_v11_u${TG_USER_ID}`;
-const LS_DECOR_KEY = `lifeless_decor_v11_u${TG_USER_ID}`;
+const LS_KEY = `lifeless_demo_v12_u${TG_USER_ID}`;
+const LS_MUSIC_KEY = `lifeless_music_v12_u${TG_USER_ID}`;
+const LS_PETS_KEY = `lifeless_pets_v12_u${TG_USER_ID}`;
+const LS_DECOR_KEY = `lifeless_decor_v12_u${TG_USER_ID}`;
 
 const defaultUser = { id: 0, first_name: "", last_name: "", username: "", avatar_url: "", balance: 0,
     cases_opened: 0, referrals: 0, stars_spent: 0, total_wagered: 0, best_drop: 0, drops: [],
@@ -38,7 +38,7 @@ const state = {
     nameColor: "", frameId: "",
     petLottie: null, sidePetLottie: null, headerPetLottie: null, previewLottie: null,
     musicShuffle: false, musicRepeat: "off",
-    coinPlaying: false,
+    coinPlaying: false, coinRotation: 0,
 };
 const lottieInstances = {};
 
@@ -147,14 +147,21 @@ const NAME_COLORS = [
     { id: "blue", name: "Синий", cls: "name-color-blue", price: 5000, currency: "coins" },
     { id: "pink", name: "Розовый", cls: "name-color-pink", price: 5000, currency: "coins" },
     { id: "purple", name: "Фиолетовый", cls: "name-color-purple", price: 5000, currency: "coins" },
+    { id: "green", name: "Зелёный", cls: "name-color-green", price: 5000, currency: "coins" },
+    { id: "red", name: "Красный", cls: "name-color-red", price: 5000, currency: "coins" },
+    { id: "cyan", name: "Циан", cls: "name-color-cyan", price: 7500, currency: "coins" },
     { id: "rainbow", name: "Радужный", cls: "name-color-rainbow", price: 25, currency: "stars" },
 ];
 const FRAMES = [
     { id: "", name: "Нет", cls: "", price: 0 },
     { id: "gold", name: "Золотая", cls: "frame-gold", price: 10000, currency: "coins" },
     { id: "blue", name: "Синяя", cls: "frame-blue", price: 10000, currency: "coins" },
+    { id: "neon", name: "Неоновая", cls: "frame-neon", price: 15000, currency: "coins" },
+    { id: "ocean", name: "Океан", cls: "frame-ocean", price: 15000, currency: "coins" },
     { id: "fire", name: "Огненная", cls: "frame-fire", price: 25, currency: "stars" },
+    { id: "sunset", name: "Закат", cls: "frame-sunset", price: 30, currency: "stars" },
     { id: "legendary", name: "Легендарная", cls: "frame-legendary", price: 50, currency: "stars" },
+    { id: "royal", name: "Королевская", cls: "frame-royal", price: 75, currency: "stars" },
 ];
 function loadDecorState() {
     try {
@@ -471,7 +478,6 @@ function renderSideMenu() {
     if (unEl) unEl.textContent = (u.username || currentUser.username) ? `@${u.username || currentUser.username}` : `ID: ${currentUser.id}`;
     const balEl = document.getElementById("side-balance-val");
     if (balEl) balEl.textContent = currentUser.balance.toLocaleString("ru-RU");
-
     const sidePetSlot = document.getElementById("side-pet-slot");
     const sidePetBtn = document.getElementById("side-pet-btn");
     if (sidePetSlot && hasPet("cat")) {
@@ -536,7 +542,6 @@ function renderProfile() {
 
 /* ПИТОМЕЦ */
 function renderActivePet() {
-    // Очищаем все слоты
     const positions = ["tl", "tr", "bl", "br"];
     positions.forEach(p => { const el = document.getElementById(`profile-pet-${p}`); if (el) { el.style.display = "none"; el.innerHTML = ""; } });
     const headerSlot = document.getElementById("header-pet-slot");
@@ -547,14 +552,13 @@ function renderActivePet() {
 
     if (!hasPet("cat")) return;
 
-    // Определяем куда ставить
     if (state.petInHeader) {
         if (headerSlot) {
             headerSlot.style.display = "block";
             setTimeout(() => { state.headerPetLottie = loadLottie(headerSlot, LOTTIE_URLS.cat, "headerPet"); }, 50);
         }
     } else {
-        const pos = state.petPos; // tl | tr | bl | br
+        const pos = state.petPos;
         const slot = document.getElementById(`profile-pet-${pos}`);
         if (slot) {
             slot.style.display = "block";
@@ -743,7 +747,7 @@ async function openCase(caseId) {
     if (state.caseOpening) return;
     const caseData = COIN_CASES.find(c => c.id === caseId);
     if (!caseData) return;
-    if (currentUser.balance < caseData.price) { toast("Недостаточно монет", "error"); hapticNotify("error"); return; }
+    if (currentUser.balance < caseData.price) { hapticNotify("error"); showInsufficientBalance(caseData.price, currentUser.balance); return; }
     await runCaseAnimation(`Кейс «${caseData.name}»`, () => apiCall("/api/open_case", { case_id: caseId }));
 }
 async function openStarCase(starId) {
@@ -752,47 +756,84 @@ async function openStarCase(starId) {
     if (!caseData) return;
     if (DEMO) {
         const coinsPrice = caseData.price * 10;
-        if (currentUser.balance < coinsPrice) { toast(`Нужно ${coinsPrice} 🪙`, "error"); return; }
+        if (currentUser.balance < coinsPrice) { hapticNotify("error"); showInsufficientBalance(coinsPrice, currentUser.balance); return; }
         await runCaseAnimation(`⭐ «${caseData.name}» · ${caseData.price}⭐`, () => apiCall("/api/open_star_case", { stars: caseData.price }));
     } else toast("Звёздные кейсы — в боте ⭐", "info");
 }
+
+/* ГЛАВНЫЙ ФИКС: анимация кейса */
 async function runCaseAnimation(title, apiFn) {
     if (state.caseOpening) return;
     state.caseOpening = true;
     haptic("medium");
+
     const modal = document.getElementById("case-modal");
     const reel = document.getElementById("case-reel");
     const titleEl = document.getElementById("case-modal-title");
     const resEl = document.getElementById("case-modal-result");
+
+    // ПРИНУДИТЕЛЬНЫЙ сброс всего перед новым прокрутом
+    reel.style.transition = "none";
+    reel.style.transform = "translate3d(0, 0, 0)";
+    reel.style.willChange = "auto";
+    reel.innerHTML = "";
     if (titleEl) titleEl.textContent = title;
     if (resEl) resEl.innerHTML = "&nbsp;";
+    void reel.offsetWidth;
+
     const WINNER_INDEX = 50;
     const items = [];
     for (let i = 0; i < 60; i++) items.push(MULT_TO_RARITY[Math.floor(Math.random() * MULT_TO_RARITY.length)]);
     items[WINNER_INDEX] = { key: "rare", label: "...", emoji: "❓" };
-    reel.innerHTML = ""; reel.style.transition = "none"; reel.style.transform = "translate3d(0, 0, 0)";
+
     const fragment = document.createDocumentFragment();
-    items.forEach(it => { const div = document.createElement("div"); div.className = `case-item r-${it.key}`; div.innerHTML = `${it.emoji}<small>${escapeHtml(it.label)}</small>`; fragment.appendChild(div); });
+    items.forEach(it => {
+        const div = document.createElement("div");
+        div.className = `case-item r-${it.key}`;
+        div.innerHTML = `${it.emoji}<small>${escapeHtml(it.label)}</small>`;
+        fragment.appendChild(div);
+    });
     reel.appendChild(fragment);
+
     modal.classList.remove("hidden");
+    void reel.offsetWidth;
+
+    // Запрос к API
     let result = null, apiError = null;
     try { result = await apiFn(); } catch (e) { apiError = e; }
-    if (apiError) { toast(apiError.message || "Ошибка", "error"); modal.classList.add("hidden"); state.caseOpening = false; return; }
+
+    if (apiError) {
+        toast(apiError.message || "Ошибка", "error");
+        modal.classList.add("hidden");
+        state.caseOpening = false;
+        return;
+    }
+
+    // Показ победителя в ленте
     const winnerRarity = MULT_TO_RARITY[result.multiplier_index] || MULT_TO_RARITY[0];
     const winnerEl = reel.children[WINNER_INDEX];
-    if (winnerEl) { winnerEl.className = `case-item r-${winnerRarity.key}`; winnerEl.innerHTML = `${winnerRarity.emoji}<small>${escapeHtml(winnerRarity.label)}</small>`; }
+    if (winnerEl) {
+        winnerEl.className = `case-item r-${winnerRarity.key}`;
+        winnerEl.innerHTML = `${winnerRarity.emoji}<small>${escapeHtml(winnerRarity.label)}</small>`;
+    }
     void reel.offsetWidth;
+
     let wrapWidth = 340;
     const wrapEl = modal.querySelector(".case-reel-wrap");
     if (wrapEl) wrapWidth = wrapEl.getBoundingClientRect().width || 340;
     const ITEM_WIDTH = 90 + 6;
     const targetX = -(WINNER_INDEX * ITEM_WIDTH + ITEM_WIDTH / 2 - wrapWidth / 2);
     const jitter = (Math.random() - 0.5) * (ITEM_WIDTH * 0.4);
-    reel.style.transition = "transform 3.6s var(--ease-smooth)";
+
+    // КОНКРЕТНЫЙ cubic-bezier (не var!) + willChange
+    reel.style.willChange = "transform";
+    reel.style.transition = "transform 3.6s cubic-bezier(0.32, 0.72, 0, 1)";
     reel.style.transform = `translate3d(${targetX + jitter}px, 0, 0)`;
-    const fallbackId = setTimeout(() => { if (state.caseOpening) showCaseResult(result); }, 4300);
-    setTimeout(() => { clearTimeout(fallbackId); if (state.caseOpening) showCaseResult(result); }, 3700);
+
+    // Автоматическое закрытие через 3.7 сек
+    setTimeout(() => { if (state.caseOpening) showCaseResult(result); }, 3700);
 }
+
 function showCaseResult(result) {
     if (!state.caseOpening || !result) return;
     state.caseOpening = false;
@@ -812,9 +853,33 @@ function showCaseResult(result) {
     const balanceBefore = result.balance - result.reward + result.cost;
     setBalance(result.balance, true, balanceBefore);
     renderProfile(); renderLeaderboard();
-    setTimeout(() => modal.classList.add("hidden"), 2400);
+
+    // Автозакрытие + очистка ленты
+    state.caseOpening = true;
+    setTimeout(() => {
+        modal.classList.add("hidden");
+        const reel = document.getElementById("case-reel");
+        if (reel) {
+            reel.style.transition = "none";
+            reel.style.transform = "translate3d(0, 0, 0)";
+            reel.style.willChange = "auto";
+            reel.innerHTML = "";
+        }
+        state.caseOpening = false;
+    }, 2400);
 }
-function forceCloseCase() { state.caseOpening = false; const modal = document.getElementById("case-modal"); if (modal) modal.classList.add("hidden"); }
+function forceCloseCase() {
+    state.caseOpening = false;
+    const modal = document.getElementById("case-modal");
+    if (modal) modal.classList.add("hidden");
+    const reel = document.getElementById("case-reel");
+    if (reel) {
+        reel.style.transition = "none";
+        reel.style.transform = "translate3d(0, 0, 0)";
+        reel.style.willChange = "auto";
+        reel.innerHTML = "";
+    }
+}
 
 /* БЕСПЛАТНЫЙ КЕЙС */
 let freeCaseTimerId = null;
@@ -932,7 +997,7 @@ function updateFreeWheelButton() {
     }
 }
 
-/* МОНЕТКА */
+/* МОНЕТКА 3D */
 async function playCoin(choice) {
     if (state.coinPlaying) return;
     state.coinPlaying = true;
@@ -944,14 +1009,24 @@ async function playCoin(choice) {
     btnEagle.disabled = true; btnKing.disabled = true;
     resultEl.textContent = ""; resultEl.className = "game-result";
 
+    // Сброс вращения перед новым броском
+    coinEl.style.transition = "none";
+    coinEl.style.transform = "rotateY(0deg)";
+    void coinEl.offsetWidth;
+
     let result;
     try { result = await apiCall("/api/play_coin", { choice }); }
     catch (e) { toast(e.message, "error"); btnEagle.disabled = false; btnKing.disabled = false; state.coinPlaying = false; return; }
 
-    // Вращение монеты: орёл = 0deg, решка = 180deg
-    const finalRotation = (result.side === "eagle" ? 0 : 180) + 360 * 8;
-    coinEl.style.transition = "transform 2.5s var(--ease-smooth)";
-    coinEl.style.transform = `rotateY(${finalRotation}deg)`;
+    // КУМУЛЯТИВНОЕ вращение: 6-10 оборотов + финальный угол
+    const extraSpins = 360 * (6 + Math.floor(Math.random() * 4));
+    const finalAngle = result.side === "eagle" ? 0 : 180;
+    // Сбрасываем state каждый раз, начинаем с 0 + много оборотов + финальный угол
+    const totalRotation = extraSpins + finalAngle;
+    state.coinRotation = totalRotation;
+
+    coinEl.style.transition = "transform 2.5s cubic-bezier(0.32, 0.72, 0, 1)";
+    coinEl.style.transform = `rotateY(${totalRotation}deg)`;
 
     setTimeout(() => {
         if (result.win) {
@@ -967,6 +1042,13 @@ async function playCoin(choice) {
         renderProfile(); renderLeaderboard();
         btnEagle.disabled = false; btnKing.disabled = false;
         state.coinPlaying = false;
+        // Возврат в исходное состояние (без transition)
+        setTimeout(() => {
+            coinEl.style.transition = "none";
+            coinEl.style.transform = "rotateY(0deg)";
+            void coinEl.offsetWidth;
+            coinEl.style.transition = "transform 2.5s cubic-bezier(0.32, 0.72, 0, 1)";
+        }, 300);
     }, 2600);
 }
 
@@ -983,7 +1065,7 @@ function setDiceToValue(diceEl, value, delay = 0) {
 }
 async function rollDice() {
     if (state.rolling) return;
-    if (currentUser.balance < 10) { toast("Нужно 10 🪙", "error"); return; }
+    if (currentUser.balance < 10) { hapticNotify("error"); showInsufficientBalance(10, currentUser.balance); return; }
     state.rolling = true; haptic("medium");
     const d1el = document.getElementById("dice1"), d2el = document.getElementById("dice2");
     const resultEl = document.getElementById("dice-result");
@@ -1023,7 +1105,7 @@ function bindSaperLevels() {
 async function startSaperGame() {
     const cfg = state.saperConfig;
     if (!cfg) return;
-    if (currentUser.balance < cfg.cost) { toast(`Нужно ${cfg.cost} 🪙`, "error"); return; }
+    if (currentUser.balance < cfg.cost) { hapticNotify("error"); showInsufficientBalance(cfg.cost, currentUser.balance); return; }
     if (DEMO) { const before = currentUser.balance; currentUser.balance -= cfg.cost; currentUser.total_wagered += cfg.cost; setBalance(currentUser.balance, true, before); saveDemo(); }
     else { try { await apiCall("/api/saper/start", { cost: cfg.cost }); } catch (e) { toast(e.message, "error"); return; } }
     haptic("medium");
@@ -1162,11 +1244,11 @@ function renderDecorShopPanel() {
         const priceText = isFree ? "Бесплатно" : `${it.price} ${it.currency === 'stars' ? '⭐' : '🪙'}`;
         let previewStyle = "";
         if (state.currentDecorTab === "color") {
-            const colors = { "": "#fff", gold: "#ffd700", blue: "#00aaff", pink: "#ff3b8b", purple: "#c04cff" };
+            const colors = { "": "#fff", gold: "#ffd700", blue: "#00aaff", pink: "#ff3b8b", purple: "#c04cff", green: "#22dd88", red: "#ff5c5c", cyan: "#00ffe1" };
             if (it.id === "rainbow") previewStyle = "background: linear-gradient(90deg, #ff3b5b, #ffd700, #22dd88, #00aaff, #c04cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;";
             else previewStyle = `color: ${colors[it.id] || "#fff"};`;
         } else {
-            const borders = { "": "#8a8aa0", gold: "#ffd700", blue: "#00aaff", fire: "#ff3b5b", legendary: "#c04cff" };
+            const borders = { "": "#8a8aa0", gold: "#ffd700", blue: "#00aaff", neon: "#22dd88", ocean: "#00ffe1", fire: "#ff3b5b", sunset: "#ff8c5c", legendary: "#c04cff", royal: "#d4a8ff" };
             previewStyle = `border-color: ${borders[it.id] || "#8a8aa0"};`;
         }
         return `<div class="decor-item ${isActive ? 'active' : ''}" onclick="selectDecor('${it.id}')"><div class="decor-preview" style="${previewStyle}">Aa</div><div class="decor-info"><div class="decor-name">${it.name}</div><div class="decor-price">${priceText}</div></div>${isActive ? '<div class="decor-status">✓</div>' : ''}</div>`;
@@ -1184,7 +1266,7 @@ function selectDecor(id) {
     if (!item) return;
     if (item.price > 0) {
         if (item.currency === "coins") {
-            if (currentUser.balance < item.price) { toast(`Нужно ${item.price} 🪙`, "error"); return; }
+            if (currentUser.balance < item.price) { hapticNotify("error"); showInsufficientBalance(item.price, currentUser.balance); return; }
             const before = currentUser.balance;
             currentUser.balance -= item.price; saveDemo();
             setBalance(currentUser.balance, true, before);
@@ -1332,6 +1414,24 @@ function submitCustomTopUp() {
 }
 function closeModal(id) { const el = document.getElementById(id); if (el) el.classList.add("hidden"); }
 
+function showInsufficientBalance(need, have) {
+    const modal = document.getElementById("insufficient-modal");
+    const text = document.getElementById("insufficient-text");
+    const grid = document.getElementById("insufficient-grid");
+    if (text) text.textContent = `Не хватает ${(need - have).toLocaleString("ru-RU")} 🪙. Пополни баланс:`;
+    if (grid) {
+        grid.innerHTML = COIN_PACKS.filter(p => p.cls !== "mega").slice(0, 4).map(o => `
+            <div class="topup-card" onclick="buyCoins(${o.coins});closeModal('insufficient-modal')">
+                <div class="topup-card-coin">🪙</div>
+                <div class="topup-card-amount">${o.coins.toLocaleString("ru-RU")}</div>
+                <div class="topup-card-price">${o.stars} ⭐</div>
+            </div>
+        `).join("");
+    }
+    modal.classList.remove("hidden");
+    haptic("light");
+}
+
 /* ПОДДЕРЖКА */
 let selectedTopic = "Вопрос";
 function selectTopic(btn) { document.querySelectorAll(".support-topic").forEach(b => b.classList.remove("active")); btn.classList.add("active"); selectedTopic = btn.dataset.topic; }
@@ -1477,10 +1577,8 @@ function musicPrev() {
 function musicNext() {
     const tracks = allTracks(); if (!tracks.length) return;
     let idx = tracks.findIndex(t => t.id === currentTrackId);
-    if (state.musicShuffle) {
-        let next; do { next = Math.floor(Math.random() * tracks.length); } while (tracks.length > 1 && next === idx);
-        idx = next;
-    } else idx = (idx + 1) % tracks.length;
+    if (state.musicShuffle) { let next; do { next = Math.floor(Math.random() * tracks.length); } while (tracks.length > 1 && next === idx); idx = next; }
+    else idx = (idx + 1) % tracks.length;
     currentTrackId = tracks[idx].id;
     const wasPlaying = musicPlaying;
     if (wasPlaying) musicAudio.pause();
