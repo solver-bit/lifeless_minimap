@@ -1,4 +1,4 @@
-/* LIFELESS SHOP · v9 */
+/* LIFELESS SHOP · v10 */
 const FORCE_DEMO = true;
 let tg = window.Telegram?.WebApp;
 const DEMO = FORCE_DEMO || !tg?.initData;
@@ -16,15 +16,14 @@ const BASE_URL = "https://solver-bit.github.io/lifeless_minimap";
 const LOTTIE_URLS = {
     coin: `${BASE_URL}/finance-management.json`,
     cat: `${BASE_URL}/Loadercat.json`,
-    catCry: `${BASE_URL}/CatCryingemojiStickeranimation.json`,
     about: `${BASE_URL}/Businessplan.json`,
 };
 
 const TG_USER_ID = tg.initDataUnsafe?.user?.id || 0;
-const LS_KEY = `lifeless_demo_v9_u${TG_USER_ID}`;
-const LS_MUSIC_KEY = `lifeless_music_v9_u${TG_USER_ID}`;
-const LS_PETS_KEY = `lifeless_pets_v9_u${TG_USER_ID}`;
-const LS_DECOR_KEY = `lifeless_decor_v9_u${TG_USER_ID}`;
+const LS_KEY = `lifeless_demo_v10_u${TG_USER_ID}`;
+const LS_MUSIC_KEY = `lifeless_music_v10_u${TG_USER_ID}`;
+const LS_PETS_KEY = `lifeless_pets_v10_u${TG_USER_ID}`;
+const LS_DECOR_KEY = `lifeless_decor_v10_u${TG_USER_ID}`;
 
 const defaultUser = { id: 0, first_name: "", last_name: "", username: "", avatar_url: "", balance: 0,
     cases_opened: 0, referrals: 0, stars_spent: 0, total_wagered: 0, best_drop: 0, drops: [],
@@ -35,14 +34,13 @@ const state = {
     spinning: false, rolling: false, caseOpening: false,
     saperActive: false, saperSafe: 0, saperTotal: 0, saperConfig: null,
     currentShopCat: "coins", currentCaseCat: "coins", currentDecorTab: "color",
-    ownedPets: [], petPos: "right", petSize: "md",
+    ownedPets: [], petPos: "br", petSize: "md",
     nameColor: "", frameId: "",
     petLottie: null, sidePetLottie: null, previewLottie: null,
+    musicShuffle: false, musicRepeat: "off", // off | all | one
 };
-
 const lottieInstances = {};
 
-/* УТИЛИТЫ */
 function haptic(t = "light") { try { tg.HapticFeedback?.impactOccurred(t); } catch (_) {} }
 function hapticNotify(t = "success") { try { tg.HapticFeedback?.notificationOccurred(t); } catch (_) {} }
 
@@ -81,20 +79,16 @@ function loadLottie(container, url, id) {
         });
         if (id) lottieInstances[id] = inst;
         return inst;
-    } catch (e) { console.error("Lottie error:", e); return null; }
+    } catch (e) { console.error(e); return null; }
 }
-
 function initLottie() {
     if (typeof lottie === "undefined") return;
-    const loaderCat = document.getElementById("loader-cat");
-    if (loaderCat) loadLottie(loaderCat, LOTTIE_URLS.cat, "loaderCat");
-    const headerCoin = document.getElementById("header-coin-lottie");
-    if (headerCoin) loadLottie(headerCoin, LOTTIE_URLS.coin, "headerCoin");
-    const sideCoin = document.getElementById("side-coin-lottie");
-    if (sideCoin) loadLottie(sideCoin, LOTTIE_URLS.coin, "sideCoin");
+    const lc = document.getElementById("loader-cat"); if (lc) loadLottie(lc, LOTTIE_URLS.cat, "loaderCat");
+    const hc = document.getElementById("header-coin-lottie"); if (hc) loadLottie(hc, LOTTIE_URLS.coin, "headerCoin");
+    const sc = document.getElementById("side-coin-lottie"); if (sc) loadLottie(sc, LOTTIE_URLS.coin, "sideCoin");
 }
 
-/* DEMO DB */
+/* DB */
 function loadDemo() {
     try {
         const raw = localStorage.getItem(LS_KEY);
@@ -131,12 +125,10 @@ function resetDemo() {
 function loadPetsState() {
     try {
         const raw = localStorage.getItem(LS_PETS_KEY);
-        if (raw) { const p = JSON.parse(raw); state.ownedPets = p.owned || []; state.petPos = p.pos || "right"; state.petSize = p.size || "md"; }
+        if (raw) { const p = JSON.parse(raw); state.ownedPets = p.owned || []; state.petPos = p.pos || "br"; state.petSize = p.size || "md"; }
     } catch (_) {}
 }
-function savePetsState() {
-    try { localStorage.setItem(LS_PETS_KEY, JSON.stringify({ owned: state.ownedPets, pos: state.petPos, size: state.petSize })); } catch (_) {}
-}
+function savePetsState() { try { localStorage.setItem(LS_PETS_KEY, JSON.stringify({ owned: state.ownedPets, pos: state.petPos, size: state.petSize })); } catch (_) {} }
 function hasPet(id) { return state.ownedPets.includes(id); }
 
 const PETS_LIST = [
@@ -152,7 +144,6 @@ const NAME_COLORS = [
     { id: "purple", name: "Фиолетовый", cls: "name-color-purple", price: 5000, currency: "coins" },
     { id: "rainbow", name: "Радужный", cls: "name-color-rainbow", price: 25, currency: "stars" },
 ];
-
 const FRAMES = [
     { id: "", name: "Нет", cls: "", price: 0 },
     { id: "gold", name: "Золотая", cls: "frame-gold", price: 10000, currency: "coins" },
@@ -160,16 +151,13 @@ const FRAMES = [
     { id: "fire", name: "Огненная", cls: "frame-fire", price: 25, currency: "stars" },
     { id: "legendary", name: "Легендарная", cls: "frame-legendary", price: 50, currency: "stars" },
 ];
-
 function loadDecorState() {
     try {
         const raw = localStorage.getItem(LS_DECOR_KEY);
         if (raw) { const p = JSON.parse(raw); state.nameColor = p.color || ""; state.frameId = p.frame || ""; }
     } catch (_) {}
 }
-function saveDecorState() {
-    try { localStorage.setItem(LS_DECOR_KEY, JSON.stringify({ color: state.nameColor, frame: state.frameId })); } catch (_) {}
-}
+function saveDecorState() { try { localStorage.setItem(LS_DECOR_KEY, JSON.stringify({ color: state.nameColor, frame: state.frameId })); } catch (_) {} }
 
 /* ЭКОНОМИКА */
 const CASE_COSTS = { "10": 10, "50": 50, "250": 250, "1000": 1000, "5000": 5000, "10000": 10000 };
@@ -183,7 +171,7 @@ const MULT_TO_RARITY = [
 function pickMultiplierIndex() {
     const total = MULT_WEIGHTS.reduce((a, b) => a + b, 0);
     let r = Math.random() * total;
-    for (let i = 0; i < MULT_WEIGHTS.length; i++) { if ((r -= MULT_WEIGHTS[i]) <= 0) return i; }
+    for (let i = 0; i < MULT_WEIGHTS.length; i++) if ((r -= MULT_WEIGHTS[i]) <= 0) return i;
     return 0;
 }
 function getRtp(cases) { if (cases < 4) return 1.15; if (cases < 6) return 1.15 - ((1.15 - 0.92) / 2) * (cases - 3); return 0.92; }
@@ -200,7 +188,6 @@ async function apiCall(path, body = null) {
     if (!res.ok) throw new Error(data.detail || "Ошибка запроса");
     return data;
 }
-
 async function demoApi(path, body) {
     await new Promise(r => setTimeout(r, 60));
     switch (path) {
@@ -212,13 +199,11 @@ async function demoApi(path, body) {
                 ref_link: currentUser.ref_link, is_admin: true, happy_hours: isHappyHours() };
         case "/api/leaderboard": return { top: generateLeaderboard() };
         case "/api/open_case": {
-            const cost = CASE_COSTS[body.case_id];
-            if (!cost) throw new Error("Неверный кейс");
+            const cost = CASE_COSTS[body.case_id]; if (!cost) throw new Error("Неверный кейс");
             if (currentUser.balance < cost) throw new Error("Недостаточно монет");
             currentUser.balance -= cost; currentUser.total_wagered += cost;
             const rtp = getRtp(currentUser.cases_opened);
-            const mIdx = pickMultiplierIndex();
-            const m = MULTIPLIERS[mIdx];
+            const mIdx = pickMultiplierIndex(); const m = MULTIPLIERS[mIdx];
             let reward = Math.floor(cost * m * rtp); reward = applyHappy(reward);
             currentUser.balance += reward; currentUser.cases_opened++;
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
@@ -372,7 +357,7 @@ const STAR_CASES = [
 /* BOOTSTRAP */
 function bootstrap() {
     if (DEMO) Object.assign(currentUser, loadDemo());
-    loadPetsState(); loadDecorState();
+    loadPetsState(); loadDecorState(); loadMusicState();
     const u = tg.initDataUnsafe?.user || {};
     currentUser.id = u.id || 0;
     currentUser.first_name = u.first_name || "";
@@ -388,8 +373,8 @@ function bootstrap() {
         buildCases(); buildStarCases(); buildCarouselDots(); buildTopUpOptions();
         buildShopGrid(); buildPerksGrid(); buildVipGrid(); buildPetsGrid();
         buildWheel(); bindCarouselSwipe(); bindEdgeSwipe(); bindSaperLevels();
-        seedAmbientDrops(); loadMusic();
-        renderAll(); renderActivePet(); startFreeCaseTimer();
+        seedAmbientDrops(); initMusic();
+        renderAll(); renderActivePet(); startFreeCaseTimer(); startHappyTimer(); renderTopToday();
     } catch (e) { console.error(e); toast("Ошибка: " + e.message, "error", 5000); }
 
     setTimeout(() => {
@@ -402,6 +387,15 @@ function renderAll() {
     renderProfile(); renderSideMenu(); renderDropsFeed();
     renderLeaderboard(); setBalance(currentUser.balance, false);
     renderMusicPlayer(); renderMyMusic(); renderMiniPlayer();
+}
+
+function renderTopToday() {
+    const top = generateLeaderboard();
+    const winner = top[0];
+    const nameEl = document.getElementById("top-today-name");
+    const balEl = document.getElementById("top-today-balance");
+    if (nameEl) nameEl.textContent = winner ? winner.username : "—";
+    if (balEl) balEl.textContent = winner ? `${winner.balance.toLocaleString("ru-RU")} 🪙` : "";
 }
 
 /* SIDE MENU */
@@ -436,13 +430,16 @@ function renderSideMenu() {
     }
     // Питомец в сайдбаре
     const sidePetSlot = document.getElementById("side-pet-slot");
+    const sidePetBtn = document.getElementById("side-pet-btn");
     if (sidePetSlot && hasPet("cat")) {
         sidePetSlot.style.display = "block";
-        sidePetSlot.style.bottom = "-14px";
-        sidePetSlot.style.right = "-14px";
+        sidePetSlot.style.bottom = "-10px";
+        sidePetSlot.style.right = "-10px";
         if (!state.sidePetLottie) state.sidePetLottie = loadLottie(sidePetSlot, LOTTIE_URLS.cat, "sidePet");
+        if (sidePetBtn) sidePetBtn.style.display = "block";
     } else if (sidePetSlot) {
         sidePetSlot.style.display = "none";
+        if (sidePetBtn) sidePetBtn.style.display = "none";
     }
 }
 
@@ -468,7 +465,6 @@ function renderProfile() {
     if (avatarEl) {
         if (currentUser.avatar_url) { avatarEl.src = currentUser.avatar_url; avatarEl.onerror = () => { avatarEl.src = makeInitialsAvatar(currentUser.first_name, currentUser.last_name, currentUser.username); avatarEl.onerror = null; }; }
         else avatarEl.src = makeInitialsAvatar(u.first_name || currentUser.first_name, u.last_name || currentUser.last_name, u.username || currentUser.username);
-        // Рамка
         avatarEl.className = "profile-avatar";
         const frame = FRAMES.find(f => f.id === state.frameId);
         if (frame && frame.cls) avatarEl.classList.add(frame.cls);
@@ -505,7 +501,6 @@ function renderActivePet() {
     absSlot.className = `pet-slot-abs pet-pos-${state.petPos} pet-size-${state.petSize}`;
     absSlot.innerHTML = "";
     setTimeout(() => { state.petLottie = loadLottie(absSlot, LOTTIE_URLS.cat, "profilePet"); }, 50);
-    // Кот в боковом меню
     renderSideMenu();
 }
 
@@ -557,6 +552,7 @@ function renderLeaderboard() {
     }).join("");
     const badge = document.getElementById("profile-badge");
     if (badge) badge.textContent = `#${currentUser.rank} из ${currentUser.total_users}`;
+    renderTopToday();
 }
 
 /* НАВИГАЦИЯ */
@@ -645,6 +641,28 @@ function bindCarouselSwipe() {
     el.addEventListener("touchmove", onMove, { passive: true });
     el.addEventListener("touchend", onEnd, { passive: true });
     el.addEventListener("touchcancel", onEnd, { passive: true });
+}
+
+/* HAPPY TIMER */
+function startHappyTimer() {
+    const el = document.getElementById("happy-timer");
+    if (!el) return;
+    function update() {
+        const now = new Date();
+        const h = now.getHours(), m = now.getMinutes();
+        if (h >= 20 && h < 22) {
+            const left = (22 * 60) - (h * 60 + m);
+            const hh = Math.floor(left / 60), mm = left % 60;
+            el.textContent = `осталось ${hh}ч ${String(mm).padStart(2, "0")}м`;
+        } else {
+            const target = h < 20 ? 20 : 32;
+            const left = (target * 60) - (h * 60 + m);
+            const hh = Math.floor(left / 60), mm = left % 60;
+            el.textContent = `через ${hh}ч ${String(mm).padStart(2, "0")}м`;
+        }
+    }
+    update();
+    setInterval(update, 60000);
 }
 
 /* КЕЙСЫ */
@@ -943,14 +961,14 @@ function resetSaperState() {
 
 /* МАГАЗИН */
 const COIN_PACKS = [
-    { coins: 100, stars: 10, cls: "", badge: null },
-    { coins: 250, stars: 25, cls: "", badge: "Популярный", badgeCls: "popular" },
-    { coins: 500, stars: 50, cls: "", badge: null },
-    { coins: 1000, stars: 100, cls: "gold", badge: "Хит", badgeCls: "hit" },
-    { coins: 2500, stars: 250, cls: "", badge: null },
-    { coins: 5000, stars: 500, cls: "gold", badge: "Выгодно", badgeCls: "best" },
-    { coins: 10000, stars: 1000, cls: "epic", badge: "Про", badgeCls: "hit" },
-    { coins: 25000, stars: 2500, cls: "mega", badge: "MEGA", badgeCls: "best" },
+    { coins: 100, stars: 10, cls: "", bonus: null },
+    { coins: 250, stars: 25, cls: "", bonus: "+10%" },
+    { coins: 500, stars: 50, cls: "", bonus: null },
+    { coins: 1000, stars: 100, cls: "gold", bonus: "+15%" },
+    { coins: 2500, stars: 250, cls: "", bonus: null },
+    { coins: 5000, stars: 500, cls: "gold", bonus: "+20%" },
+    { coins: 10000, stars: 1000, cls: "epic", bonus: "+25%" },
+    { coins: 25000, stars: 2500, cls: "mega", bonus: "+30%" },
 ];
 const PERKS = [
     { id: "frame_gold", name: "Золотая рамка", emoji: "🖼️", cost: 5000 },
@@ -964,20 +982,51 @@ const VIP_ITEMS = [
     { id: "vip_month", name: "VIP на месяц", emoji: "👑", cost: 300 },
     { id: "no_ads", name: "Без рекламы", emoji: "🚫", cost: 50 },
 ];
+
 function buildTopUpOptions() {
     const box = document.getElementById("topup-options");
     if (!box) return;
-    box.innerHTML = COIN_PACKS.filter(p => p.cls !== "mega").slice(0, 4).map(o => `<button onclick="buyCoins(${o.coins})">${o.coins} 🪙 · ${o.stars} ⭐</button>`).join("");
+    const quick = COIN_PACKS.slice(0, 4);
+    box.innerHTML = quick.map(o => `
+        <div class="topup-card" onclick="buyCoins(${o.coins})">
+            ${o.bonus ? `<div class="topup-card-badge">${o.bonus}</div>` : ''}
+            <div class="topup-card-coin">🪙</div>
+            <div class="topup-card-amount">${o.coins.toLocaleString("ru-RU")}</div>
+            <div class="topup-card-price">${o.stars} ⭐</div>
+        </div>
+    `).join("") + `
+        <div class="topup-card custom" onclick="openCustomTopUp()">
+            <div class="topup-card-coin">✨</div>
+            <div>
+                <div class="topup-card-amount">Своя сумма</div>
+                <div class="topup-card-price">от 100 🪙</div>
+            </div>
+        </div>
+    `;
 }
 function buildShopGrid() {
     const grid = document.getElementById("shop-grid");
     if (!grid) return;
     let html = "";
     COIN_PACKS.forEach(o => {
-        if (o.cls === "mega") html += `<button class="shop-card coins ${o.cls}" onclick="buyCoins(${o.coins})">${o.badge ? `<div class="shop-badge ${o.badgeCls}">${o.badge}</div>` : ""}<div class="shop-coin">💎</div><div class="shop-info"><div class="shop-amount">${o.coins.toLocaleString("ru-RU")} монет</div><div class="shop-price">${o.stars} ⭐</div></div></button>`;
-        else html += `<button class="shop-card coins ${o.cls}" onclick="buyCoins(${o.coins})">${o.badge ? `<div class="shop-badge ${o.badgeCls}">${o.badge}</div>` : ""}<div class="shop-coin">🪙</div><div class="shop-amount">${o.coins.toLocaleString("ru-RU")}</div><div class="shop-price">${o.stars} ⭐</div></button>`;
+        if (o.cls === "mega") {
+            html += `<button class="shop-card coins mega" onclick="buyCoins(${o.coins})">
+                ${o.bonus ? `<div class="shop-badge best">${o.bonus}</div>` : ''}
+                <div class="coin-big">💎</div>
+                <div class="coin-info">
+                    <div class="coin-amount">${o.coins.toLocaleString("ru-RU")} монет</div>
+                    <div class="coin-stars">${o.stars} ⭐</div>
+                </div>
+            </button>`;
+        } else {
+            html += `<button class="shop-card coins ${o.cls}" onclick="buyCoins(${o.coins})">
+                ${o.bonus ? `<div class="coin-bonus">${o.bonus}</div>` : ''}
+                <div class="coin-big">🪙</div>
+                <div class="coin-amount">${o.coins.toLocaleString("ru-RU")}</div>
+                <div class="coin-stars">${o.stars} ⭐</div>
+            </button>`;
+        }
     });
-    html += `<button class="shop-card coins gold" onclick="openCustomTopUp()"><div class="shop-coin">✨</div><div class="shop-amount">Своя сумма</div><div class="shop-price">от 100 🪙</div></button>`;
     grid.innerHTML = html;
 }
 function buildPerksGrid() {
@@ -1015,12 +1064,11 @@ async function buyPerk(id, cost) {
     currentUser.balance -= cost; saveDemo();
     setBalance(currentUser.balance, true, before);
     renderProfile(); renderLeaderboard();
-    toast(`✅ Куплено!`, "success");
-    hapticNotify("success");
+    toast(`✅ Куплено!`, "success"); hapticNotify("success");
 }
 async function buyVip(id, cost) { toast("💎 VIP появится на сервере", "info"); }
 
-/* МОДАЛКА ПОКУПКИ ПИТОМЦА */
+/* ПИТОМЕЦ */
 let petToBuy = null;
 function openPetModal(petId) {
     const pet = PETS_LIST.find(p => p.id === petId);
@@ -1048,7 +1096,7 @@ function confirmBuyPet() {
         renderActivePet();
         buildPetsGrid();
         closeModal("pet-modal");
-        toast(`🐱 ${petToBuy.name} добавлен в профиль!`, "success", 3000);
+        toast(`🐱 ${petToBuy.name} добавлен!`, "success", 3000);
         hapticNotify("success");
         setTimeout(openPetsManager, 600);
         return;
@@ -1067,15 +1115,15 @@ function openPetsManager() {
         return;
     }
     const positions = [
-        { id: "top", name: "Сверху" },
-        { id: "bottom", name: "Снизу" },
-        { id: "left", name: "Слева" },
-        { id: "right", name: "Справа" },
+        { id: "tl", name: "↖ Сверху-слева" },
+        { id: "tr", name: "↗ Сверху-справа" },
+        { id: "bl", name: "↙ Снизу-слева" },
+        { id: "br", name: "↘ Снизу-справа" },
     ];
     const sizes = [
-        { id: "sm", name: "S" },
-        { id: "md", name: "M" },
-        { id: "lg", name: "L" },
+        { id: "sm", name: "Малый" },
+        { id: "md", name: "Средний" },
+        { id: "lg", name: "Большой" },
     ];
     content.innerHTML = `
         <div class="pm-item">
@@ -1101,25 +1149,11 @@ function openPetsManager() {
     modal.classList.remove("hidden");
     haptic("light");
 }
-function setPetPos(pos) {
-    state.petPos = pos;
-    savePetsState();
-    renderActivePet();
-    openPetsManager();
-    haptic("light");
-}
-function setPetSize(size) {
-    state.petSize = size;
-    savePetsState();
-    renderActivePet();
-    openPetsManager();
-    haptic("light");
-}
+function setPetPos(pos) { state.petPos = pos; savePetsState(); renderActivePet(); openPetsManager(); haptic("light"); }
+function setPetSize(size) { state.petSize = size; savePetsState(); renderActivePet(); openPetsManager(); haptic("light"); }
 function removePet(id) {
     state.ownedPets = state.ownedPets.filter(x => x !== id);
-    savePetsState();
-    renderActivePet();
-    buildPetsGrid();
+    savePetsState(); renderActivePet(); buildPetsGrid();
     closeModal("pets-manager-modal");
     toast("Питомец убран", "info");
 }
@@ -1149,7 +1183,7 @@ function renderDecorModal() {
         let previewStyle = "";
         if (state.currentDecorTab === "color") {
             const colors = { "": "#fff", gold: "#ffd700", blue: "#00aaff", pink: "#ff3b8b", purple: "#c04cff" };
-            if (it.id === "rainbow") previewStyle = "background: linear-gradient(90deg, #ff3b5b, #ffd700, #22dd88, #00aaff, #c04cff);";
+            if (it.id === "rainbow") previewStyle = "background: linear-gradient(90deg, #ff3b5b, #ffd700, #22dd88, #00aaff, #c04cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;";
             else previewStyle = `color: ${colors[it.id] || "#fff"};`;
         } else {
             const borders = { "": "#8a8aa0", gold: "#ffd700", blue: "#00aaff", fire: "#ff3b5b", legendary: "#c04cff" };
@@ -1157,10 +1191,7 @@ function renderDecorModal() {
         }
         return `<div class="decor-item ${isActive ? 'active' : ''}" onclick="selectDecor('${it.id}')">
             <div class="decor-preview" style="${previewStyle}">Aa</div>
-            <div class="decor-info">
-                <div class="decor-name">${it.name}</div>
-                <div class="decor-price">${isFree ? "Бесплатно" : priceText}</div>
-            </div>
+            <div class="decor-info"><div class="decor-name">${it.name}</div><div class="decor-price">${priceText}</div></div>
             ${isActive ? '<div class="decor-status">✓</div>' : ''}
         </div>`;
     }).join("");
@@ -1170,7 +1201,6 @@ function selectDecor(id) {
     const item = items.find(x => x.id === id);
     if (!item) return;
     if (item.price > 0) {
-        // В демо — просто списываем монеты (или звёзды для vip)
         if (item.currency === "coins") {
             if (currentUser.balance < item.price) { toast(`Нужно ${item.price} 🪙`, "error"); return; }
             const before = currentUser.balance;
@@ -1178,16 +1208,12 @@ function selectDecor(id) {
             setBalance(currentUser.balance, true, before);
         } else {
             toast(`Оплата ${item.price} ⭐ будет на сервере`, "info");
-            // В демо применяем бесплатно
         }
     }
     if (state.currentDecorTab === "color") state.nameColor = id;
     else state.frameId = id;
-    saveDecorState();
-    renderProfile();
-    renderDecorModal();
-    toast("✅ Применено", "success");
-    hapticNotify("success");
+    saveDecorState(); renderProfile(); renderDecorModal();
+    toast("✅ Применено", "success"); hapticNotify("success");
 }
 
 /* МОДАЛКИ */
@@ -1239,48 +1265,97 @@ const DEFAULT_TRACKS = [
     { id: "t6", name: "💎 Lifeless Theme", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", builtin: true },
 ];
 let musicAudio = null, currentTrackId = null, musicPlaying = false, myTracks = [];
-function loadMusic() {
+
+function loadMusicState() {
     try {
         const raw = localStorage.getItem(LS_MUSIC_KEY);
         if (raw) { const p = JSON.parse(raw); myTracks = Array.isArray(p.tracks) ? p.tracks : []; currentTrackId = p.current || null; }
     } catch (_) {}
     if (!currentTrackId && DEFAULT_TRACKS.length) currentTrackId = DEFAULT_TRACKS[0].id;
-    musicAudio = new Audio(); musicAudio.loop = true; musicAudio.volume = 0.5;
-    musicAudio.addEventListener("timeupdate", updateMusicProgress);
-    musicAudio.addEventListener("ended", musicNext);
+}
+function initMusic() {
+    if (!musicAudio) {
+        musicAudio = new Audio();
+        musicAudio.loop = false;
+        musicAudio.volume = 0.5;
+        musicAudio.addEventListener("timeupdate", updateMusicProgress);
+        musicAudio.addEventListener("ended", onMusicEnded);
+        musicAudio.addEventListener("loadedmetadata", updateMusicProgress);
+    }
+    bindMusicProgressBar();
     renderMusicPlayer(); renderMyMusic(); renderMiniPlayer();
+}
+function bindMusicProgressBar() {
+    const mainBar = document.getElementById("music-progress-click");
+    const miniBar = document.getElementById("mini-progress-wrap");
+    [mainBar, miniBar].forEach(el => {
+        if (!el) return;
+        el.addEventListener("click", (e) => {
+            if (!musicAudio || !musicAudio.duration) return;
+            const rect = el.getBoundingClientRect();
+            const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+            musicAudio.currentTime = pct * musicAudio.duration;
+            updateMusicProgress();
+        });
+    });
 }
 function saveMusic() { try { localStorage.setItem(LS_MUSIC_KEY, JSON.stringify({ tracks: myTracks, current: currentTrackId })); } catch (_) {} }
 function allTracks() { return [...DEFAULT_TRACKS, ...myTracks]; }
 function findTrack(id) { return allTracks().find(t => t.id === id); }
+function fmtTime(s) { if (!s || isNaN(s)) return "0:00"; const m = Math.floor(s / 60); const sec = Math.floor(s % 60); return `${m}:${String(sec).padStart(2, "0")}`; }
+
 function renderMusicPlayer() {
     const track = findTrack(currentTrackId);
     const titleEl = document.getElementById("music-track-title");
     const subEl = document.getElementById("music-track-sub");
-    const btnEl = document.getElementById("music-main-btn");
     const coverImg = document.getElementById("music-cover-img");
     if (!track) { if (titleEl) titleEl.textContent = "Выбери трек"; if (subEl) subEl.textContent = "Моя коллекция"; return; }
     if (titleEl) titleEl.textContent = track.name;
     if (subEl) subEl.textContent = track.builtin ? "Библиотека Lifeless" : "Мой трек";
-    if (btnEl) btnEl.textContent = musicPlaying ? "⏸" : "▶";
     if (coverImg) coverImg.src = `https://placehold.co/400x400/1a0d3e/ffd700?text=${encodeURIComponent(track.name.split(" ")[0] || "🎵")}`;
+    updatePlayButtons();
+    updateRepeatIcon();
 }
 function renderMiniPlayer() {
     const track = findTrack(currentTrackId);
     const titleEl = document.getElementById("mini-track-title");
-    const btnEl = document.getElementById("mini-play-btn");
-    const player = document.getElementById("mini-player");
+    const eq = document.getElementById("mini-eq");
     if (titleEl) titleEl.textContent = track ? track.name : "Выбери трек";
-    if (btnEl) btnEl.textContent = musicPlaying ? "⏸" : "▶";
-    if (player) player.classList.toggle("paused", !musicPlaying);
+    if (eq) eq.classList.toggle("playing", musicPlaying);
+    updatePlayButtons();
+}
+function updatePlayButtons() {
+    const miniBtn = document.getElementById("mini-play-btn");
+    const mainBtn = document.getElementById("music-main-btn");
+    const miniIcon = document.getElementById("mini-play-icon");
+    const mainIcon = document.getElementById("music-main-icon");
+    const useId = musicPlaying ? "#ic-pause" : "#ic-play-mini";
+    if (miniIcon) miniIcon.innerHTML = `<use href="${useId}"/>`;
+    if (mainIcon) mainIcon.innerHTML = `<use href="${useId}"/>`;
+    // Эквалайзер в профиле
+    const eq = document.getElementById("mini-eq");
+    if (eq) eq.classList.toggle("playing", musicPlaying);
+}
+function updateRepeatIcon() {
+    const ids = ["mini-repeat-icon", "music-repeat-icon"];
+    const useId = state.musicRepeat === "one" ? "#ic-repeat-one" : "#ic-repeat";
+    ids.forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = `<use href="${useId}"/>`; });
+    const mini = document.getElementById("mini-repeat-btn");
+    const main = document.getElementById("music-repeat-btn");
+    if (mini) mini.classList.toggle("active", state.musicRepeat !== "off");
+    if (main) main.classList.toggle("active", state.musicRepeat !== "off");
 }
 function updateMusicProgress() {
     const bar = document.getElementById("music-progress-bar");
     const miniBar = document.getElementById("mini-progress-bar");
-    if (!musicAudio || !musicAudio.duration) return;
-    const pct = (musicAudio.currentTime / musicAudio.duration) * 100;
+    const curTime = document.getElementById("music-current-time");
+    const dur = document.getElementById("music-duration");
+    if (!musicAudio) return;
+    const pct = musicAudio.duration ? (musicAudio.currentTime / musicAudio.duration) * 100 : 0;
     if (bar) bar.style.width = pct + "%";
     if (miniBar) miniBar.style.width = pct + "%";
+    if (curTime) curTime.textContent = fmtTime(musicAudio.currentTime);
+    if (dur) dur.textContent = fmtTime(musicAudio.duration);
 }
 function toggleMusic() {
     const track = findTrack(currentTrackId);
@@ -1294,14 +1369,60 @@ function toggleMusic() {
     haptic("light");
 }
 function musicPrev() {
-    const tracks = allTracks(); const idx = tracks.findIndex(t => t.id === currentTrackId);
-    const prev = tracks[(idx - 1 + tracks.length) % tracks.length];
-    if (prev) { currentTrackId = prev.id; if (musicPlaying) { musicAudio.pause(); musicPlaying = false; toggleMusic(); } else renderMusicPlayer(); renderMiniPlayer(); saveMusic(); }
+    const tracks = allTracks(); if (!tracks.length) return;
+    let idx = tracks.findIndex(t => t.id === currentTrackId);
+    if (state.musicShuffle) {
+        idx = Math.floor(Math.random() * tracks.length);
+    } else {
+        idx = (idx - 1 + tracks.length) % tracks.length;
+    }
+    currentTrackId = tracks[idx].id;
+    if (musicPlaying) { musicAudio.pause(); musicPlaying = false; toggleMusic(); } else { renderMusicPlayer(); renderMiniPlayer(); }
+    saveMusic();
 }
 function musicNext() {
-    const tracks = allTracks(); const idx = tracks.findIndex(t => t.id === currentTrackId);
-    const next = tracks[(idx + 1) % tracks.length];
-    if (next) { currentTrackId = next.id; if (musicPlaying) { musicAudio.pause(); musicPlaying = false; toggleMusic(); } else renderMusicPlayer(); renderMiniPlayer(); saveMusic(); }
+    const tracks = allTracks(); if (!tracks.length) return;
+    let idx = tracks.findIndex(t => t.id === currentTrackId);
+    if (state.musicShuffle) {
+        let next;
+        do { next = Math.floor(Math.random() * tracks.length); } while (tracks.length > 1 && next === idx);
+        idx = next;
+    } else {
+        idx = (idx + 1) % tracks.length;
+    }
+    currentTrackId = tracks[idx].id;
+    if (musicPlaying) { musicAudio.pause(); musicPlaying = false; toggleMusic(); } else { renderMusicPlayer(); renderMiniPlayer(); }
+    saveMusic();
+}
+function musicShuffle() {
+    state.musicShuffle = !state.musicShuffle;
+    toast(state.musicShuffle ? "🔀 Перемешать: вкл" : "🔀 Перемешать: выкл", "info", 1500);
+    haptic("light");
+    const mini = document.querySelector('[onclick="musicShuffle()"]');
+    const main = document.querySelector('.music-ctrl[onclick="musicShuffle()"]');
+    [mini, main].forEach(el => { if (el) el.classList.toggle("active", state.musicShuffle); });
+}
+function musicToggleRepeat() {
+    if (state.musicRepeat === "off") state.musicRepeat = "all";
+    else if (state.musicRepeat === "all") state.musicRepeat = "one";
+    else state.musicRepeat = "off";
+    updateRepeatIcon();
+    const labels = { off: "🔁 Повтор: выкл", all: "🔁 Повтор: всё", one: "🔂 Повтор: один" };
+    toast(labels[state.musicRepeat], "info", 1500);
+    haptic("light");
+}
+function onMusicEnded() {
+    if (state.musicRepeat === "one") {
+        musicAudio.currentTime = 0;
+        musicAudio.play();
+    } else if (state.musicRepeat === "all") {
+        musicNext();
+    } else {
+        // off — просто переключаем трек
+        musicNext();
+        musicPlaying = false;
+        renderMiniPlayer();
+    }
 }
 function renderMyMusic() {
     const box = document.getElementById("music-my-list");
@@ -1314,8 +1435,8 @@ function selectMusic(id) {
     if (!track) return;
     currentTrackId = id;
     if (musicPlaying) { musicAudio.pause(); musicPlaying = false; toggleMusic(); }
-    else renderMusicPlayer();
-    renderMyMusic(); renderMiniPlayer(); saveMusic();
+    else { renderMusicPlayer(); renderMiniPlayer(); }
+    renderMyMusic(); saveMusic();
     haptic("light");
 }
 function openMusicPicker() { renderMusicLibrary(); document.getElementById("music-modal").classList.remove("hidden"); }
