@@ -1,4 +1,4 @@
-/* LIFELESS SHOP · v12 */
+/* LIFELESS SHOP · v13 */
 const FORCE_DEMO = true;
 let tg = window.Telegram?.WebApp;
 const DEMO = FORCE_DEMO || !tg?.initData;
@@ -13,21 +13,15 @@ if (!tg) {
 const API_BASE = location.origin;
 const BOT_USERNAME = "Solver_Life_bot";
 const BASE_URL = "https://solver-bit.github.io/lifeless_minimap";
-const LOTTIE_URLS = {
-    coin: `${BASE_URL}/finance-management.json`,
-    cat: `${BASE_URL}/Loadercat.json`,
-    about: `${BASE_URL}/Businessplan.json`,
-};
+const LOTTIE_URLS = { coin: `${BASE_URL}/finance-management.json`, cat: `${BASE_URL}/Loadercat.json`, about: `${BASE_URL}/Businessplan.json` };
 
 const TG_USER_ID = tg.initDataUnsafe?.user?.id || 0;
-const LS_KEY = `lifeless_demo_v12_u${TG_USER_ID}`;
-const LS_MUSIC_KEY = `lifeless_music_v12_u${TG_USER_ID}`;
-const LS_PETS_KEY = `lifeless_pets_v12_u${TG_USER_ID}`;
-const LS_DECOR_KEY = `lifeless_decor_v12_u${TG_USER_ID}`;
+const LS_KEY = `lifeless_demo_v13_u${TG_USER_ID}`;
+const LS_MUSIC_KEY = `lifeless_music_v13_u${TG_USER_ID}`;
+const LS_PETS_KEY = `lifeless_pets_v13_u${TG_USER_ID}`;
+const LS_DECOR_KEY = `lifeless_decor_v13_u${TG_USER_ID}`;
 
-const defaultUser = { id: 0, first_name: "", last_name: "", username: "", avatar_url: "", balance: 0,
-    cases_opened: 0, referrals: 0, stars_spent: 0, total_wagered: 0, best_drop: 0, drops: [],
-    rank: 1, total_users: 1, ref_link: "", last_free_case: 0, last_daily: "", last_free_wheel: 0 };
+const defaultUser = { id: 0, first_name: "", last_name: "", username: "", avatar_url: "", balance: 0, cases_opened: 0, referrals: 0, stars_spent: 0, total_wagered: 0, best_drop: 0, drops: [], rank: 1, total_users: 1, ref_link: "", last_free_case: 0, last_daily: "", last_free_wheel: 0 };
 
 let currentUser = { ...defaultUser };
 const state = {
@@ -52,11 +46,7 @@ function toast(msg, type = "info", ms = 2800) {
     el.className = `toast ${type}`;
     el.textContent = msg;
     cont.appendChild(el);
-    setTimeout(() => {
-        el.style.opacity = "0";
-        el.style.transform = "translate3d(120%,0,0)";
-        el.style.transition = "opacity 0.5s ease, transform 0.5s cubic-bezier(0.32, 0.72, 0, 1)";
-    }, ms);
+    setTimeout(() => { el.style.opacity = "0"; el.style.transform = "translate3d(120%,0,0)"; el.style.transition = "opacity 0.5s ease, transform 0.5s cubic-bezier(0.32, 0.72, 0, 1)"; }, ms);
     setTimeout(() => el.remove(), ms + 600);
 }
 function openLink(url) { if (tg.openTelegramLink) tg.openTelegramLink(url); else window.open(url, "_blank"); }
@@ -73,15 +63,81 @@ function makeInitialsAvatar(f, l, u) {
     return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
 
+/* ПРИЗЫ КЕЙСОВ — реальные предметы */
+const CASE_PRIZES = [
+    // Пустышки
+    { kind: "empty",     emoji: "💨", label: "Пусто",       weight: 25, rarity: "common" },
+    // Мелкие монеты
+    { kind: "coins",     value: 25,   emoji: "🪙", label: "25",  weight: 18, rarity: "common" },
+    { kind: "coins",     value: 50,   emoji: "🪙", label: "50",  weight: 15, rarity: "common" },
+    { kind: "coins",     value: 100,  emoji: "💰", label: "100", weight: 12, rarity: "uncommon" },
+    { kind: "coins",     value: 250,  emoji: "💰", label: "250", weight: 10, rarity: "uncommon" },
+    { kind: "coins",     value: 500,  emoji: "💵", label: "500", weight: 8,  rarity: "rare" },
+    { kind: "coins",     value: 1000, emoji: "💎", label: "1K",  weight: 5,  rarity: "epic" },
+    { kind: "coins",     value: 2000, emoji: "💎", label: "2K",  weight: 2,  rarity: "epic" },
+    // Подарки (в будущем — реальные подарки Telegram через бота)
+    { kind: "gift", gift: "heart",  emoji: "❤️", label: "Сердце",  weight: 3,  rarity: "rare" },
+    { kind: "gift", gift: "bear",   emoji: "🐻", label: "Медведь", weight: 1.5,rarity: "rare" },
+    { kind: "gift", gift: "rose",   emoji: "🌹", label: "Роза",    weight: 0.7,rarity: "epic" },
+    { kind: "gift", gift: "rocket", emoji: "🚀", label: "Ракета",  weight: 0.3,rarity: "legendary" },
+    { kind: "gift", gift: "ring",   emoji: "💍", label: "Кольцо",  weight: 0.1,rarity: "legendary" },
+];
+
+function pickRandomPrize() {
+    const total = CASE_PRIZES.reduce((s, p) => s + p.weight, 0);
+    let r = Math.random() * total;
+    for (const p of CASE_PRIZES) {
+        if ((r -= p.weight) <= 0) return p;
+    }
+    return CASE_PRIZES[0];
+}
+
+function pickPrizeByRarity(rarity) {
+    const pool = CASE_PRIZES.filter(p => p.rarity === rarity);
+    if (!pool.length) return CASE_PRIZES[0];
+    return pool[Math.floor(Math.random() * pool.length)];
+}
+
+/* КОЛЁСА — с подарками */
+const WHEEL_CONFIG = {
+    "wheel":      { cost: 10, items: [
+        { emoji: "💨", label: "0",      value: 0,    rarity: "common" },
+        { emoji: "🪙", label: "5",      value: 5,    rarity: "common" },
+        { emoji: "🪙", label: "10",     value: 10,   rarity: "common" },
+        { emoji: "🪙", label: "15",     value: 15,   rarity: "common" },
+        { emoji: "💰", label: "20",     value: 20,   rarity: "uncommon" },
+        { emoji: "💰", label: "25",     value: 25,   rarity: "uncommon" },
+        { emoji: "❤️", label: "Сердце", value: 150,  rarity: "rare" },
+        { emoji: "🎁", label: "50",     value: 50,   rarity: "rare" },
+    ]},
+    "wheel-free": { cost: 0, items: [
+        { emoji: "🪙", label: "5",      value: 5,    rarity: "common" },
+        { emoji: "🪙", label: "10",     value: 10,   rarity: "common" },
+        { emoji: "🪙", label: "15",     value: 15,   rarity: "common" },
+        { emoji: "💰", label: "20",     value: 20,   rarity: "uncommon" },
+        { emoji: "💰", label: "25",     value: 25,   rarity: "uncommon" },
+        { emoji: "💰", label: "30",     value: 30,   rarity: "uncommon" },
+        { emoji: "❤️", label: "Сердце", value: 150,  rarity: "rare" },
+        { emoji: "🎁", label: "50",     value: 50,   rarity: "epic" },
+    ]},
+    "wheel-vip":  { cost: 50, items: [
+        { emoji: "💰", label: "500",  value: 500,   rarity: "uncommon" },
+        { emoji: "💎", label: "750",  value: 750,   rarity: "uncommon" },
+        { emoji: "💎", label: "1K",   value: 1000,  rarity: "rare" },
+        { emoji: "👑", label: "1.5K", value: 1500,  rarity: "rare" },
+        { emoji: "👑", label: "2K",   value: 2000,  rarity: "epic" },
+        { emoji: "🌹", label: "Роза", value: 250,   rarity: "epic" },
+        { emoji: "🚀", label: "Ракета", value: 500, rarity: "legendary" },
+        { emoji: "💍", label: "Кольцо", value: 1000,rarity: "jackpot" },
+    ]},
+};
+
 /* LOTTIE */
 function loadLottie(container, url, id) {
     if (typeof lottie === "undefined") return null;
     if (id && lottieInstances[id]) { lottieInstances[id].destroy(); delete lottieInstances[id]; }
     try {
-        const inst = lottie.loadAnimation({
-            container, renderer: "svg", loop: true, autoplay: true, path: url,
-            rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: true },
-        });
+        const inst = lottie.loadAnimation({ container, renderer: "svg", loop: true, autoplay: true, path: url, rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: true } });
         if (id) lottieInstances[id] = inst;
         return inst;
     } catch (e) { console.error(e); return null; }
@@ -95,50 +151,20 @@ function initLottie() {
 
 /* DB */
 function loadDemo() {
-    try {
-        const raw = localStorage.getItem(LS_KEY);
-        if (raw) {
-            const p = JSON.parse(raw);
-            return { ...defaultUser, balance: typeof p.balance === "number" ? p.balance : 50000,
-                cases_opened: p.cases_opened || 0, referrals: p.referrals || 0,
-                stars_spent: p.stars_spent || 0, total_wagered: p.total_wagered || 0,
-                best_drop: p.best_drop || 0, drops: Array.isArray(p.drops) ? p.drops : [],
-                last_free_case: p.last_free_case || 0, last_daily: p.last_daily || "",
-                last_free_wheel: p.last_free_wheel || 0 };
-        }
-    } catch (_) {}
+    try { const raw = localStorage.getItem(LS_KEY); if (raw) { const p = JSON.parse(raw); return { ...defaultUser, balance: typeof p.balance === "number" ? p.balance : 50000, cases_opened: p.cases_opened || 0, referrals: p.referrals || 0, stars_spent: p.stars_spent || 0, total_wagered: p.total_wagered || 0, best_drop: p.best_drop || 0, drops: Array.isArray(p.drops) ? p.drops : [], last_free_case: p.last_free_case || 0, last_daily: p.last_daily || "", last_free_wheel: p.last_free_wheel || 0 }; } } catch (_) {}
     return { ...defaultUser, balance: 50000 };
 }
 function saveDemo() {
     if (!DEMO) return;
-    try {
-        localStorage.setItem(LS_KEY, JSON.stringify({
-            balance: currentUser.balance, cases_opened: currentUser.cases_opened,
-            referrals: currentUser.referrals, stars_spent: currentUser.stars_spent,
-            total_wagered: currentUser.total_wagered, best_drop: currentUser.best_drop,
-            drops: currentUser.drops.slice(0, 30), last_free_case: currentUser.last_free_case,
-            last_daily: currentUser.last_daily, last_free_wheel: currentUser.last_free_wheel,
-        }));
-    } catch (_) {}
+    try { localStorage.setItem(LS_KEY, JSON.stringify({ balance: currentUser.balance, cases_opened: currentUser.cases_opened, referrals: currentUser.referrals, stars_spent: currentUser.stars_spent, total_wagered: currentUser.total_wagered, best_drop: currentUser.best_drop, drops: currentUser.drops.slice(0, 30), last_free_case: currentUser.last_free_case, last_daily: currentUser.last_daily, last_free_wheel: currentUser.last_free_wheel })); } catch (_) {}
 }
-function resetDemo() {
-    if (!confirm("Сбросить весь прогресс?")) return;
-    try { [LS_KEY, LS_PETS_KEY, LS_DECOR_KEY].forEach(k => localStorage.removeItem(k)); } catch (_) {}
-    location.reload();
-}
+function resetDemo() { if (!confirm("Сбросить весь прогресс?")) return; try { [LS_KEY, LS_PETS_KEY, LS_DECOR_KEY].forEach(k => localStorage.removeItem(k)); } catch (_) {}; location.reload(); }
 
 /* ПИТОМЦЫ */
-function loadPetsState() {
-    try {
-        const raw = localStorage.getItem(LS_PETS_KEY);
-        if (raw) { const p = JSON.parse(raw); state.ownedPets = p.owned || []; state.petPos = p.pos || "br"; state.petSize = p.size || "md"; state.petInHeader = p.inHeader || false; }
-    } catch (_) {}
-}
+function loadPetsState() { try { const raw = localStorage.getItem(LS_PETS_KEY); if (raw) { const p = JSON.parse(raw); state.ownedPets = p.owned || []; state.petPos = p.pos || "br"; state.petSize = p.size || "md"; state.petInHeader = p.inHeader || false; } } catch (_) {} }
 function savePetsState() { try { localStorage.setItem(LS_PETS_KEY, JSON.stringify({ owned: state.ownedPets, pos: state.petPos, size: state.petSize, inHeader: state.petInHeader })); } catch (_) {} }
 function hasPet(id) { return state.ownedPets.includes(id); }
-const PETS_LIST = [
-    { id: "cat", name: "Кот", emoji: "🐱", price: 25, url: LOTTIE_URLS.cat, desc: "Милый анимированный кот" },
-];
+const PETS_LIST = [{ id: "cat", name: "Кот", emoji: "🐱", price: 25, url: LOTTIE_URLS.cat, desc: "Милый анимированный кот" }];
 
 /* УКРАШЕНИЯ */
 const NAME_COLORS = [
@@ -163,12 +189,7 @@ const FRAMES = [
     { id: "legendary", name: "Легендарная", cls: "frame-legendary", price: 50, currency: "stars" },
     { id: "royal", name: "Королевская", cls: "frame-royal", price: 75, currency: "stars" },
 ];
-function loadDecorState() {
-    try {
-        const raw = localStorage.getItem(LS_DECOR_KEY);
-        if (raw) { const p = JSON.parse(raw); state.nameColor = p.color || ""; state.frameId = p.frame || ""; }
-    } catch (_) {}
-}
+function loadDecorState() { try { const raw = localStorage.getItem(LS_DECOR_KEY); if (raw) { const p = JSON.parse(raw); state.nameColor = p.color || ""; state.frameId = p.frame || ""; } } catch (_) {} }
 function saveDecorState() { try { localStorage.setItem(LS_DECOR_KEY, JSON.stringify({ color: state.nameColor, frame: state.frameId })); } catch (_) {} }
 
 /* ЭКОНОМИКА */
@@ -176,10 +197,14 @@ const CASE_COSTS = { "10": 10, "50": 50, "250": 250, "1000": 1000, "5000": 5000,
 const MULTIPLIERS = [0.0, 0.5, 1.0, 1.5, 2.0, 4.0];
 const MULT_WEIGHTS = [40, 20, 20, 12, 6, 2];
 const MULT_TO_RARITY = [
-    { key: "common", label: "Пусто", emoji: "💨" }, { key: "common", label: "Обычный", emoji: "📦" },
-    { key: "uncommon", label: "Хороший", emoji: "✨" }, { key: "rare", label: "Редкий", emoji: "💎" },
-    { key: "epic", label: "Эпик", emoji: "🔥" }, { key: "legendary", label: "ЛЕГЕНДА", emoji: "👑" },
+    { key: "common", label: "Пусто", emoji: "💨", rarity: "common" },
+    { key: "common", label: "Обычный", emoji: "📦", rarity: "common" },
+    { key: "uncommon", label: "Хороший", emoji: "✨", rarity: "uncommon" },
+    { key: "rare", label: "Редкий", emoji: "💎", rarity: "rare" },
+    { key: "epic", label: "Эпик", emoji: "🔥", rarity: "epic" },
+    { key: "legendary", label: "ЛЕГЕНДА", emoji: "👑", rarity: "legendary" },
 ];
+
 function pickMultiplierIndex() {
     const total = MULT_WEIGHTS.reduce((a, b) => a + b, 0);
     let r = Math.random() * total;
@@ -205,11 +230,7 @@ async function demoApi(path, body) {
     await new Promise(r => setTimeout(r, 60));
     switch (path) {
         case "/api/me":
-            return { id: currentUser.id, first_name: currentUser.first_name, last_name: currentUser.last_name,
-                username: currentUser.username, avatar_url: currentUser.avatar_url, balance: currentUser.balance,
-                cases_opened: currentUser.cases_opened, referrals: currentUser.referrals,
-                stars_spent: currentUser.stars_spent, rank: currentUser.rank, total_users: currentUser.total_users,
-                ref_link: currentUser.ref_link, is_admin: true, happy_hours: isHappyHours() };
+            return { id: currentUser.id, first_name: currentUser.first_name, last_name: currentUser.last_name, username: currentUser.username, avatar_url: currentUser.avatar_url, balance: currentUser.balance, cases_opened: currentUser.cases_opened, referrals: currentUser.referrals, stars_spent: currentUser.stars_spent, rank: currentUser.rank, total_users: currentUser.total_users, ref_link: currentUser.ref_link, is_admin: true, happy_hours: isHappyHours() };
         case "/api/leaderboard": return { top: generateLeaderboard() };
         case "/api/open_case": {
             const cost = CASE_COSTS[body.case_id]; if (!cost) throw new Error("Неверный кейс");
@@ -242,14 +263,15 @@ async function demoApi(path, body) {
         case "/api/spin_wheel": {
             if (currentUser.balance < 10) throw new Error("Недостаточно монет");
             currentUser.balance -= 10; currentUser.total_wagered += 10;
-            const prizes = [0, 5, 10, 15, 20, 25, 30, 50]; const weights = [25, 20, 18, 12, 10, 8, 5, 2];
+            const items = WHEEL_CONFIG["wheel"].items;
+            const weights = [25, 20, 18, 12, 10, 8, 5, 2];
             const total = weights.reduce((a, b) => a + b, 0);
             let r = Math.random() * total, idx = 0;
             for (let i = 0; i < weights.length; i++) if ((r -= weights[i]) <= 0) { idx = i; break; }
-            const reward = applyHappy(prizes[idx]);
+            const reward = applyHappy(items[idx].value);
             currentUser.balance += reward; currentUser.cases_opened++;
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-            addDrop("Колесо фортуны", reward - 10, reward >= 30);
+            addDrop("Колесо фортуны", reward - 10, reward >= 100);
             saveDemo();
             return { index: idx, reward, cost: 10, balance: currentUser.balance, win: reward > 0 };
         }
@@ -257,22 +279,24 @@ async function demoApi(path, body) {
             const now = Date.now();
             if (now - (currentUser.last_free_wheel || 0) < 3600000) throw new Error("Раз в час");
             currentUser.last_free_wheel = now;
-            const prizes = [5, 10, 15, 20, 25, 30, 40, 50];
-            const reward = applyHappy(prizes[Math.floor(Math.random() * prizes.length)]);
+            const items = WHEEL_CONFIG["wheel-free"].items;
+            const idx = Math.floor(Math.random() * items.length);
+            const reward = applyHappy(items[idx].value);
             currentUser.balance += reward; currentUser.cases_opened++;
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-            addDrop("Бесплатное колесо", reward, reward >= 30);
+            addDrop("Бесплатное колесо", reward, reward >= 100);
             saveDemo();
-            return { index: Math.floor(Math.random() * 8), reward, balance: currentUser.balance };
+            return { index: idx, reward, balance: currentUser.balance };
         }
         case "/api/spin_wheel_vip": {
-            const prizes = [500, 750, 1000, 1500, 2000, 2500, 3000, 5000];
-            const reward = applyHappy(prizes[Math.floor(Math.random() * prizes.length)]);
+            const items = WHEEL_CONFIG["wheel-vip"].items;
+            const idx = Math.floor(Math.random() * items.length);
+            const reward = applyHappy(items[idx].value);
             currentUser.balance += reward; currentUser.cases_opened++;
             if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-            addDrop("VIP-колесо", reward, reward >= 2500);
+            addDrop("VIP-колесо", reward, reward >= 500);
             saveDemo();
-            return { index: Math.floor(Math.random() * 8), reward, balance: currentUser.balance };
+            return { index: idx, reward, balance: currentUser.balance };
         }
         case "/api/roll_dice": {
             if (currentUser.balance < 10) throw new Error("Недостаточно монет");
@@ -387,24 +411,24 @@ function renderDropsFeed() {
 const CASE_LABEL = { "10": "Пыль", "50": "Пепел", "250": "Мелл", "1000": "Telega", "5000": "Оникс", "10000": "Бездна" };
 const STAR_LABEL = { "1": "Фарм", "3": "Базовый", "5": "Лёгкий", "10": "Удача", "25": "Везучий", "50": "Подарки", "75": "Победа", "100": "Фортуна", "250": "Джекпот", "500": "NFT" };
 const COIN_CASES = [
-    { id: "10", name: "Пыль", price: 10, emoji: "📦", tag: "Старт", preview: ["📦","✨","💎"] },
-    { id: "50", name: "Пепел", price: 50, emoji: "💼", tag: "Обычный", preview: ["✨","💎","🔥"] },
-    { id: "250", name: "Мелл", price: 250, emoji: "🔥", tag: "Хайроллер", preview: ["💎","🔥","👑"] },
-    { id: "1000", name: "Telega", price: 1000, emoji: "💎", tag: "Редкий", preview: ["🔥","👑","🌟"] },
-    { id: "5000", name: "Оникс", price: 5000, emoji: "👑", tag: "Элита", preview: ["👑","🌟","💎"] },
-    { id: "10000", name: "Бездна", price: 10000, emoji: "🌌", tag: "ТОП", preview: ["🌟","👑","🔥"] },
+    { id: "10", name: "Пыль", price: 10, emoji: "📦", tag: "Старт", preview: ["💨","🪙","❤️"] },
+    { id: "50", name: "Пепел", price: 50, emoji: "💼", tag: "Обычный", preview: ["🪙","❤️","🐻"] },
+    { id: "250", name: "Мелл", price: 250, emoji: "🔥", tag: "Хайроллер", preview: ["❤️","🌹","🐻"] },
+    { id: "1000", name: "Telega", price: 1000, emoji: "💎", tag: "Редкий", preview: ["🌹","🚀","💍"] },
+    { id: "5000", name: "Оникс", price: 5000, emoji: "👑", tag: "Элита", preview: ["🚀","💍","🐻"] },
+    { id: "10000", name: "Бездна", price: 10000, emoji: "🌌", tag: "ТОП", preview: ["💍","🚀","👑"] },
 ];
 const STAR_CASES = [
-    { id: "1", name: "Фарм", price: 1, emoji: "🌱", tag: "1⭐", preview: ["🌱","✨","💎"] },
-    { id: "3", name: "Базовый", price: 3, emoji: "🎯", tag: "3⭐", preview: ["🎯","✨","💎"] },
-    { id: "5", name: "Лёгкий", price: 5, emoji: "🎈", tag: "5⭐", preview: ["🎈","✨","💎"] },
-    { id: "10", name: "Удача", price: 10, emoji: "🍀", tag: "10⭐", preview: ["🍀","💎","🔥"] },
-    { id: "25", name: "Везучий", price: 25, emoji: "🎪", tag: "25⭐", preview: ["🎪","💎","🔥"] },
-    { id: "50", name: "Подарки", price: 50, emoji: "🎁", tag: "50⭐", preview: ["🎁","🔥","👑"] },
-    { id: "75", name: "Победа", price: 75, emoji: "🏆", tag: "75⭐", preview: ["🏆","🔥","👑"] },
-    { id: "100", name: "Фортуна", price: 100, emoji: "⭐", tag: "100⭐", preview: ["⭐","👑","🌟"] },
-    { id: "250", name: "Джекпот", price: 250, emoji: "💥", tag: "250⭐", preview: ["💥","👑","🌟"] },
-    { id: "500", name: "NFT", price: 500, emoji: "🪐", tag: "500⭐", preview: ["🪐","🌟","👑"] },
+    { id: "1", name: "Фарм", price: 1, emoji: "🌱", tag: "1⭐", preview: ["🪙","🪙","❤️"] },
+    { id: "3", name: "Базовый", price: 3, emoji: "🎯", tag: "3⭐", preview: ["🪙","❤️","🐻"] },
+    { id: "5", name: "Лёгкий", price: 5, emoji: "🎈", tag: "5⭐", preview: ["❤️","🐻","🌹"] },
+    { id: "10", name: "Удача", price: 10, emoji: "🍀", tag: "10⭐", preview: ["🐻","🌹","🚀"] },
+    { id: "25", name: "Везучий", price: 25, emoji: "🎪", tag: "25⭐", preview: ["🌹","🚀","💍"] },
+    { id: "50", name: "Подарки", price: 50, emoji: "🎁", tag: "50⭐", preview: ["🚀","💍","👑"] },
+    { id: "75", name: "Победа", price: 75, emoji: "🏆", tag: "75⭐", preview: ["💍","🚀","👑"] },
+    { id: "100", name: "Фортуна", price: 100, emoji: "⭐", tag: "100⭐", preview: ["💍","🚀","👑"] },
+    { id: "250", name: "Джекпот", price: 250, emoji: "💥", tag: "250⭐", preview: ["💍","🚀","👑"] },
+    { id: "500", name: "NFT", price: 500, emoji: "🪐", tag: "500⭐", preview: ["🪐","💍","🚀"] },
 ];
 
 /* BOOTSTRAP */
@@ -425,19 +449,17 @@ function bootstrap() {
         initLottie();
         buildCases(); buildStarCases(); buildCarouselDots(); buildTopUpOptions();
         buildShopGrid(); buildVipGrid(); buildPetsGrid(); renderDecorShopPanel();
-        buildWheel("wheel", [0, 5, 10, 15, 20, 25, 30, 50]);
-        buildWheel("wheel-free", [5, 10, 15, 20, 25, 30, 40, 50]);
-        buildWheel("wheel-vip", [500, 750, 1000, 1500, 2000, 2500, 3000, 5000]);
+        buildWheel("wheel", WHEEL_CONFIG["wheel"].items);
+        buildWheel("wheel-free", WHEEL_CONFIG["wheel-free"].items);
+        buildWheel("wheel-vip", WHEEL_CONFIG["wheel-vip"].items);
+        buildCoinEdges();
         bindCarouselSwipe(); bindEdgeSwipe(); bindSaperLevels();
         seedAmbientDrops(); initMusic();
         renderAll(); renderActivePet(); startFreeCaseTimer(); startHappyTimer(); renderTopToday();
         startFreeWheelTimer();
     } catch (e) { console.error(e); toast("Ошибка: " + e.message, "error", 5000); }
 
-    setTimeout(() => {
-        document.getElementById("global-loader").classList.add("hidden");
-        document.getElementById("app").classList.remove("hidden");
-    }, 800);
+    setTimeout(() => { document.getElementById("global-loader").classList.add("hidden"); document.getElementById("app").classList.remove("hidden"); }, 800);
 }
 function renderAll() {
     renderProfile(); renderSideMenu(); renderDropsFeed();
@@ -456,7 +478,7 @@ function renderTopToday() {
 /* SIDE MENU */
 function openSideMenu() { document.getElementById("side-menu").classList.add("open"); document.getElementById("side-overlay").classList.add("open"); haptic("light"); }
 function closeSideMenu() { document.getElementById("side-menu").classList.remove("open"); document.getElementById("side-overlay").classList.remove("open"); }
-document.querySelectorAll(".side-item").forEach(btn => {
+document.querySelectorAll(".side-item[data-tab]").forEach(btn => {
     btn.addEventListener("click", () => {
         const tab = btn.dataset.tab;
         if (!tab) return;
@@ -465,6 +487,18 @@ document.querySelectorAll(".side-item").forEach(btn => {
         switchTab(tab); closeSideMenu();
     });
 });
+// FIX: Support button — не переключает таб, просто открывает модалку + main tab активен
+const sideSupportBtn = document.getElementById("side-support-btn");
+if (sideSupportBtn) {
+    sideSupportBtn.addEventListener("click", () => {
+        closeSideMenu();
+        // Сначала переключаемся на главную, чтобы контент был не пустой
+        switchTab("home");
+        document.querySelectorAll(".side-item").forEach(b => b.classList.remove("active"));
+        document.querySelector('.side-item[data-tab="home"]').classList.add("active");
+        openSupport();
+    });
+}
 function renderSideMenu() {
     const u = tg.initDataUnsafe?.user || {};
     const avatar = document.getElementById("side-avatar");
@@ -497,11 +531,7 @@ function bindEdgeSwipe() {
     if (!el) return;
     let startX = 0, startY = 0;
     const onStart = (e) => { const t = e.touches ? e.touches[0] : e; startX = t.clientX; startY = t.clientY; };
-    const onMove = (e) => {
-        const t = e.touches ? e.touches[0] : e;
-        const dx = t.clientX - startX, dy = t.clientY - startY;
-        if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy) && dx > 0) openSideMenu();
-    };
+    const onMove = (e) => { const t = e.touches ? e.touches[0] : e; const dx = t.clientX - startX, dy = t.clientY - startY; if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy) && dx > 0) openSideMenu(); };
     el.addEventListener("touchstart", onStart, { passive: true });
     el.addEventListener("touchmove", onMove, { passive: true });
     el.addEventListener("click", openSideMenu);
@@ -546,25 +576,15 @@ function renderActivePet() {
     positions.forEach(p => { const el = document.getElementById(`profile-pet-${p}`); if (el) { el.style.display = "none"; el.innerHTML = ""; } });
     const headerSlot = document.getElementById("header-pet-slot");
     if (headerSlot) { headerSlot.style.display = "none"; headerSlot.innerHTML = ""; }
-
     if (state.petLottie) { state.petLottie.destroy(); state.petLottie = null; }
     if (state.headerPetLottie) { state.headerPetLottie.destroy(); state.headerPetLottie = null; }
-
     if (!hasPet("cat")) return;
-
     if (state.petInHeader) {
-        if (headerSlot) {
-            headerSlot.style.display = "block";
-            setTimeout(() => { state.headerPetLottie = loadLottie(headerSlot, LOTTIE_URLS.cat, "headerPet"); }, 50);
-        }
+        if (headerSlot) { headerSlot.style.display = "block"; setTimeout(() => { state.headerPetLottie = loadLottie(headerSlot, LOTTIE_URLS.cat, "headerPet"); }, 50); }
     } else {
         const pos = state.petPos;
         const slot = document.getElementById(`profile-pet-${pos}`);
-        if (slot) {
-            slot.style.display = "block";
-            slot.className = `pet-slot-abs pet-pos-${pos} pet-size-${state.petSize}`;
-            setTimeout(() => { state.petLottie = loadLottie(slot, LOTTIE_URLS.cat, "profilePet"); }, 50);
-        }
+        if (slot) { slot.style.display = "block"; slot.className = `pet-slot-abs pet-pos-${pos} pet-size-${state.petSize}`; setTimeout(() => { state.petLottie = loadLottie(slot, LOTTIE_URLS.cat, "profilePet"); }, 50); }
     }
     renderSideMenu();
 }
@@ -589,13 +609,8 @@ function animateBalance(from, to, duration = 700) {
 function setBalance(v, animate = true, fromValue = null) {
     const old = fromValue !== null ? fromValue : currentUser.balance;
     currentUser.balance = v;
-    if (animate && old !== v) {
-        animateBalance(old, v, 700);
-        const pill = document.getElementById("balance-pill");
-        if (pill) { pill.classList.add("bump"); setTimeout(() => pill.classList.remove("bump"), 400); }
-    } else {
-        ["coins", "profile-balance", "side-balance-val"].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = v.toLocaleString("ru-RU"); });
-    }
+    if (animate && old !== v) { animateBalance(old, v, 700); const pill = document.getElementById("balance-pill"); if (pill) { pill.classList.add("bump"); setTimeout(() => pill.classList.remove("bump"), 400); } }
+    else { ["coins", "profile-balance", "side-balance-val"].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = v.toLocaleString("ru-RU"); }); }
     saveDemo();
 }
 
@@ -626,12 +641,9 @@ function switchTab(tabId) {
     const el = document.getElementById(`tab-${tabId}`);
     if (el) el.classList.add("active");
     document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tabId));
-    document.querySelectorAll(".side-item").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tabId));
+    document.querySelectorAll(".side-item[data-tab]").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tabId));
     if (tabId !== "games") closeGameView();
-    if (tabId === "about" && !lottieInstances.about && typeof lottie !== "undefined") {
-        const slot = document.getElementById("about-lottie");
-        if (slot) lottieInstances.about = loadLottie(slot, LOTTIE_URLS.about, "about");
-    }
+    if (tabId === "about" && !lottieInstances.about && typeof lottie !== "undefined") { const slot = document.getElementById("about-lottie"); if (slot) lottieInstances.about = loadLottie(slot, LOTTIE_URLS.about, "about"); }
     haptic("light");
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -716,16 +728,8 @@ function startHappyTimer() {
     function update() {
         const now = new Date();
         const h = now.getHours(), m = now.getMinutes();
-        if (h >= 20 && h < 22) {
-            const left = (22 * 60) - (h * 60 + m);
-            const hh = Math.floor(left / 60), mm = left % 60;
-            el.textContent = `осталось ${hh}ч ${String(mm).padStart(2, "0")}м`;
-        } else {
-            const target = h < 20 ? 20 : 32;
-            const left = (target * 60) - (h * 60 + m);
-            const hh = Math.floor(left / 60), mm = left % 60;
-            el.textContent = `через ${hh}ч ${String(mm).padStart(2, "0")}м`;
-        }
+        if (h >= 20 && h < 22) { const left = (22 * 60) - (h * 60 + m); const hh = Math.floor(left / 60), mm = left % 60; el.textContent = `осталось ${hh}ч ${String(mm).padStart(2, "0")}м`; }
+        else { const target = h < 20 ? 20 : 32; const left = (target * 60) - (h * 60 + m); const hh = Math.floor(left / 60), mm = left % 60; el.textContent = `через ${hh}ч ${String(mm).padStart(2, "0")}м`; }
     }
     update(); setInterval(update, 60000);
 }
@@ -761,7 +765,11 @@ async function openStarCase(starId) {
     } else toast("Звёздные кейсы — в боте ⭐", "info");
 }
 
-/* ГЛАВНЫЙ ФИКС: анимация кейса */
+function makeReelItemHTML(prize) {
+    const cls = `r-${prize.rarity}`;
+    return `<div class="ci-icon">${prize.emoji}</div><div class="ci-label">${escapeHtml(prize.label)}</div>`;
+}
+
 async function runCaseAnimation(title, apiFn) {
     if (state.caseOpening) return;
     state.caseOpening = true;
@@ -772,7 +780,6 @@ async function runCaseAnimation(title, apiFn) {
     const titleEl = document.getElementById("case-modal-title");
     const resEl = document.getElementById("case-modal-result");
 
-    // ПРИНУДИТЕЛЬНЫЙ сброс всего перед новым прокрутом
     reel.style.transition = "none";
     reel.style.transform = "translate3d(0, 0, 0)";
     reel.style.willChange = "auto";
@@ -783,14 +790,14 @@ async function runCaseAnimation(title, apiFn) {
 
     const WINNER_INDEX = 50;
     const items = [];
-    for (let i = 0; i < 60; i++) items.push(MULT_TO_RARITY[Math.floor(Math.random() * MULT_TO_RARITY.length)]);
-    items[WINNER_INDEX] = { key: "rare", label: "...", emoji: "❓" };
+    for (let i = 0; i < 60; i++) items.push(pickRandomPrize());
+    items[WINNER_INDEX] = pickRandomPrize();
 
     const fragment = document.createDocumentFragment();
     items.forEach(it => {
         const div = document.createElement("div");
-        div.className = `case-item r-${it.key}`;
-        div.innerHTML = `${it.emoji}<small>${escapeHtml(it.label)}</small>`;
+        div.className = `case-item r-${it.rarity}`;
+        div.innerHTML = makeReelItemHTML(it);
         fragment.appendChild(div);
     });
     reel.appendChild(fragment);
@@ -798,7 +805,6 @@ async function runCaseAnimation(title, apiFn) {
     modal.classList.remove("hidden");
     void reel.offsetWidth;
 
-    // Запрос к API
     let result = null, apiError = null;
     try { result = await apiFn(); } catch (e) { apiError = e; }
 
@@ -809,32 +815,31 @@ async function runCaseAnimation(title, apiFn) {
         return;
     }
 
-    // Показ победителя в ленте
-    const winnerRarity = MULT_TO_RARITY[result.multiplier_index] || MULT_TO_RARITY[0];
+    // Определяем настоящий приз по рарити
+    const realRarity = MULT_TO_RARITY[result.multiplier_index]?.rarity || "common";
+    const winnerPrize = result.win ? pickPrizeByRarity(realRarity) : CASE_PRIZES[0]; // для проигрыша — пусто
     const winnerEl = reel.children[WINNER_INDEX];
     if (winnerEl) {
-        winnerEl.className = `case-item r-${winnerRarity.key}`;
-        winnerEl.innerHTML = `${winnerRarity.emoji}<small>${escapeHtml(winnerRarity.label)}</small>`;
+        winnerEl.className = `case-item r-${winnerPrize.rarity}`;
+        winnerEl.innerHTML = makeReelItemHTML(winnerPrize);
     }
     void reel.offsetWidth;
 
     let wrapWidth = 340;
     const wrapEl = modal.querySelector(".case-reel-wrap");
     if (wrapEl) wrapWidth = wrapEl.getBoundingClientRect().width || 340;
-    const ITEM_WIDTH = 90 + 6;
+    const ITEM_WIDTH = 100 + 6;
     const targetX = -(WINNER_INDEX * ITEM_WIDTH + ITEM_WIDTH / 2 - wrapWidth / 2);
     const jitter = (Math.random() - 0.5) * (ITEM_WIDTH * 0.4);
 
-    // КОНКРЕТНЫЙ cubic-bezier (не var!) + willChange
     reel.style.willChange = "transform";
     reel.style.transition = "transform 3.6s cubic-bezier(0.32, 0.72, 0, 1)";
     reel.style.transform = `translate3d(${targetX + jitter}px, 0, 0)`;
 
-    // Автоматическое закрытие через 3.7 сек
-    setTimeout(() => { if (state.caseOpening) showCaseResult(result); }, 3700);
+    setTimeout(() => { if (state.caseOpening) showCaseResult(result, winnerPrize); }, 3700);
 }
 
-function showCaseResult(result) {
+function showCaseResult(result, prize) {
     if (!state.caseOpening || !result) return;
     state.caseOpening = false;
     const modal = document.getElementById("case-modal");
@@ -844,7 +849,8 @@ function showCaseResult(result) {
         const profit = result.reward - result.cost;
         const profitColor = profit >= 0 ? "#22dd88" : "#ff3b5b";
         const profitSign = profit >= 0 ? "+" : "";
-        resEl.innerHTML = `<span style="color:${isJackpot ? '#ff3b5b' : '#ffd700'};text-shadow:0 0 30px currentColor">${isJackpot ? "🎉 JACKPOT!" : "🏆 ПОБЕДА!"}</span><div style="margin-top:14px;font-size:20px;color:#fff">Выигрыш: <b>${result.reward.toLocaleString("ru-RU")}</b> 🪙</div><div style="margin-top:6px;font-size:15px;color:${profitColor}">Чистыми: <b>${profitSign}${profit.toLocaleString("ru-RU")}</b> 🪙</div>`;
+        const prizeText = prize.kind === "gift" ? `${prize.emoji} ${prize.label}` : `${prize.emoji} ${result.reward.toLocaleString("ru-RU")} 🪙`;
+        resEl.innerHTML = `<div style="font-size:32px;margin-bottom:8px">${prize.emoji}</div><span style="color:${isJackpot ? '#ff3b5b' : '#ffd700'};text-shadow:0 0 30px currentColor">${isJackpot ? "🎉 JACKPOT!" : "🏆 ПОБЕДА!"}</span><div style="margin-top:14px;font-size:20px;color:#fff">${prizeText}</div><div style="margin-top:6px;font-size:15px;color:${profitColor}">Чистыми: <b>${profitSign}${profit.toLocaleString("ru-RU")}</b> 🪙</div>`;
         hapticNotify("success");
     } else {
         resEl.innerHTML = `<span style="color:#ff3b5b;font-size:22px">💔 Проигрыш</span><div style="margin-top:14px;font-size:15px;color:#ff3b5b">Чистыми: <b>-${result.cost.toLocaleString("ru-RU")}</b> 🪙</div>`;
@@ -854,17 +860,11 @@ function showCaseResult(result) {
     setBalance(result.balance, true, balanceBefore);
     renderProfile(); renderLeaderboard();
 
-    // Автозакрытие + очистка ленты
     state.caseOpening = true;
     setTimeout(() => {
         modal.classList.add("hidden");
         const reel = document.getElementById("case-reel");
-        if (reel) {
-            reel.style.transition = "none";
-            reel.style.transform = "translate3d(0, 0, 0)";
-            reel.style.willChange = "auto";
-            reel.innerHTML = "";
-        }
+        if (reel) { reel.style.transition = "none"; reel.style.transform = "translate3d(0, 0, 0)"; reel.style.willChange = "auto"; reel.innerHTML = ""; }
         state.caseOpening = false;
     }, 2400);
 }
@@ -873,12 +873,7 @@ function forceCloseCase() {
     const modal = document.getElementById("case-modal");
     if (modal) modal.classList.add("hidden");
     const reel = document.getElementById("case-reel");
-    if (reel) {
-        reel.style.transition = "none";
-        reel.style.transform = "translate3d(0, 0, 0)";
-        reel.style.willChange = "auto";
-        reel.innerHTML = "";
-    }
+    if (reel) { reel.style.transition = "none"; reel.style.transform = "translate3d(0, 0, 0)"; reel.style.willChange = "auto"; reel.innerHTML = ""; }
 }
 
 /* БЕСПЛАТНЫЙ КЕЙС */
@@ -906,28 +901,22 @@ async function openFreeCase() {
     renderProfile(); renderLeaderboard();
 }
 
-/* КОЛЁСА */
-const WHEEL_PRIZES = {
-    "wheel": [0, 5, 10, 15, 20, 25, 30, 50],
-    "wheel-free": [5, 10, 15, 20, 25, 30, 40, 50],
-    "wheel-vip": [500, 750, 1000, 1500, 2000, 2500, 3000, 5000],
-};
-let wheelRotations = { "wheel": 0, "wheel-free": 0, "wheel-vip": 0 };
-
-function buildWheel(wheelId, prizes) {
+/* КОЛЁСА — с подарками */
+function buildWheel(wheelId, items) {
     const inner = document.getElementById(`${wheelId}-inner`);
     if (!inner) return;
     inner.innerHTML = "";
-    const total = prizes.length, seg = 360 / total;
-    prizes.forEach((prize, i) => {
+    const total = items.length, seg = 360 / total;
+    items.forEach((it, i) => {
         const label = document.createElement("div");
         label.className = "wheel-seg-label";
         const angle = i * seg + seg / 2;
         label.style.transform = `rotate(${angle - 90}deg) translate(90px, 0)`;
-        label.textContent = prize === 0 ? "💀" : prize >= 1000 ? `${Math.floor(prize/1000)}K` : prize + "🪙";
+        label.textContent = it.label;
         inner.appendChild(label);
     });
 }
+let wheelRotations = { "wheel": 0, "wheel-free": 0, "wheel-vip": 0 };
 
 async function spinWheelGeneric(wheelId, apiPath, btnId, resultId) {
     const btn = document.getElementById(btnId);
@@ -942,8 +931,8 @@ async function spinWheelGeneric(wheelId, apiPath, btnId, resultId) {
     try { result = await apiCall(apiPath, {}); }
     catch (e) { toast(e.message, "error"); btn.disabled = false; return; }
 
-    const prizes = WHEEL_PRIZES[wheelId];
-    const seg = 360 / prizes.length;
+    const items = WHEEL_CONFIG[wheelId].items;
+    const seg = 360 / items.length;
     const current = wheelRotations[wheelId];
     const normalizedCurrent = ((current % 360) + 360) % 360;
     const targetIn360 = (360 - (result.index * seg + seg / 2)) % 360;
@@ -952,8 +941,9 @@ async function spinWheelGeneric(wheelId, apiPath, btnId, resultId) {
     wheelEl.style.transform = `rotate(${wheelRotations[wheelId]}deg)`;
 
     setTimeout(() => {
+        const item = items[result.index];
         if (result.reward > 0) {
-            resultEl.textContent = `🎉 +${result.reward.toLocaleString("ru-RU")} 🪙`;
+            resultEl.innerHTML = `${item.emoji} +${result.reward.toLocaleString("ru-RU")} 🪙`;
             resultEl.classList.add("win");
             hapticNotify("success");
         } else {
@@ -977,7 +967,6 @@ function spinWheel() { return spinWheelGeneric("wheel", "/api/spin_wheel", "spin
 function spinWheelFree() { return spinWheelGeneric("wheel-free", "/api/spin_wheel_free", "spin-free-btn", "wheel-free-result"); }
 function spinWheelVip() { return spinWheelGeneric("wheel-vip", "/api/spin_wheel_vip", "spin-vip-btn", "wheel-vip-result"); }
 
-/* Таймер бесплатного колеса */
 let freeWheelTimer = null;
 function startFreeWheelTimer() {
     if (freeWheelTimer) clearInterval(freeWheelTimer);
@@ -990,14 +979,10 @@ function updateFreeWheelButton() {
     const diff = Date.now() - (currentUser.last_free_wheel || 0);
     const cooldown = 60 * 60 * 1000;
     if (diff >= cooldown) { btn.disabled = false; btn.textContent = "Крутить бесплатно"; }
-    else {
-        const left = cooldown - diff;
-        const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
-        btn.disabled = true; btn.textContent = `Через ${m}м ${String(s).padStart(2,"0")}с`;
-    }
+    else { const left = cooldown - diff; const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000); btn.disabled = true; btn.textContent = `Через ${m}м ${String(s).padStart(2,"0")}с`; }
 }
 
-/* МОНЕТКА 3D */
+/* МОНЕТКА 3D — БЕЗ автосброса, полноценное вращение */
 async function playCoin(choice) {
     if (state.coinPlaying) return;
     state.coinPlaying = true;
@@ -1009,24 +994,22 @@ async function playCoin(choice) {
     btnEagle.disabled = true; btnKing.disabled = true;
     resultEl.textContent = ""; resultEl.className = "game-result";
 
-    // Сброс вращения перед новым броском
-    coinEl.style.transition = "none";
-    coinEl.style.transform = "rotateY(0deg)";
-    void coinEl.offsetWidth;
-
     let result;
     try { result = await apiCall("/api/play_coin", { choice }); }
     catch (e) { toast(e.message, "error"); btnEagle.disabled = false; btnKing.disabled = false; state.coinPlaying = false; return; }
 
-    // КУМУЛЯТИВНОЕ вращение: 6-10 оборотов + финальный угол
-    const extraSpins = 360 * (6 + Math.floor(Math.random() * 4));
+    // Кумулятивное вращение: 8-14 оборотов + финальный угол
+    const spins = 8 + Math.floor(Math.random() * 6);
     const finalAngle = result.side === "eagle" ? 0 : 180;
-    // Сбрасываем state каждый раз, начинаем с 0 + много оборотов + финальный угол
-    const totalRotation = extraSpins + finalAngle;
-    state.coinRotation = totalRotation;
+    const currentRotation = state.coinRotation || 0;
+    const baseTarget = 360 * spins;
+    // Приводим к чёткому положению относительно текущего
+    const normalizedCurrent = ((currentRotation % 360) + 360) % 360;
+    const delta = (finalAngle - normalizedCurrent + 360) % 360;
+    state.coinRotation = currentRotation + baseTarget + delta;
 
-    coinEl.style.transition = "transform 2.5s cubic-bezier(0.32, 0.72, 0, 1)";
-    coinEl.style.transform = `rotateY(${totalRotation}deg)`;
+    coinEl.style.transition = `transform ${2.8 + Math.random() * 0.6}s cubic-bezier(0.32, 0.72, 0, 1)`;
+    coinEl.style.transform = `rotateY(${state.coinRotation}deg)`;
 
     setTimeout(() => {
         if (result.win) {
@@ -1042,14 +1025,36 @@ async function playCoin(choice) {
         renderProfile(); renderLeaderboard();
         btnEagle.disabled = false; btnKing.disabled = false;
         state.coinPlaying = false;
-        // Возврат в исходное состояние (без transition)
-        setTimeout(() => {
-            coinEl.style.transition = "none";
-            coinEl.style.transform = "rotateY(0deg)";
-            void coinEl.offsetWidth;
-            coinEl.style.transition = "transform 2.5s cubic-bezier(0.32, 0.72, 0, 1)";
-        }, 300);
-    }, 2600);
+    }, 3000);
+}
+/* Создаём боковые грани монеты */
+function buildCoinEdges() {
+    const coin = document.getElementById("coin3d");
+    if (!coin) return;
+    // Удаляем старые edges
+    coin.querySelectorAll(".coin-edge").forEach(e => e.remove());
+    const SEGMENTS = 24;
+    const radius = 80;
+    const thickness = 20;
+    for (let i = 0; i < SEGMENTS; i++) {
+        const angle = (360 / SEGMENTS) * i;
+        const edge = document.createElement("div");
+        edge.className = "coin-edge";
+        edge.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
+        edge.style.position = "absolute";
+        edge.style.width = `${thickness}px`;
+        edge.style.height = "160px";
+        edge.style.left = `${80 - thickness / 2}px`;
+        edge.style.top = "0";
+        edge.style.background = "linear-gradient(180deg, #8a6a00, #d4a017, #8a6a00)";
+        edge.style.borderRadius = "2px";
+        edge.style.backfaceVisibility = "visible";
+        edge.style.transformOrigin = "center center";
+        // Слегка затемняем боковые для объёма
+        const bright = 0.7 + 0.3 * Math.cos(angle * Math.PI / 180);
+        edge.style.filter = `brightness(${bright})`;
+        coin.appendChild(edge);
+    }
 }
 
 /* КОСТИ */
@@ -1060,7 +1065,7 @@ function setDiceToValue(diceEl, value, delay = 0) {
     const extraY = 360 * (4 + Math.floor(Math.random() * 3));
     const extraZ = 90 * (Math.floor(Math.random() * 4) - 2);
     const duration = 2.2 + Math.random() * 0.5;
-    diceEl.style.transition = `transform ${duration}s var(--ease-smooth) ${delay}s`;
+    diceEl.style.transition = `transform ${duration}s cubic-bezier(0.32, 0.72, 0, 1) ${delay}s`;
     diceEl.style.transform = `rotateX(${rot.x + extraX}deg) rotateY(${rot.y + extraY}deg) rotateZ(${extraZ}deg)`;
 }
 async function rollDice() {
@@ -1211,25 +1216,15 @@ function buildTopUpOptions() {
     const box = document.getElementById("topup-options");
     if (!box) return;
     const quick = COIN_PACKS.slice(0, 4);
-    box.innerHTML = quick.map(o => `
-        <div class="topup-card" onclick="buyCoins(${o.coins})">
-            ${o.bonus ? `<div class="topup-card-badge">${o.bonus}</div>` : ''}
-            <div class="topup-card-coin">🪙</div>
-            <div class="topup-card-amount">${o.coins.toLocaleString("ru-RU")}</div>
-            <div class="topup-card-price">${o.stars} ⭐</div>
-        </div>
-    `).join("") + `<div class="topup-card custom" onclick="openCustomTopUp()"><div class="topup-card-coin">✨</div><div><div class="topup-card-amount">Своя сумма</div><div class="topup-card-price">от 100 🪙</div></div></div>`;
+    box.innerHTML = quick.map(o => `<div class="topup-card" onclick="buyCoins(${o.coins})">${o.bonus ? `<div class="topup-card-badge">${o.bonus}</div>` : ''}<div class="topup-card-coin">🪙</div><div class="topup-card-amount">${o.coins.toLocaleString("ru-RU")}</div><div class="topup-card-price">${o.stars} ⭐</div></div>`).join("") + `<div class="topup-card custom" onclick="openCustomTopUp()"><div class="topup-card-coin">✨</div><div><div class="topup-card-amount">Своя сумма</div><div class="topup-card-price">от 100 🪙</div></div></div>`;
 }
 function buildShopGrid() {
     const grid = document.getElementById("shop-grid");
     if (!grid) return;
     let html = "";
     COIN_PACKS.forEach(o => {
-        if (o.cls === "mega") {
-            html += `<button class="shop-card coins mega" onclick="buyCoins(${o.coins})">${o.bonus ? `<div class="shop-badge best">${o.bonus}</div>` : ''}<div class="coin-big">💎</div><div class="coin-info"><div class="coin-amount">${o.coins.toLocaleString("ru-RU")} монет</div><div class="coin-stars">${o.stars} ⭐</div></div></button>`;
-        } else {
-            html += `<button class="shop-card coins ${o.cls}" onclick="buyCoins(${o.coins})">${o.bonus ? `<div class="coin-bonus">${o.bonus}</div>` : ''}<div class="coin-big">🪙</div><div class="coin-amount">${o.coins.toLocaleString("ru-RU")}</div><div class="coin-stars">${o.stars} ⭐</div></button>`;
-        }
+        if (o.cls === "mega") html += `<button class="shop-card coins mega" onclick="buyCoins(${o.coins})">${o.bonus ? `<div class="shop-badge best">${o.bonus}</div>` : ''}<div class="coin-big">💎</div><div class="coin-info"><div class="coin-amount">${o.coins.toLocaleString("ru-RU")} монет</div><div class="coin-stars">${o.stars} ⭐</div></div></button>`;
+        else html += `<button class="shop-card coins ${o.cls}" onclick="buyCoins(${o.coins})">${o.bonus ? `<div class="coin-bonus">${o.bonus}</div>` : ''}<div class="coin-big">🪙</div><div class="coin-amount">${o.coins.toLocaleString("ru-RU")}</div><div class="coin-stars">${o.stars} ⭐</div></button>`;
     });
     grid.innerHTML = html;
 }
@@ -1279,10 +1274,7 @@ function selectDecor(id) {
     saveDecorState(); renderProfile(); renderDecorShopPanel();
     toast("✅ Применено", "success"); hapticNotify("success");
 }
-function openDecorShop() {
-    switchTab("shop");
-    switchShopCat("perks");
-}
+function openDecorShop() { switchTab("shop"); switchShopCat("perks"); }
 function buildVipGrid() {
     const grid = document.getElementById("shop-vip");
     if (!grid) return;
@@ -1291,10 +1283,7 @@ function buildVipGrid() {
 function buildPetsGrid() {
     const grid = document.getElementById("shop-pets");
     if (!grid) return;
-    grid.innerHTML = PETS_LIST.map(p => {
-        const owned = hasPet(p.id);
-        return `<button class="shop-card pet ${owned ? 'owned' : ''}" onclick="${owned ? `openPetsManager()` : `openPetModal('${p.id}')`}"><div class="shop-coin">${p.emoji}</div><div class="shop-name">${p.name}</div><div class="shop-price">${owned ? "Настроить" : p.price + " ⭐"}</div></button>`;
-    }).join("");
+    grid.innerHTML = PETS_LIST.map(p => { const owned = hasPet(p.id); return `<button class="shop-card pet ${owned ? 'owned' : ''}" onclick="${owned ? `openPetsManager()` : `openPetModal('${p.id}')`}"><div class="shop-coin">${p.emoji}</div><div class="shop-name">${p.name}</div><div class="shop-price">${owned ? "Настроить" : p.price + " ⭐"}</div></button>`; }).join("");
 }
 async function buyCoins(coins) {
     haptic("medium");
@@ -1343,7 +1332,6 @@ function confirmBuyPet() {
     toast("Оплата Stars будет на сервере", "info");
 }
 
-/* УПРАВЛЕНИЕ ПИТОМЦАМИ */
 function openPetsManager() {
     const modal = document.getElementById("pets-manager-modal");
     const content = document.getElementById("pets-manager-content");
@@ -1357,16 +1345,19 @@ function openPetsManager() {
         { id: "tl", name: "↖ Верх-лево" },
         { id: "tr", name: "↗ Верх-право" },
         { id: "bl", name: "↙ Низ-лево" },
-        { id: "br", name: "↘ Низ-право" },
+        { id: "br", name: "↘ Низ-право" }
     ];
     const sizes = [
         { id: "sm", name: "S" },
         { id: "md", name: "M" },
-        { id: "lg", name: "L" },
+        { id: "lg", name: "L" }
     ];
     content.innerHTML = `
         <div class="pm-item">
-            <div class="pm-item-header"><div class="pm-item-emoji">🐱</div><div class="pm-item-name">Кот</div></div>
+            <div class="pm-item-header">
+                <div class="pm-item-emoji">🐱</div>
+                <div class="pm-item-name">Кот</div>
+            </div>
             <div class="pm-row">
                 <div class="pm-row-label">Место</div>
                 <div class="pm-btns">
@@ -1394,6 +1385,7 @@ function openPetsManager() {
     modal.classList.remove("hidden");
     haptic("light");
 }
+
 function setPetPos(pos) { state.petPos = pos; savePetsState(); renderActivePet(); openPetsManager(); haptic("light"); }
 function setPetSize(size) { state.petSize = size; savePetsState(); renderActivePet(); openPetsManager(); haptic("light"); }
 function setPetInHeader(v) { state.petInHeader = !!v; savePetsState(); renderActivePet(); openPetsManager(); haptic("light"); }
@@ -1410,7 +1402,8 @@ function openCustomTopUp() { document.getElementById("custom-modal").classList.r
 function submitCustomTopUp() {
     const v = parseInt(document.getElementById("custom-coins-input").value);
     if (!v || v < 100 || v > 100000) { toast("Введите число от 100 до 100 000", "error"); return; }
-    closeModal("custom-modal"); buyCoins(v);
+    closeModal("custom-modal");
+    buyCoins(v);
 }
 function closeModal(id) { const el = document.getElementById(id); if (el) el.classList.add("hidden"); }
 
@@ -1434,13 +1427,33 @@ function showInsufficientBalance(need, have) {
 
 /* ПОДДЕРЖКА */
 let selectedTopic = "Вопрос";
-function selectTopic(btn) { document.querySelectorAll(".support-topic").forEach(b => b.classList.remove("active")); btn.classList.add("active"); selectedTopic = btn.dataset.topic; }
-function openSupport() { document.getElementById("support-modal").classList.remove("hidden"); }
+function selectTopic(btn) {
+    document.querySelectorAll(".support-topic").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    selectedTopic = btn.dataset.topic;
+}
+function openSupport() {
+    document.getElementById("support-modal").classList.remove("hidden");
+}
+function closeSupportModal() {
+    closeModal("support-modal");
+    // FIX: возвращаемся на главную, чтобы не было пустого экрана
+    switchTab("home");
+    document.querySelectorAll(".side-item[data-tab]").forEach(b => {
+        b.classList.toggle("active", b.dataset.tab === "home");
+    });
+}
 async function submitSupport() {
     const text = document.getElementById("support-text").value.trim();
     if (!text) { toast("Введите текст", "error"); return; }
-    try { await apiCall("/api/support", { topic: selectedTopic, text }); toast("✅ Отправлено", "success"); document.getElementById("support-text").value = ""; closeModal("support-modal"); }
-    catch (e) { toast(e.message, "error"); }
+    try {
+        await apiCall("/api/support", { topic: selectedTopic, text });
+        toast("✅ Отправлено", "success");
+        document.getElementById("support-text").value = "";
+        closeSupportModal();
+    } catch (e) {
+        toast(e.message, "error");
+    }
 }
 
 /* DAILY */
@@ -1451,41 +1464,60 @@ async function claimDaily() {
     try {
         const r = await apiCall("/api/daily");
         setBalance(r.balance, true, before);
-        renderProfile(); renderLeaderboard();
+        renderProfile();
+        renderLeaderboard();
         toast(`🎁 Бонус: +${r.reward} 🪙`, "success", 3500);
         hapticNotify("success");
-    } catch (e) { toast(e.message, "error"); btn.disabled = false; }
+    } catch (e) {
+        toast(e.message, "error");
+        btn.disabled = false;
+    }
 }
+
 function copyRef() {
     const link = document.getElementById("ref-link").textContent;
-    navigator.clipboard.writeText(link).then(() => toast("📋 Скопировано", "success")).catch(() => toast("Не удалось", "error"));
+    navigator.clipboard.writeText(link)
+        .then(() => toast("📋 Скопировано", "success"))
+        .catch(() => toast("Не удалось", "error"));
 }
 
 /* МУЗЫКА */
 const DEFAULT_TRACKS = [
-    { id: "t1", name: "🌃 Neon Dreams", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", builtin: true },
-    { id: "t2", name: "🚗 Midnight Drive", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", builtin: true },
-    { id: "t3", name: "⚡ Cyber Pulse", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", builtin: true },
-    { id: "t4", name: "🌅 Golden Sunset", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", builtin: true },
-    { id: "t5", name: "🌌 Deep Space", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", builtin: true },
-    { id: "t6", name: "💎 Lifeless Theme", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", builtin: true },
+    { id: "t1", name: "🌃 Neon Dreams",     url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", builtin: true },
+    { id: "t2", name: "🚗 Midnight Drive",  url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", builtin: true },
+    { id: "t3", name: "⚡ Cyber Pulse",      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", builtin: true },
+    { id: "t4", name: "🌅 Golden Sunset",   url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", builtin: true },
+    { id: "t5", name: "🌌 Deep Space",      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", builtin: true },
+    { id: "t6", name: "💎 Lifeless Theme",  url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", builtin: true },
 ];
 let musicAudio = null, currentTrackId = null, musicPlaying = false, myTracks = [];
 
 function loadMusicState() {
-    try { const raw = localStorage.getItem(LS_MUSIC_KEY); if (raw) { const p = JSON.parse(raw); myTracks = Array.isArray(p.tracks) ? p.tracks : []; currentTrackId = p.current || null; } } catch (_) {}
+    try {
+        const raw = localStorage.getItem(LS_MUSIC_KEY);
+        if (raw) {
+            const p = JSON.parse(raw);
+            myTracks = Array.isArray(p.tracks) ? p.tracks : [];
+            currentTrackId = p.current || null;
+        }
+    } catch (_) {}
     if (!currentTrackId && DEFAULT_TRACKS.length) currentTrackId = DEFAULT_TRACKS[0].id;
 }
 function initMusic() {
     if (!musicAudio) {
-        musicAudio = new Audio(); musicAudio.loop = false; musicAudio.volume = 0.5;
+        musicAudio = new Audio();
+        musicAudio.loop = false;
+        musicAudio.volume = 0.5;
         musicAudio.addEventListener("timeupdate", updateMusicProgress);
         musicAudio.addEventListener("ended", onMusicEnded);
         musicAudio.addEventListener("loadedmetadata", updateMusicProgress);
         musicAudio.addEventListener("play", () => { musicPlaying = true; updatePlayButtons(); });
         musicAudio.addEventListener("pause", () => { musicPlaying = false; updatePlayButtons(); });
     }
-    bindMusicProgressBar(); renderMusicPlayer(); renderMyMusic(); renderMiniPlayer();
+    bindMusicProgressBar();
+    renderMusicPlayer();
+    renderMyMusic();
+    renderMiniPlayer();
 }
 function bindMusicProgressBar() {
     const mainBar = document.getElementById("music-progress-click");
@@ -1505,16 +1537,22 @@ function saveMusic() { try { localStorage.setItem(LS_MUSIC_KEY, JSON.stringify({
 function allTracks() { return [...DEFAULT_TRACKS, ...myTracks]; }
 function findTrack(id) { return allTracks().find(t => t.id === id); }
 function fmtTime(s) { if (!s || isNaN(s)) return "0:00"; const m = Math.floor(s / 60); const sec = Math.floor(s % 60); return `${m}:${String(sec).padStart(2, "0")}`; }
+
 function renderMusicPlayer() {
     const track = findTrack(currentTrackId);
     const titleEl = document.getElementById("music-track-title");
     const subEl = document.getElementById("music-track-sub");
     const coverImg = document.getElementById("music-cover-img");
-    if (!track) { if (titleEl) titleEl.textContent = "Выбери трек"; if (subEl) subEl.textContent = "Моя коллекция"; return; }
+    if (!track) {
+        if (titleEl) titleEl.textContent = "Выбери трек";
+        if (subEl) subEl.textContent = "Моя коллекция";
+        return;
+    }
     if (titleEl) titleEl.textContent = track.name;
     if (subEl) subEl.textContent = track.builtin ? "Библиотека Lifeless" : "Мой трек";
     if (coverImg) coverImg.src = `https://placehold.co/400x400/1a0d3e/ffd700?text=${encodeURIComponent(track.name.split(" ")[0] || "🎵")}`;
-    updatePlayButtons(); updateRepeatIcon();
+    updatePlayButtons();
+    updateRepeatIcon();
 }
 function renderMiniPlayer() {
     const track = findTrack(currentTrackId);
@@ -1524,7 +1562,10 @@ function renderMiniPlayer() {
 }
 function updatePlayButtons() {
     const useId = musicPlaying ? "#ic-pause" : "#ic-play-mini";
-    ["mini-play-icon", "music-main-icon"].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = `<use href="${useId}"/>`; });
+    ["mini-play-icon", "music-main-icon"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = `<use href="${useId}"/>`;
+    });
     const mini = document.getElementById("mini-player");
     const main = document.querySelector(".music-player-card");
     if (mini) mini.classList.toggle("playing", musicPlaying);
@@ -1534,7 +1575,10 @@ function updatePlayButtons() {
 }
 function updateRepeatIcon() {
     const useId = state.musicRepeat === "one" ? "#ic-repeat-one" : "#ic-repeat";
-    ["mini-repeat-icon", "music-repeat-icon"].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = `<use href="${useId}"/>`; });
+    ["mini-repeat-icon", "music-repeat-icon"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = `<use href="${useId}"/>`;
+    });
     const mini = document.getElementById("mini-repeat-btn");
     const main = document.getElementById("music-repeat-btn");
     if (mini) mini.classList.toggle("active", state.musicRepeat !== "off");
@@ -1555,8 +1599,9 @@ function updateMusicProgress() {
 function toggleMusic() {
     const track = findTrack(currentTrackId);
     if (!track) return;
-    if (musicPlaying) { musicAudio.pause(); }
-    else {
+    if (musicPlaying) {
+        musicAudio.pause();
+    } else {
         if (musicAudio.src !== track.url) musicAudio.src = track.url;
         musicAudio.play().catch(() => { toast("Не удалось воспроизвести", "error"); });
     }
@@ -1577,8 +1622,11 @@ function musicPrev() {
 function musicNext() {
     const tracks = allTracks(); if (!tracks.length) return;
     let idx = tracks.findIndex(t => t.id === currentTrackId);
-    if (state.musicShuffle) { let next; do { next = Math.floor(Math.random() * tracks.length); } while (tracks.length > 1 && next === idx); idx = next; }
-    else idx = (idx + 1) % tracks.length;
+    if (state.musicShuffle) {
+        let next;
+        do { next = Math.floor(Math.random() * tracks.length); } while (tracks.length > 1 && next === idx);
+        idx = next;
+    } else idx = (idx + 1) % tracks.length;
     currentTrackId = tracks[idx].id;
     const wasPlaying = musicPlaying;
     if (wasPlaying) musicAudio.pause();
@@ -1598,34 +1646,62 @@ function musicToggleRepeat() {
     else state.musicRepeat = "off";
     updateRepeatIcon();
     const labels = { off: "🔁 Повтор: выкл", all: "🔁 Повтор: всё", one: "🔂 Повтор: один" };
-    toast(labels[state.musicRepeat], "info", 1500); haptic("light");
+    toast(labels[state.musicRepeat], "info", 1500);
+    haptic("light");
 }
 function onMusicEnded() {
-    if (state.musicRepeat === "one") { musicAudio.currentTime = 0; musicAudio.play(); }
-    else musicNext();
+    if (state.musicRepeat === "one") {
+        musicAudio.currentTime = 0;
+        musicAudio.play();
+    } else {
+        musicNext();
+    }
 }
 function renderMyMusic() {
     const box = document.getElementById("music-my-list");
     if (!box) return;
     const all = [...DEFAULT_TRACKS, ...myTracks];
-    box.innerHTML = all.map(t => `<div class="music-item ${t.id === currentTrackId ? 'active' : ''}" onclick="selectMusic('${t.id}')"><span class="music-item-emoji">🎵</span><span class="music-item-name">${escapeHtml(t.name)}</span>${!t.builtin ? `<button class="music-item-del" onclick="event.stopPropagation();deleteTrack('${t.id}')">✕</button>` : ''}</div>`).join("");
+    box.innerHTML = all.map(t => `
+        <div class="music-item ${t.id === currentTrackId ? 'active' : ''}" onclick="selectMusic('${t.id}')">
+            <span class="music-item-emoji">🎵</span>
+            <span class="music-item-name">${escapeHtml(t.name)}</span>
+            ${!t.builtin ? `<button class="music-item-del" onclick="event.stopPropagation();deleteTrack('${t.id}')">✕</button>` : ''}
+        </div>
+    `).join("");
 }
 function selectMusic(id) {
-    const track = findTrack(id); if (!track) return;
+    const track = findTrack(id);
+    if (!track) return;
     currentTrackId = id;
     const wasPlaying = musicPlaying;
     if (wasPlaying) musicAudio.pause();
-    renderMusicPlayer(); renderMiniPlayer();
+    renderMusicPlayer();
+    renderMiniPlayer();
     if (wasPlaying) setTimeout(() => toggleMusic(), 50);
-    renderMyMusic(); saveMusic(); haptic("light");
+    renderMyMusic();
+    saveMusic();
+    haptic("light");
 }
-function openMusicPicker() { renderMusicLibrary(); document.getElementById("music-modal").classList.remove("hidden"); }
+function openMusicPicker() {
+    renderMusicLibrary();
+    document.getElementById("music-modal").classList.remove("hidden");
+}
 function renderMusicLibrary() {
-    const box = document.getElementById("music-list"); if (!box) return;
+    const box = document.getElementById("music-list");
+    if (!box) return;
     const query = (document.getElementById("music-search")?.value || "").toLowerCase();
     const all = [...DEFAULT_TRACKS, ...myTracks].filter(t => t.name.toLowerCase().includes(query));
-    if (!all.length) { box.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-dim)">Ничего не найдено</div>`; return; }
-    box.innerHTML = all.map(t => `<button class="music-item ${t.id === currentTrackId ? 'active' : ''}" onclick="selectMusic('${t.id}');closeModal('music-modal')"><span class="music-item-emoji">🎵</span><span class="music-item-name">${escapeHtml(t.name)}</span>${!t.builtin ? '<span style="color:var(--gold);font-size:11px">моё</span>' : ''}</button>`).join("");
+    if (!all.length) {
+        box.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-dim)">Ничего не найдено</div>`;
+        return;
+    }
+    box.innerHTML = all.map(t => `
+        <button class="music-item ${t.id === currentTrackId ? 'active' : ''}" onclick="selectMusic('${t.id}');closeModal('music-modal')">
+            <span class="music-item-emoji">🎵</span>
+            <span class="music-item-name">${escapeHtml(t.name)}</span>
+            ${!t.builtin ? '<span style="color:var(--gold);font-size:11px">моё</span>' : ''}
+        </button>
+    `).join("");
 }
 function openAddMusicModal() {
     document.getElementById("add-music-url").value = "";
@@ -1638,14 +1714,27 @@ function submitAddMusic() {
     if (!url || !url.startsWith("http")) { toast("Введите корректную ссылку", "error"); return; }
     const id = "my_" + Date.now();
     myTracks.push({ id, name, url, builtin: false });
-    saveMusic(); renderMyMusic(); closeModal("add-music-modal"); toast("✅ Трек добавлен", "success");
+    saveMusic();
+    renderMyMusic();
+    closeModal("add-music-modal");
+    toast("✅ Трек добавлен", "success");
 }
 function deleteTrack(id) {
     myTracks = myTracks.filter(t => t.id !== id);
-    if (currentTrackId === id) { currentTrackId = DEFAULT_TRACKS[0].id; if (musicPlaying) { musicAudio.pause(); } }
-    saveMusic(); renderMyMusic(); renderMusicPlayer(); renderMiniPlayer(); toast("Удалено", "info");
+    if (currentTrackId === id) {
+        currentTrackId = DEFAULT_TRACKS[0].id;
+        if (musicPlaying) musicAudio.pause();
+    }
+    saveMusic();
+    renderMyMusic();
+    renderMusicPlayer();
+    renderMiniPlayer();
+    toast("Удалено", "info");
 }
 
 /* СТАРТ */
-if (document.readyState === "loading") window.addEventListener("DOMContentLoaded", bootstrap);
-else bootstrap();
+if (document.readyState === "loading") {
+    window.addEventListener("DOMContentLoaded", bootstrap);
+} else {
+    bootstrap();
+}

@@ -67,7 +67,7 @@
         <button class="side-item" data-tab="about"><svg><use href="#ic-info"/></svg>О нас</button>
         <button class="side-item" data-tab="rules"><svg><use href="#ic-book"/></svg>Правила игры</button>
         <button class="side-item" data-tab="privacy"><svg><use href="#ic-shield"/></svg>Конфиденциальность</button>
-        <button class="side-item" data-tab="support" onclick="closeSideMenu();openSupport()"><svg><use href="#ic-support"/></svg>Поддержка</button>
+        <button class="side-item" id="side-support-btn"><svg><use href="#ic-support"/></svg>Поддержка</button>
     </nav>
     <div class="side-footer"><div class="side-version">Lifeless Shop · v1.0</div></div>
 </aside>
@@ -247,9 +247,45 @@
                 <div class="section-title">🪙 Монетка · 10 🪙</div>
                 <div class="coin-scene">
                     <div class="coin-3d" id="coin3d">
-                        <div class="coin-face coin-front">🦅</div>
-                        <div class="coin-face coin-back">👑</div>
-                        <div class="coin-edge"></div>
+                        <div class="coin-face coin-front">
+                            <svg viewBox="0 0 100 100" class="coin-svg">
+                                <defs>
+                                    <linearGradient id="eagleGrad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#5a3d1a"/>
+                                        <stop offset="100%" stop-color="#2a1a08"/>
+                                    </linearGradient>
+                                </defs>
+                                <!-- крылья -->
+                                <path d="M50 30 C 38 18, 18 20, 8 32 C 20 36, 32 36, 42 34 C 30 42, 18 54, 12 68 C 26 66, 38 58, 46 50 L 50 58 L 54 50 C 62 58, 74 66, 88 68 C 82 54, 70 42, 58 34 C 68 36, 80 36, 92 32 C 82 20, 62 18, 50 30 Z" fill="url(#eagleGrad)"/>
+                                <!-- голова -->
+                                <circle cx="50" cy="32" r="9" fill="url(#eagleGrad)"/>
+                                <!-- клюв -->
+                                <path d="M50 30 L 61 35 L 50 38 Z" fill="#c9922b"/>
+                                <!-- глаз -->
+                                <circle cx="54" cy="30" r="1.8" fill="#c9922b"/>
+                            </svg>
+                        </div>
+                        <div class="coin-face coin-back">
+                            <svg viewBox="0 0 100 100" class="coin-svg">
+                                <defs>
+                                    <linearGradient id="crownGrad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#5a3d1a"/>
+                                        <stop offset="100%" stop-color="#2a1a08"/>
+                                    </linearGradient>
+                                </defs>
+                                <!-- корона -->
+                                <path d="M18 72 L 18 38 L 34 52 L 50 22 L 66 52 L 82 38 L 82 72 Z" fill="url(#crownGrad)"/>
+                                <rect x="18" y="72" width="64" height="8" rx="2" fill="url(#crownGrad)"/>
+                                <!-- драгоценные камни -->
+                                <circle cx="18" cy="34" r="4" fill="#c9922b"/>
+                                <circle cx="50" cy="18" r="4" fill="#c9922b"/>
+                                <circle cx="82" cy="34" r="4" fill="#c9922b"/>
+                                <circle cx="34" cy="80" r="2.5" fill="#c9922b"/>
+                                <circle cx="50" cy="80" r="2.5" fill="#c9922b"/>
+                                <circle cx="66" cy="80" r="2.5" fill="#c9922b"/>
+                            </svg>
+                        </div>
+                        <!-- Edge segments будут сгенерированы JS -->
                     </div>
                 </div>
                 <div class="coin-choices">
@@ -269,10 +305,18 @@
                 </div>
                 <div class="scene-3d">
                     <div class="dice-wrap"><div class="dice-shadow"></div>
-                        <div class="dice-3d" id="dice1"><div class="dice-face front"></div><div class="dice-face back"></div><div class="dice-face right"></div><div class="dice-face left"></div><div class="dice-face top"></div><div class="dice-face bottom"></div></div>
+                        <div class="dice-3d" id="dice1">
+                            <div class="dice-face front"></div><div class="dice-face back"></div>
+                            <div class="dice-face right"></div><div class="dice-face left"></div>
+                            <div class="dice-face top"></div><div class="dice-face bottom"></div>
+                        </div>
                     </div>
                     <div class="dice-wrap"><div class="dice-shadow"></div>
-                        <div class="dice-3d" id="dice2"><div class="dice-face front"></div><div class="dice-face back"></div><div class="dice-face right"></div><div class="dice-face left"></div><div class="dice-face top"></div><div class="dice-face bottom"></div></div>
+                        <div class="dice-3d" id="dice2">
+                            <div class="dice-face front"></div><div class="dice-face back"></div>
+                            <div class="dice-face right"></div><div class="dice-face left"></div>
+                            <div class="dice-face top"></div><div class="dice-face bottom"></div>
+                        </div>
                     </div>
                 </div>
                 <button class="play-btn" onclick="rollDice()">Бросить · 10 🪙</button>
@@ -448,12 +492,11 @@
             <div class="about-card glass">
                 <h2 class="about-title">📖 Правила игры</h2>
                 <div class="rules-list">
-                    <div class="rule-item"><div class="rule-num">1</div><div class="rule-text"><b>Возраст 18+</b><br>Игра предназначена для совершеннолетних пользователей.</div></div>
-                    <div class="rule-item"><div class="rule-num">2</div><div class="rule-text"><b>Виртуальная валюта</b><br>Монеты — это внутриигровая валюта. Реальные деньги используются только для покупки Telegram Stars.</div></div>
-                    <div class="rule-item"><div class="rule-num">3</div><div class="rule-text"><b>Честность</b><br>Все результаты генерируются случайным образом на сервере. Попытки взлома или модификации → блокировка аккаунта.</div></div>
-                    <div class="rule-item"><div class="rule-num">4</div><div class="rule-text"><b>Один аккаунт</b><br>Мульти-аккаунты для абуза реферальной программы или бонусов запрещены.</div></div>
-                    <div class="rule-item"><div class="rule-num">5</div><div class="rule-text"><b>Поддержка</b><br>Все спорные ситуации решаются через поддержку. Решение администрации окончательное.</div></div>
-                    <div class="rule-item"><div class="rule-num">6</div><div class="rule-text"><b>Изменения</b><br>Мы оставляем право менять правила и функционал. Обновления публикуются в канале.</div></div>
+                    <div class="rule-item"><div class="rule-num">1</div><div class="rule-text"><b>Виртуальная валюта</b><br>Монеты — это внутриигровая валюта. Реальные деньги используются только для покупки Telegram Stars.</div></div>
+                    <div class="rule-item"><div class="rule-num">2</div><div class="rule-text"><b>Честность</b><br>Все результаты генерируются случайным образом на сервере. Попытки взлома или модификации → блокировка аккаунта.</div></div>
+                    <div class="rule-item"><div class="rule-num">3</div><div class="rule-text"><b>Один аккаунт</b><br>Мульти-аккаунты для абуза реферальной программы или бонусов запрещены.</div></div>
+                    <div class="rule-item"><div class="rule-num">4</div><div class="rule-text"><b>Поддержка</b><br>Все спорные ситуации решаются через поддержку. Решение администрации окончательное.</div></div>
+                    <div class="rule-item"><div class="rule-num">5</div><div class="rule-text"><b>Изменения</b><br>Мы оставляем право менять правила и функционал. Обновления публикуются в канале.</div></div>
                 </div>
                 <div class="about-signature">— Команда Lifeless</div>
             </div>
@@ -506,7 +549,7 @@
             </div>
             <textarea id="support-text" class="modal-input" placeholder="Опишите подробно..." maxlength="2000"></textarea>
             <button class="close-btn primary" onclick="submitSupport()">Отправить</button>
-            <button class="close-btn" onclick="closeModal('support-modal')">Отмена</button>
+            <button class="close-btn" onclick="closeSupportModal()">Отмена</button>
         </div>
     </div>
 
