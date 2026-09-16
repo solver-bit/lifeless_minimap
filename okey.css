@@ -1542,64 +1542,92 @@ img, svg { display: block; max-width: 100%; }
 }
 
 /* ============================================================
-   COIN 3D
+   COIN 3D (FIXED)
    ============================================================ */
 .coin-scene {
     width: 100%;
-    height: 260px;
-    perspective: 1200px;
+    height: 280px;
+    perspective: 900px;
     perspective-origin: 50% 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 20px 0;
 }
+
 .coin-3d {
     width: 160px;
     height: 160px;
     position: relative;
     transform-style: preserve-3d;
-    transition: transform 2.5s var(--ease-out);
+    transform: rotateY(0deg) translateZ(0);
+    /* важно: initial transform, чтобы preserve-3d включился сразу */
     will-change: transform;
-    transform: rotateY(0deg);
+    -webkit-transform-style: preserve-3d;
 }
+
 .coin-face {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 160px;
     height: 160px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 72px;
-    background: radial-gradient(circle at 35% 30%, #FFEFB8 0%, var(--gold) 40%, var(--gold-deep) 100%);
-    border: 4px solid #5A4014;
+    background:
+        radial-gradient(circle at 32% 28%, #FFE9B0 0%, #E4B963 38%, #B88838 70%, #6E4E1A 100%);
     box-shadow:
-        inset 0 0 26px rgba(90, 64, 20, 0.5),
-        inset 0 0 0 6px rgba(228, 185, 99, 0.60),
-        0 10px 32px rgba(0, 0, 0, 0.55);
+        inset 0 0 0 5px rgba(255, 220, 150, 0.55),
+        inset 0 0 0 7px #5A4014,
+        inset 0 0 30px rgba(60, 40, 10, 0.55),
+        0 0 0 1px #5A4014;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    top: 0;
-    left: 0;
+    overflow: hidden;
+    will-change: transform;
 }
-.coin-front { transform: translateZ(12px); }
-.coin-back  { transform: translateZ(-12px) rotateY(180deg); }
 
+/* Блик на лицевой стороне */
+.coin-face::before {
+    content: '';
+    position: absolute;
+    top: 6%;
+    left: 12%;
+    width: 55%;
+    height: 40%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(255, 255, 255, 0.55), transparent 70%);
+    pointer-events: none;
+}
+
+.coin-front { transform: translateZ(14px); }
+.coin-back  { transform: translateZ(-14px) rotateY(180deg); }
+
+/* Толщина монеты — делаем не отдельные сегменты, а кольцо-подложку */
 .coin-edge {
     position: absolute;
+    top: 0;
+    left: 0;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
     background: linear-gradient(90deg, #3D2A08 0%, #C99429 50%, #3D2A08 100%);
-    border-radius: 1px;
+    transform: translateZ(0);
     backface-visibility: visible;
-    transform-origin: center center;
+    pointer-events: none;
 }
-.coin-svg { width: 80%; height: 80%; }
+
+.coin-svg { width: 72%; height: 72%; display: block; }
 
 .coin-choices {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     margin-bottom: 12px;
+    position: relative;
+    z-index: 2;
 }
 .coin-choice-btn {
     background: linear-gradient(145deg, rgba(228, 185, 99, 0.16), rgba(91, 168, 255, 0.10));
@@ -1610,10 +1638,10 @@ img, svg { display: block; max-width: 100%; }
     font-weight: 800;
     font-size: var(--fs-md);
     cursor: pointer;
-    transition: all 0.25s var(--ease-spring);
+    transition: transform 0.2s var(--ease-spring), box-shadow 0.25s, background 0.25s;
     box-shadow: var(--sh-sm), inset 0 1px 0 rgba(255,255,255,0.08);
 }
-.coin-choice-btn:hover {
+.coin-choice-btn:hover:not(:disabled) {
     background: linear-gradient(145deg, rgba(228, 185, 99, 0.28), rgba(91, 168, 255, 0.15));
     transform: translateY(-2px);
     box-shadow: var(--sh-gold);
@@ -1622,7 +1650,7 @@ img, svg { display: block; max-width: 100%; }
 .coin-choice-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
 /* ============================================================
-   DICE 3D
+   DICE 3D (FIXED)
    ============================================================ */
 .dice-info {
     display: grid;
@@ -1641,7 +1669,7 @@ img, svg { display: block; max-width: 100%; }
 .scene-3d {
     width: 100%;
     height: 240px;
-    perspective: 1200px;
+    perspective: 900px;
     perspective-origin: 50% 50%;
     display: flex;
     align-items: center;
@@ -1649,12 +1677,16 @@ img, svg { display: block; max-width: 100%; }
     gap: 40px;
     margin: 24px 0;
 }
+
 .dice-wrap {
     position: relative;
     width: 100px;
     height: 100px;
     transform-style: preserve-3d;
+    transform: translateZ(0);   /* важно: без этого 3D-цепочка рвётся */
+    -webkit-transform-style: preserve-3d;
 }
+
 .dice-shadow {
     position: absolute;
     bottom: -22px;
@@ -1664,39 +1696,48 @@ img, svg { display: block; max-width: 100%; }
     height: 16px;
     background: radial-gradient(ellipse, rgba(0, 0, 0, 0.8), transparent 70%);
     filter: blur(8px);
+    pointer-events: none;
 }
+
 .dice-3d {
     width: 100px;
     height: 100px;
     position: relative;
     transform-style: preserve-3d;
+    transform: rotateX(0deg) rotateY(0deg) translateZ(0);
+    /* важно: initial transform */
     will-change: transform;
+    -webkit-transform-style: preserve-3d;
 }
+
 .dice-face {
     position: absolute;
     top: 0;
     left: 0;
     width: 100px;
     height: 100px;
-    background: linear-gradient(135deg, #FFFFFF 0%, #F4F4F4 45%, #E0E0E0 75%, #C8C8C8 100%);
-    border-radius: 12px;
+    background: linear-gradient(135deg, #FFFFFF 0%, #F6F6F6 45%, #E4E4E4 75%, #CACACA 100%);
+    border-radius: 14px;
     box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, 0.9),
-        inset 0 0 0 2px rgba(0, 0, 0, 0.08),
-        inset -4px -4px 12px rgba(0, 0, 0, 0.18),
-        inset 4px 4px 12px rgba(255, 255, 255, 0.85),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.95),
+        inset 0 0 0 2px rgba(0, 0, 0, 0.06),
+        inset -5px -5px 14px rgba(0, 0, 0, 0.14),
+        inset 5px 5px 14px rgba(255, 255, 255, 0.9),
         0 0 22px rgba(228, 185, 99, 0.28);
     background-repeat: no-repeat;
     background-position: center;
     background-size: 78%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
-.dice-face.front  { transform: rotateY(0deg)   translateZ(50px); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='11' fill='%23B8862B'/></svg>"); }
-.dice-face.back   { transform: rotateY(180deg) translateZ(50px); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='28' cy='22' r='10' fill='%23B8862B'/><circle cx='28' cy='50' r='10' fill='%23B8862B'/><circle cx='28' cy='78' r='10' fill='%23B8862B'/><circle cx='72' cy='22' r='10' fill='%23B8862B'/><circle cx='72' cy='50' r='10' fill='%23B8862B'/><circle cx='72' cy='78' r='10' fill='%23B8862B'/></svg>"); }
-.dice-face.right  { transform: rotateY(90deg)  translateZ(50px); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='22' cy='22' r='11' fill='%23B8862B'/><circle cx='50' cy='50' r='11' fill='%23B8862B'/><circle cx='78' cy='78' r='11' fill='%23B8862B'/></svg>"); }
-.dice-face.left   { transform: rotateY(-90deg) translateZ(50px); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='28' cy='28' r='11' fill='%23B8862B'/><circle cx='72' cy='28' r='11' fill='%23B8862B'/><circle cx='28' cy='72' r='11' fill='%23B8862B'/><circle cx='72' cy='72' r='11' fill='%23B8862B'/></svg>"); }
-.dice-face.top    { transform: rotateX(90deg)  translateZ(50px); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='25' cy='25' r='10' fill='%23B8862B'/><circle cx='75' cy='25' r='10' fill='%23B8862B'/><circle cx='50' cy='50' r='10' fill='%23B8862B'/><circle cx='25' cy='75' r='10' fill='%23B8862B'/><circle cx='75' cy='75' r='10' fill='%23B8862B'/></svg>"); }
-.dice-face.bottom { transform: rotateX(-90deg) translateZ(50px); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='28' cy='28' r='11' fill='%23B8862B'/><circle cx='72' cy='72' r='11' fill='%23B8862B'/></svg>"); }
 
+/* Точки отрисованы с явным размером — иначе SVG рендерится 300×150 */
+.dice-face.front  { transform: rotateY(0deg)   translateZ(50px); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><circle cx='50' cy='50' r='11' fill='%23B8862B'/></svg>"); }
+.dice-face.back   { transform: rotateY(180deg) translateZ(50px); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><circle cx='28' cy='22' r='10' fill='%23B8862B'/><circle cx='28' cy='50' r='10' fill='%23B8862B'/><circle cx='28' cy='78' r='10' fill='%23B8862B'/><circle cx='72' cy='22' r='10' fill='%23B8862B'/><circle cx='72' cy='50' r='10' fill='%23B8862B'/><circle cx='72' cy='78' r='10' fill='%23B8862B'/></svg>"); }
+.dice-face.right  { transform: rotateY(90deg)  translateZ(50px); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><circle cx='22' cy='22' r='11' fill='%23B8862B'/><circle cx='50' cy='50' r='11' fill='%23B8862B'/><circle cx='78' cy='78' r='11' fill='%23B8862B'/></svg>"); }
+.dice-face.left   { transform: rotateY(-90deg) translateZ(50px); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><circle cx='28' cy='28' r='11' fill='%23B8862B'/><circle cx='72' cy='28' r='11' fill='%23B8862B'/><circle cx='28' cy='72' r='11' fill='%23B8862B'/><circle cx='72' cy='72' r='11' fill='%23B8862B'/></svg>"); }
+.dice-face.top    { transform: rotateX(90deg)  translateZ(50px); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><circle cx='25' cy='25' r='10' fill='%23B8862B'/><circle cx='75' cy='25' r='10' fill='%23B8862B'/><circle cx='50' cy='50' r='10' fill='%23B8862B'/><circle cx='25' cy='75' r='10' fill='%23B8862B'/><circle cx='75' cy='75' r='10' fill='%23B8862B'/></svg>"); }
+.dice-face.bottom { transform: rotateX(-90deg) translateZ(50px); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><circle cx='28' cy='28' r='11' fill='%23B8862B'/><circle cx='72' cy='72' r='11' fill='%23B8862B'/></svg>"); }
 /* ============================================================
    SAPER
    ============================================================ */

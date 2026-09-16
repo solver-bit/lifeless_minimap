@@ -1,43 +1,81 @@
-/* LIFELESS SHOP · v13 */
-const FORCE_DEMO = true;
+/* LIFELESS SHOP · v15 — универсальные платежи через tg.openInvoice */
+const FORCE_DEMO = false;
+
 let tg = window.Telegram?.WebApp;
 const DEMO = FORCE_DEMO || !tg?.initData;
 
 if (!tg) {
-    tg = { initData: "", initDataUnsafe: { user: { id: 0, first_name: "Гость", username: "guest" } },
+    tg = {
+        initData: "", initDataUnsafe: { user: { id: 0, first_name: "Гость", username: "guest" } },
         expand: () => {}, close: () => {}, showPopup: (o) => alert(o.message || o.title || ""),
         openTelegramLink: (u) => window.open(u, "_blank"), openLink: (u) => window.open(u, "_blank"),
-        sendData: () => {}, HapticFeedback: { impactOccurred: () => {}, notificationOccurred: () => {} } };
-} else { try { tg.expand(); } catch (_) {}; tg.setHeaderColor?.("#06060f"); tg.setBackgroundColor?.("#06060f"); }
+        sendData: () => {}, HapticFeedback: { impactOccurred: () => {}, notificationOccurred: () => {} },
+    };
+} else {
+    try { tg.expand(); } catch (_) {}
+    tg.setHeaderColor?.("#06060f");
+    tg.setBackgroundColor?.("#06060f");
+}
 
 const API_BASE = location.origin;
 const BOT_USERNAME = "Solver_Life_bot";
-const BASE_URL = "https://solver-bit.github.io/lifeless_minimap";
-const LOTTIE_URLS = { coin: `${BASE_URL}/finance-management.json`, cat: `${BASE_URL}/Loadercat.json`, about: `${BASE_URL}/Businessplan.json` };
+const BASE_URL = location.origin + "/miniapp/assets";
+const LOTTIE_URLS = {
+    coin:  `${BASE_URL}/finance-management.json`,
+    cat:   `${BASE_URL}/Loadercat.json`,
+    about: `${BASE_URL}/Businessplan.json`,
+};
 
 const TG_USER_ID = tg.initDataUnsafe?.user?.id || 0;
-const LS_KEY = `lifeless_demo_v13_u${TG_USER_ID}`;
-const LS_MUSIC_KEY = `lifeless_music_v13_u${TG_USER_ID}`;
-const LS_PETS_KEY = `lifeless_pets_v13_u${TG_USER_ID}`;
-const LS_DECOR_KEY = `lifeless_decor_v13_u${TG_USER_ID}`;
+const LS_MUSIC_KEY = `lifeless_music_v15_u${TG_USER_ID}`;
+const LS_PETS_KEY  = `lifeless_pets_v15_u${TG_USER_ID}`;
+const LS_DECOR_KEY = `lifeless_decor_v15_u${TG_USER_ID}`;
 
-const defaultUser = { id: 0, first_name: "", last_name: "", username: "", avatar_url: "", balance: 0, cases_opened: 0, referrals: 0, stars_spent: 0, total_wagered: 0, best_drop: 0, drops: [], rank: 1, total_users: 1, ref_link: "", last_free_case: 0, last_daily: "", last_free_wheel: 0 };
+// ============================================================
+//                     СОСТОЯНИЕ
+// ============================================================
+
+const defaultUser = {
+    id: 0, first_name: "", last_name: "", username: "", avatar_url: "",
+    balance: 0, cases_opened: 0, referrals: 0, stars_spent: 0,
+    total_deposited: 0, referral_revshare: 0,
+    rank: 1, total_users: 1, ref_link: "",
+    is_admin: false, happy_hours: false, happy_seconds_left: 0,
+    name_color: "", frame_id: "", premium: false, free_spins: 0,
+    last_free_case: "1970-01-01 00:00:00",
+    last_free_wheel: "1970-01-01 00:00:00",
+    owned_pets: [], pet_pos: "br", pet_size: "md", pet_in_header: false,
+    vip_tier: "none", vip_name: "Игрок", vip_emoji: "👤", vip_color: "#8a8aa0",
+    vip_rtp_bonus: 0, vip_discount: 0,
+    streak_day: 1, streak_can_claim: false,
+    quests: {},
+};
 
 let currentUser = { ...defaultUser };
+
 const state = {
     spinning: false, rolling: false, caseOpening: false,
     saperActive: false, saperSafe: 0, saperTotal: 0, saperConfig: null,
+    saperMode: "coins",
     currentShopCat: "coins", currentCaseCat: "coins", currentDecorTab: "color",
-    ownedPets: [], petPos: "br", petSize: "md", petInHeader: false,
-    nameColor: "", frameId: "",
+    petPos: "br", petSize: "md", petInHeader: false,
     petLottie: null, sidePetLottie: null, headerPetLottie: null, previewLottie: null,
     musicShuffle: false, musicRepeat: "off",
     coinPlaying: false, coinRotation: 0,
 };
+
 const lottieInstances = {};
+
+let DECOR_PRICES = null;   // ← грузим с сервера
+let PETS_LIST = null;      // ← грузим с сервера
+
+// ============================================================
+//                     УТИЛИТЫ
+// ============================================================
 
 function haptic(t = "light") { try { tg.HapticFeedback?.impactOccurred(t); } catch (_) {} }
 function hapticNotify(t = "success") { try { tg.HapticFeedback?.notificationOccurred(t); } catch (_) {} }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function toast(msg, type = "info", ms = 2800) {
     const cont = document.getElementById("toast-container");
@@ -46,12 +84,28 @@ function toast(msg, type = "info", ms = 2800) {
     el.className = `toast ${type}`;
     el.textContent = msg;
     cont.appendChild(el);
-    setTimeout(() => { el.style.opacity = "0"; el.style.transform = "translate3d(120%,0,0)"; el.style.transition = "opacity 0.5s ease, transform 0.5s cubic-bezier(0.32, 0.72, 0, 1)"; }, ms);
+    setTimeout(() => {
+        el.style.opacity = "0";
+        el.style.transform = "translate3d(120%,0,0)";
+        el.style.transition = "opacity 0.5s ease, transform 0.5s cubic-bezier(0.32,0.72,0,1)";
+    }, ms);
     setTimeout(() => el.remove(), ms + 600);
 }
-function openLink(url) { if (tg.openTelegramLink) tg.openTelegramLink(url); else window.open(url, "_blank"); }
-function formatNum(n) { if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(".0", "") + "M"; if (n >= 1_000) return (n / 1_000).toFixed(1).replace(".0", "") + "K"; return String(n); }
-function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+function openLink(url) {
+    if (tg.openTelegramLink) tg.openTelegramLink(url);
+    else window.open(url, "_blank");
+}
+
+function formatNum(n) {
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(".0", "") + "M";
+    if (n >= 1_000) return (n / 1_000).toFixed(1).replace(".0", "") + "K";
+    return String(n);
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
 
 function makeInitialsAvatar(f, l, u) {
     let letters = "";
@@ -63,85 +117,186 @@ function makeInitialsAvatar(f, l, u) {
     return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
 
-/* ПРИЗЫ КЕЙСОВ — реальные предметы */
+// ============================================================
+//                     API
+// ============================================================
+
+async function apiCall(path, body = null) {
+    const headers = { "X-Init-Data": tg.initData || "" };
+    if (body) headers["Content-Type"] = "application/json";
+    const res = await fetch(`${API_BASE}${path}`, {
+        method: body ? "POST" : "GET",
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+        const err = new Error(data.detail || "Ошибка запроса");
+        err.status = res.status;
+        throw err;
+    }
+    return data;
+}
+
+async function refreshMe() {
+    try {
+        const me = await apiCall("/api/me");
+        Object.assign(currentUser, me);
+        return me;
+    } catch (e) {
+        console.error("refreshMe:", e);
+        return null;
+    }
+}
+
+async function loadShopPrices() {
+    try {
+        if (!DECOR_PRICES) {
+            const d = await apiCall("/api/shop/decor");
+            DECOR_PRICES = d.decor;
+        }
+        if (!PETS_LIST) {
+            const p = await apiCall("/api/shop/pets");
+            PETS_LIST = p.pets;
+        }
+    } catch (e) { console.error("shop prices:", e); }
+}
+
+// ============================================================
+//    УНИВЕРСАЛЬНЫЙ ПЛАТЁЖ ЧЕРЕЗ tg.openInvoice
+// ============================================================
+
+async function startStarPayment(kind, params, onSuccess) {
+    if (DEMO || !tg.openInvoice) {
+        toast("Оплата доступна только в Telegram", "info");
+        return;
+    }
+    haptic("medium");
+
+    let prep;
+    try {
+        prep = await apiCall("/api/invoice/prepare", { kind, params });
+    } catch (e) {
+        toast(e.message || "Не удалось создать инвойс", "error");
+        return;
+    }
+
+    tg.openInvoice(prep.invoice_link, async (status) => {
+        if (status === "cancelled") { toast("Оплата отменена", "info"); return; }
+        if (status === "failed") { toast("Оплата не прошла", "error"); hapticNotify("error"); return; }
+        if (status !== "paid") return;
+
+        toast("✅ Оплата прошла! Обрабатываем...", "success", 4000);
+        hapticNotify("success");
+
+        let result = null;
+        for (let i = 0; i < 12; i++) {
+            await sleep(700);
+            try {
+                const claim = await apiCall("/api/invoice/claim", { session_id: prep.session_id });
+                if (claim.status === "paid" && claim.result) { result = claim.result; break; }
+                if (claim.status === "pending") continue;
+            } catch (e) { /* pending */ }
+        }
+
+        await refreshMe();
+        renderProfile();
+        renderLeaderboard();
+        renderDropsFeed();
+
+        if (!result) {
+            toast("Обработка задерживается — проверь баланс через минуту", "info", 5000);
+            return;
+        }
+        if (onSuccess) onSuccess(result);
+    });
+}
+
+// ============================================================
+//                     ПРИЗЫ КЕЙСОВ
+// ============================================================
+
 const CASE_PRIZES = [
-    // Пустышки
-    { kind: "empty",     emoji: "💨", label: "Пусто",       weight: 25, rarity: "common" },
-    // Мелкие монеты
-    { kind: "coins",     value: 25,   emoji: "🪙", label: "25",  weight: 18, rarity: "common" },
-    { kind: "coins",     value: 50,   emoji: "🪙", label: "50",  weight: 15, rarity: "common" },
-    { kind: "coins",     value: 100,  emoji: "💰", label: "100", weight: 12, rarity: "uncommon" },
-    { kind: "coins",     value: 250,  emoji: "💰", label: "250", weight: 10, rarity: "uncommon" },
-    { kind: "coins",     value: 500,  emoji: "💵", label: "500", weight: 8,  rarity: "rare" },
-    { kind: "coins",     value: 1000, emoji: "💎", label: "1K",  weight: 5,  rarity: "epic" },
-    { kind: "coins",     value: 2000, emoji: "💎", label: "2K",  weight: 2,  rarity: "epic" },
-    // Подарки (в будущем — реальные подарки Telegram через бота)
+    { kind: "empty",     emoji: "💨", label: "Пусто",      weight: 25, rarity: "common" },
+    { kind: "coins", value: 25,   emoji: "🪙", label: "25",  weight: 18, rarity: "common" },
+    { kind: "coins", value: 50,   emoji: "🪙", label: "50",  weight: 15, rarity: "common" },
+    { kind: "coins", value: 100,  emoji: "💰", label: "100", weight: 12, rarity: "uncommon" },
+    { kind: "coins", value: 250,  emoji: "💰", label: "250", weight: 10, rarity: "uncommon" },
+    { kind: "coins", value: 500,  emoji: "💵", label: "500", weight: 8,  rarity: "rare" },
+    { kind: "coins", value: 1000, emoji: "💎", label: "1K",  weight: 5,  rarity: "epic" },
+    { kind: "coins", value: 2000, emoji: "💎", label: "2K",  weight: 2,  rarity: "epic" },
     { kind: "gift", gift: "heart",  emoji: "❤️", label: "Сердце",  weight: 3,  rarity: "rare" },
-    { kind: "gift", gift: "bear",   emoji: "🐻", label: "Медведь", weight: 1.5,rarity: "rare" },
+    { kind: "gift", gift: "bear",   emoji: "🧸", label: "Медведь", weight: 1.5,rarity: "rare" },
     { kind: "gift", gift: "rose",   emoji: "🌹", label: "Роза",    weight: 0.7,rarity: "epic" },
     { kind: "gift", gift: "rocket", emoji: "🚀", label: "Ракета",  weight: 0.3,rarity: "legendary" },
     { kind: "gift", gift: "ring",   emoji: "💍", label: "Кольцо",  weight: 0.1,rarity: "legendary" },
 ];
 
+const MULT_TO_RARITY = [
+    { rarity: "common" }, { rarity: "common" }, { rarity: "uncommon" },
+    { rarity: "rare" },   { rarity: "epic" },   { rarity: "legendary" },
+];
+
 function pickRandomPrize() {
     const total = CASE_PRIZES.reduce((s, p) => s + p.weight, 0);
     let r = Math.random() * total;
-    for (const p of CASE_PRIZES) {
-        if ((r -= p.weight) <= 0) return p;
-    }
+    for (const p of CASE_PRIZES) if ((r -= p.weight) <= 0) return p;
     return CASE_PRIZES[0];
 }
-
 function pickPrizeByRarity(rarity) {
     const pool = CASE_PRIZES.filter(p => p.rarity === rarity);
     if (!pool.length) return CASE_PRIZES[0];
     return pool[Math.floor(Math.random() * pool.length)];
 }
+function makeReelItemHTML(prize) {
+    return `<div class="ci-icon">${prize.emoji}</div><div class="ci-label">${escapeHtml(prize.label)}</div>`;
+}
 
-/* КОЛЁСА — с подарками */
+// ============================================================
+//                     КОЛЁСА
+// ============================================================
+
 const WHEEL_CONFIG = {
-    "wheel":      { cost: 10, items: [
-        { emoji: "💨", label: "0",      value: 0,    rarity: "common" },
-        { emoji: "🪙", label: "5",      value: 5,    rarity: "common" },
-        { emoji: "🪙", label: "10",     value: 10,   rarity: "common" },
-        { emoji: "🪙", label: "15",     value: 15,   rarity: "common" },
-        { emoji: "💰", label: "20",     value: 20,   rarity: "uncommon" },
-        { emoji: "💰", label: "25",     value: 25,   rarity: "uncommon" },
-        { emoji: "❤️", label: "Сердце", value: 150,  rarity: "rare" },
-        { emoji: "🎁", label: "50",     value: 50,   rarity: "rare" },
-    ]},
-    "wheel-free": { cost: 0, items: [
-        { emoji: "🪙", label: "5",      value: 5,    rarity: "common" },
-        { emoji: "🪙", label: "10",     value: 10,   rarity: "common" },
-        { emoji: "🪙", label: "15",     value: 15,   rarity: "common" },
-        { emoji: "💰", label: "20",     value: 20,   rarity: "uncommon" },
-        { emoji: "💰", label: "25",     value: 25,   rarity: "uncommon" },
-        { emoji: "💰", label: "30",     value: 30,   rarity: "uncommon" },
-        { emoji: "❤️", label: "Сердце", value: 150,  rarity: "rare" },
-        { emoji: "🎁", label: "50",     value: 50,   rarity: "epic" },
-    ]},
-    "wheel-vip":  { cost: 50, items: [
-        { emoji: "💰", label: "500",  value: 500,   rarity: "uncommon" },
-        { emoji: "💎", label: "750",  value: 750,   rarity: "uncommon" },
-        { emoji: "💎", label: "1K",   value: 1000,  rarity: "rare" },
-        { emoji: "👑", label: "1.5K", value: 1500,  rarity: "rare" },
-        { emoji: "👑", label: "2K",   value: 2000,  rarity: "epic" },
-        { emoji: "🌹", label: "Роза", value: 250,   rarity: "epic" },
-        { emoji: "🚀", label: "Ракета", value: 500, rarity: "legendary" },
-        { emoji: "💍", label: "Кольцо", value: 1000,rarity: "jackpot" },
-    ]},
+    "wheel": {
+        cost: 200,
+        values: [0, 100, 150, 200, 300, 500, 1000, 2000],
+        emoji:  ["💨", "🪙", "🪙", "💰", "💰", "💎", "💎", "👑"],
+        labels: ["0", "100", "150", "200", "300", "500", "1K", "2K"],
+    },
+    "wheel-free": {
+        cost: 0,
+        values: [0, 10, 25, 50, 100, 200, 500],
+        emoji:  ["💨", "🪙", "🪙", "💰", "💰", "💎", "👑"],
+        labels: ["0", "10", "25", "50", "100", "200", "500"],
+    },
+    "wheel-vip": {
+        cost: 50,  // в звёздах
+        values: [0, 200, 500, 1000, 2000, 5000, 10000],
+        emoji:  ["💨", "💰", "💰", "💎", "👑", "🚀", "🪐"],
+        labels: ["0", "200", "500", "1K", "2K", "5K", "10K"],
+    },
 };
 
-/* LOTTIE */
+// ============================================================
+//                     LOTTIE
+// ============================================================
+
 function loadLottie(container, url, id) {
     if (typeof lottie === "undefined") return null;
-    if (id && lottieInstances[id]) { lottieInstances[id].destroy(); delete lottieInstances[id]; }
+    if (id && lottieInstances[id]) {
+        lottieInstances[id].destroy();
+        delete lottieInstances[id];
+    }
     try {
-        const inst = lottie.loadAnimation({ container, renderer: "svg", loop: true, autoplay: true, path: url, rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: true } });
+        const inst = lottie.loadAnimation({
+            container, renderer: "svg", loop: true, autoplay: true, path: url,
+            rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: true },
+        });
         if (id) lottieInstances[id] = inst;
         return inst;
     } catch (e) { console.error(e); return null; }
 }
+
 function initLottie() {
     if (typeof lottie === "undefined") return;
     const lc = document.getElementById("loader-cat"); if (lc) loadLottie(lc, LOTTIE_URLS.cat, "loaderCat");
@@ -149,362 +304,147 @@ function initLottie() {
     const sc = document.getElementById("side-coin-lottie"); if (sc) loadLottie(sc, LOTTIE_URLS.coin, "sideCoin");
 }
 
-/* DB */
-function loadDemo() {
-    try { const raw = localStorage.getItem(LS_KEY); if (raw) { const p = JSON.parse(raw); return { ...defaultUser, balance: typeof p.balance === "number" ? p.balance : 50000, cases_opened: p.cases_opened || 0, referrals: p.referrals || 0, stars_spent: p.stars_spent || 0, total_wagered: p.total_wagered || 0, best_drop: p.best_drop || 0, drops: Array.isArray(p.drops) ? p.drops : [], last_free_case: p.last_free_case || 0, last_daily: p.last_daily || "", last_free_wheel: p.last_free_wheel || 0 }; } } catch (_) {}
-    return { ...defaultUser, balance: 50000 };
+// ============================================================
+//                     ПИТОМЦЫ / ДЕКОР
+// ============================================================
+
+function loadPetsState() {
+    try {
+        const raw = localStorage.getItem(LS_PETS_KEY);
+        if (raw) {
+            const p = JSON.parse(raw);
+            state.petPos = p.pos || "br";
+            state.petSize = p.size || "md";
+            state.petInHeader = p.inHeader || false;
+        }
+    } catch (_) {}
 }
-function saveDemo() {
-    if (!DEMO) return;
-    try { localStorage.setItem(LS_KEY, JSON.stringify({ balance: currentUser.balance, cases_opened: currentUser.cases_opened, referrals: currentUser.referrals, stars_spent: currentUser.stars_spent, total_wagered: currentUser.total_wagered, best_drop: currentUser.best_drop, drops: currentUser.drops.slice(0, 30), last_free_case: currentUser.last_free_case, last_daily: currentUser.last_daily, last_free_wheel: currentUser.last_free_wheel })); } catch (_) {}
-}
-function resetDemo() { if (!confirm("Сбросить весь прогресс?")) return; try { [LS_KEY, LS_PETS_KEY, LS_DECOR_KEY].forEach(k => localStorage.removeItem(k)); } catch (_) {}; location.reload(); }
-
-/* ПИТОМЦЫ */
-function loadPetsState() { try { const raw = localStorage.getItem(LS_PETS_KEY); if (raw) { const p = JSON.parse(raw); state.ownedPets = p.owned || []; state.petPos = p.pos || "br"; state.petSize = p.size || "md"; state.petInHeader = p.inHeader || false; } } catch (_) {} }
-function savePetsState() { try { localStorage.setItem(LS_PETS_KEY, JSON.stringify({ owned: state.ownedPets, pos: state.petPos, size: state.petSize, inHeader: state.petInHeader })); } catch (_) {} }
-function hasPet(id) { return state.ownedPets.includes(id); }
-const PETS_LIST = [{ id: "cat", name: "Кот", emoji: "🐱", price: 25, url: LOTTIE_URLS.cat, desc: "Милый анимированный кот" }];
-
-/* УКРАШЕНИЯ */
-const NAME_COLORS = [
-    { id: "", name: "Обычный (белый)", cls: "", price: 0 },
-    { id: "gold", name: "Золотой", cls: "name-color-gold", price: 5000, currency: "coins" },
-    { id: "blue", name: "Синий", cls: "name-color-blue", price: 5000, currency: "coins" },
-    { id: "pink", name: "Розовый", cls: "name-color-pink", price: 5000, currency: "coins" },
-    { id: "purple", name: "Фиолетовый", cls: "name-color-purple", price: 5000, currency: "coins" },
-    { id: "green", name: "Зелёный", cls: "name-color-green", price: 5000, currency: "coins" },
-    { id: "red", name: "Красный", cls: "name-color-red", price: 5000, currency: "coins" },
-    { id: "cyan", name: "Циан", cls: "name-color-cyan", price: 7500, currency: "coins" },
-    { id: "rainbow", name: "Радужный", cls: "name-color-rainbow", price: 25, currency: "stars" },
-];
-const FRAMES = [
-    { id: "", name: "Нет", cls: "", price: 0 },
-    { id: "gold", name: "Золотая", cls: "frame-gold", price: 10000, currency: "coins" },
-    { id: "blue", name: "Синяя", cls: "frame-blue", price: 10000, currency: "coins" },
-    { id: "neon", name: "Неоновая", cls: "frame-neon", price: 15000, currency: "coins" },
-    { id: "ocean", name: "Океан", cls: "frame-ocean", price: 15000, currency: "coins" },
-    { id: "fire", name: "Огненная", cls: "frame-fire", price: 25, currency: "stars" },
-    { id: "sunset", name: "Закат", cls: "frame-sunset", price: 30, currency: "stars" },
-    { id: "legendary", name: "Легендарная", cls: "frame-legendary", price: 50, currency: "stars" },
-    { id: "royal", name: "Королевская", cls: "frame-royal", price: 75, currency: "stars" },
-];
-function loadDecorState() { try { const raw = localStorage.getItem(LS_DECOR_KEY); if (raw) { const p = JSON.parse(raw); state.nameColor = p.color || ""; state.frameId = p.frame || ""; } } catch (_) {} }
-function saveDecorState() { try { localStorage.setItem(LS_DECOR_KEY, JSON.stringify({ color: state.nameColor, frame: state.frameId })); } catch (_) {} }
-
-/* ЭКОНОМИКА */
-const CASE_COSTS = { "10": 10, "50": 50, "250": 250, "1000": 1000, "5000": 5000, "10000": 10000 };
-const MULTIPLIERS = [0.0, 0.5, 1.0, 1.5, 2.0, 4.0];
-const MULT_WEIGHTS = [40, 20, 20, 12, 6, 2];
-const MULT_TO_RARITY = [
-    { key: "common", label: "Пусто", emoji: "💨", rarity: "common" },
-    { key: "common", label: "Обычный", emoji: "📦", rarity: "common" },
-    { key: "uncommon", label: "Хороший", emoji: "✨", rarity: "uncommon" },
-    { key: "rare", label: "Редкий", emoji: "💎", rarity: "rare" },
-    { key: "epic", label: "Эпик", emoji: "🔥", rarity: "epic" },
-    { key: "legendary", label: "ЛЕГЕНДА", emoji: "👑", rarity: "legendary" },
-];
-
-function pickMultiplierIndex() {
-    const total = MULT_WEIGHTS.reduce((a, b) => a + b, 0);
-    let r = Math.random() * total;
-    for (let i = 0; i < MULT_WEIGHTS.length; i++) if ((r -= MULT_WEIGHTS[i]) <= 0) return i;
-    return 0;
-}
-function getRtp(cases) { if (cases < 4) return 1.15; if (cases < 6) return 1.15 - ((1.15 - 0.92) / 2) * (cases - 3); return 0.92; }
-function isHappyHours() { const h = new Date().getHours(); return h >= 20 && h < 22; }
-function applyHappy(x) { return isHappyHours() ? Math.floor(x * 1.2) : x; }
-
-/* API */
-async function apiCall(path, body = null) {
-    if (DEMO) return demoApi(path, body);
-    const headers = { "X-Init-Data": tg.initData || "" };
-    if (body) headers["Content-Type"] = "application/json";
-    const res = await fetch(`${API_BASE}${path}`, { method: body ? "POST" : "GET", headers, body: body ? JSON.stringify(body) : undefined });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || "Ошибка запроса");
-    return data;
+function savePetsState() {
+    try {
+        localStorage.setItem(LS_PETS_KEY, JSON.stringify({
+            pos: state.petPos, size: state.petSize, inHeader: state.petInHeader,
+        }));
+    } catch (_) {}
 }
 
-async function demoApi(path, body) {
-    await new Promise(r => setTimeout(r, 60));
-    switch (path) {
-        case "/api/me":
-            return { id: currentUser.id, first_name: currentUser.first_name, last_name: currentUser.last_name, username: currentUser.username, avatar_url: currentUser.avatar_url, balance: currentUser.balance, cases_opened: currentUser.cases_opened, referrals: currentUser.referrals, stars_spent: currentUser.stars_spent, rank: currentUser.rank, total_users: currentUser.total_users, ref_link: currentUser.ref_link, is_admin: true, happy_hours: isHappyHours() };
-        case "/api/leaderboard": return { top: generateLeaderboard() };
-        case "/api/open_case": {
-            const cost = CASE_COSTS[body.case_id]; if (!cost) throw new Error("Неверный кейс");
-            if (currentUser.balance < cost) throw new Error("Недостаточно монет");
-            currentUser.balance -= cost; currentUser.total_wagered += cost;
-            const rtp = getRtp(currentUser.cases_opened);
-            const mIdx = pickMultiplierIndex(); const m = MULTIPLIERS[mIdx];
-            let reward = Math.floor(cost * m * rtp); reward = applyHappy(reward);
-            currentUser.balance += reward; currentUser.cases_opened++;
-            if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-            addDrop(CASE_LABEL[body.case_id] || `Кейс ${cost}`, reward - cost, mIdx === MULTIPLIERS.length - 1);
-            saveDemo();
-            return { reward, cost, balance: currentUser.balance, multiplier: m, multiplier_index: mIdx, win: m >= 1.0, jackpot: mIdx === MULTIPLIERS.length - 1 };
-        }
-        case "/api/open_star_case": {
-            const stars = body.stars; const cost = stars * 10;
-            if (currentUser.balance < cost) throw new Error("Недостаточно монет");
-            currentUser.balance -= cost; currentUser.total_wagered += cost;
-            const rtp = getRtp(currentUser.cases_opened);
-            const tables = { 1:[0,0.5,1.0,1.5,2.0,3.0], 3:[0,0.5,1.0,1.5,2.0,3.0], 5:[0,0.7,1.0,1.5,2.0,3.5], 10:[0,0.7,1.0,1.5,2.0,4.0], 25:[0,0.8,1.0,1.5,2.5,5.0], 50:[0,0.8,1.0,1.5,3.0,6.0], 75:[0,0.8,1.0,1.5,3.0,8.0], 100:[0,1.0,1.2,1.5,3.0,10.0], 250:[0,1.0,1.2,1.5,3.5,12.0], 500:[0,1.0,1.5,2.0,4.0,15.0] };
-            const mults = tables[stars] || tables[10];
-            const mIdx = pickMultiplierIndex(); const m = mults[mIdx];
-            let reward = Math.floor(cost * m * rtp); reward = applyHappy(reward);
-            currentUser.balance += reward; currentUser.cases_opened++;
-            if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-            addDrop(`⭐ ${STAR_LABEL[stars]}`, reward - cost, mIdx === MULTIPLIERS.length - 1);
-            saveDemo();
-            return { reward, cost, balance: currentUser.balance, multiplier: m, multiplier_index: mIdx, win: m >= 1.0, jackpot: mIdx === MULTIPLIERS.length - 1 };
-        }
-        case "/api/spin_wheel": {
-            if (currentUser.balance < 10) throw new Error("Недостаточно монет");
-            currentUser.balance -= 10; currentUser.total_wagered += 10;
-            const items = WHEEL_CONFIG["wheel"].items;
-            const weights = [25, 20, 18, 12, 10, 8, 5, 2];
-            const total = weights.reduce((a, b) => a + b, 0);
-            let r = Math.random() * total, idx = 0;
-            for (let i = 0; i < weights.length; i++) if ((r -= weights[i]) <= 0) { idx = i; break; }
-            const reward = applyHappy(items[idx].value);
-            currentUser.balance += reward; currentUser.cases_opened++;
-            if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-            addDrop("Колесо фортуны", reward - 10, reward >= 100);
-            saveDemo();
-            return { index: idx, reward, cost: 10, balance: currentUser.balance, win: reward > 0 };
-        }
-        case "/api/spin_wheel_free": {
-            const now = Date.now();
-            if (now - (currentUser.last_free_wheel || 0) < 3600000) throw new Error("Раз в час");
-            currentUser.last_free_wheel = now;
-            const items = WHEEL_CONFIG["wheel-free"].items;
-            const idx = Math.floor(Math.random() * items.length);
-            const reward = applyHappy(items[idx].value);
-            currentUser.balance += reward; currentUser.cases_opened++;
-            if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-            addDrop("Бесплатное колесо", reward, reward >= 100);
-            saveDemo();
-            return { index: idx, reward, balance: currentUser.balance };
-        }
-        case "/api/spin_wheel_vip": {
-            const items = WHEEL_CONFIG["wheel-vip"].items;
-            const idx = Math.floor(Math.random() * items.length);
-            const reward = applyHappy(items[idx].value);
-            currentUser.balance += reward; currentUser.cases_opened++;
-            if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-            addDrop("VIP-колесо", reward, reward >= 500);
-            saveDemo();
-            return { index: idx, reward, balance: currentUser.balance };
-        }
-        case "/api/roll_dice": {
-            if (currentUser.balance < 10) throw new Error("Недостаточно монет");
-            currentUser.balance -= 10; currentUser.total_wagered += 10;
-            const d1 = 1 + Math.floor(Math.random() * 6), d2 = 1 + Math.floor(Math.random() * 6);
-            const sum = d1 + d2;
-            let reward = 0;
-            if (sum === 12) reward = 40;
-            else if (sum === 7 || sum === 11) reward = 25;
-            else if (sum === 2 || sum === 8 || sum === 10) reward = 15;
-            reward = applyHappy(reward);
-            currentUser.balance += reward; currentUser.cases_opened++;
-            if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-            addDrop(`Кости ${d1}+${d2}`, reward - 10, sum === 12);
-            saveDemo();
-            return { dice: [d1, d2], total: sum, reward, cost: 10, balance: currentUser.balance, win: reward >= 15 };
-        }
-        case "/api/play_coin": {
-            if (currentUser.balance < 10) throw new Error("Недостаточно монет");
-            currentUser.balance -= 10; currentUser.total_wagered += 10;
-            const side = Math.random() < 0.5 ? "eagle" : "king";
-            const win = side === body.choice;
-            const reward = win ? applyHappy(20) : 0;
-            currentUser.balance += reward; currentUser.cases_opened++;
-            if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-            addDrop(`Монетка (${win ? "победа" : "проигрыш"})`, reward - 10, false);
-            saveDemo();
-            return { side, choice: body.choice, win, reward, balance: currentUser.balance };
-        }
-        case "/api/saper/start": {
-            const cost = body.cost || 25;
-            if (currentUser.balance < cost) throw new Error("Недостаточно монет");
-            currentUser.balance -= cost; currentUser.total_wagered += cost;
-            saveDemo();
-            return { cost, balance: currentUser.balance };
-        }
-        case "/api/saper/finish": {
-            const cellsOpened = body.cells_opened || 0;
-            const config = state.saperConfig || { cost: 25, size: 5, mines: 5 };
-            const totalCells = config.size * config.size;
-            const safe = totalCells - config.mines;
-            const pct = safe > 0 ? cellsOpened / safe : 0;
-            const mult = 1 + pct * 1.5;
-            const reward = Math.floor(config.cost * mult);
-            const finalReward = applyHappy(reward);
-            currentUser.balance += finalReward; currentUser.cases_opened++;
-            if (finalReward > currentUser.best_drop) currentUser.best_drop = finalReward;
-            addDrop("Сапёр", finalReward - config.cost, finalReward > config.cost * 2.5);
-            saveDemo();
-            return { reward: finalReward, balance: currentUser.balance };
-        }
-        case "/api/daily": {
-            const today = new Date().toISOString().slice(0, 10);
-            if (currentUser.last_daily === today) throw new Error("Уже получено сегодня");
-            const reward = [15, 20, 25, 30, 50][Math.floor(Math.random() * 5)];
-            currentUser.balance += reward; currentUser.last_daily = today;
-            saveDemo();
-            return { reward, balance: currentUser.balance };
-        }
-        case "/api/support": return { ok: true, delivered: 1 };
-        case "/api/invoice/coins": { currentUser.balance += body.coins; saveDemo(); return { stars: Math.floor(body.coins / 10), coins: body.coins, demo: true }; }
-        case "/api/free_case": {
-            const now = Date.now(); const cooldown = 24 * 60 * 60 * 1000;
-            if (now - (currentUser.last_free_case || 0) < cooldown) throw new Error("Ещё не готов");
-            const reward = applyHappy(20 + Math.floor(Math.random() * 480));
-            currentUser.balance += reward; currentUser.cases_opened++;
-            currentUser.last_free_case = now;
-            if (reward > currentUser.best_drop) currentUser.best_drop = reward;
-            addDrop("Бесплатный кейс", reward, reward >= 300);
-            saveDemo();
-            return { reward, balance: currentUser.balance };
-        }
-    }
-    throw new Error("Unknown endpoint: " + path);
+function hasPet(id) {
+    return Array.isArray(currentUser.owned_pets) && currentUser.owned_pets.includes(id);
 }
 
-/* ДРОПЫ */
-function addDrop(label, delta, jackpot = false) {
-    currentUser.drops.unshift({ label, delta, jackpot, ts: Date.now(), user: currentUser.first_name || currentUser.username || "Ты", isMine: true });
-    if (currentUser.drops.length > 30) currentUser.drops.length = 30;
-    renderDropsFeed();
+const NAME_COLORS_META = {
+    "":        { name: "Обычный", cls: "" },
+    "gold":    { name: "Золотой", cls: "name-color-gold" },
+    "blue":    { name: "Синий", cls: "name-color-blue" },
+    "pink":    { name: "Розовый", cls: "name-color-pink" },
+    "purple":  { name: "Фиолетовый", cls: "name-color-purple" },
+    "green":   { name: "Зелёный", cls: "name-color-green" },
+    "red":     { name: "Красный", cls: "name-color-red" },
+    "cyan":    { name: "Циан", cls: "name-color-cyan" },
+    "rainbow": { name: "Радужный", cls: "name-color-rainbow" },
+};
+const FRAMES_META = {
+    "":          { name: "Нет", cls: "" },
+    "gold":      { name: "Золотая", cls: "frame-gold" },
+    "blue":      { name: "Синяя", cls: "frame-blue" },
+    "neon":      { name: "Неоновая", cls: "frame-neon" },
+    "ocean":     { name: "Океан", cls: "frame-ocean" },
+    "fire":      { name: "Огненная", cls: "frame-fire" },
+    "sunset":    { name: "Закат", cls: "frame-sunset" },
+    "legendary": { name: "Легендарная", cls: "frame-legendary" },
+    "royal":     { name: "Королевская", cls: "frame-royal" },
+};
+
+function loadDecorState() {
+    try {
+        const raw = localStorage.getItem(LS_DECOR_KEY);
+        if (raw) {
+            const p = JSON.parse(raw);
+            state.nameColor = p.color || "";
+            state.frameId = p.frame || "";
+        }
+    } catch (_) {}
 }
-const AMBIENT_NAMES = ["CryptoKing", "Lucky7", "Neon", "ZeroX", "MaxWin", "Flash", "Void", "Nova", "Titan", "Ghost", "Ace", "Samurai", "Phantom", "Fury", "Blade", "Storm", "Venom", "Echo", "Frost", "Whale"];
-const AMBIENT_CASES = ["Пыль", "Пепел", "Мелл", "Telega", "Оникс", "Бездна", "Колесо", "Кости", "Сапёр", "Монетка"];
-let ambientDrops = [];
-function seedAmbientDrops() {
-    ambientDrops = []; const now = Date.now();
-    for (let i = 0; i < 14; i++) {
-        const name = AMBIENT_NAMES[i % AMBIENT_NAMES.length];
-        const game = AMBIENT_CASES[(i * 7 + 3) % AMBIENT_CASES.length];
-        const winRoll = (i * 73) % 100; const win = winRoll > 35;
-        const delta = win ? 80 + ((i * 137) % 820) : -(30 + ((i * 53) % 180));
-        ambientDrops.push({ label: game, delta, jackpot: win && winRoll > 92, ts: now - i * 1000 * 60 * (2 + (i % 5)), user: name, isMine: false });
-    }
-    ambientDrops.sort((a, b) => b.ts - a.ts);
-}
-function renderDropsFeed() {
-    const box = document.getElementById("drops-feed");
-    if (!box) return;
-    const myDrops = (currentUser.drops || []).map(d => ({ ...d, isMine: true }));
-    const merged = [...myDrops, ...ambientDrops].sort((a, b) => b.ts - a.ts).slice(0, 15);
-    if (!merged.length) { box.innerHTML = `<div class="drop-row"><div class="drop-text">Пока пусто. Открой первый кейс!</div></div>`; return; }
-    box.innerHTML = merged.map(d => {
-        const cls = d.delta > 0 ? (d.jackpot ? "jackpot" : "win") : "lose";
-        const sign = d.delta > 0 ? "+" : "";
-        const prefix = d.isMine ? "⭐ " : "";
-        return `<div class="drop-row"><div class="drop-icon">${d.jackpot ? "🌟" : d.delta > 0 ? "🎉" : "💔"}</div><div class="drop-text">${prefix}<b>${escapeHtml(d.user)}</b> · ${escapeHtml(d.label)}</div><div class="drop-value ${cls}">${sign}${d.delta.toLocaleString("ru-RU")} 🪙</div></div>`;
-    }).join("");
+function saveDecorState() {
+    try {
+        localStorage.setItem(LS_DECOR_KEY, JSON.stringify({ color: state.nameColor, frame: state.frameId }));
+    } catch (_) {}
 }
 
-/* СПРАВОЧНИКИ */
-const CASE_LABEL = { "10": "Пыль", "50": "Пепел", "250": "Мелл", "1000": "Telega", "5000": "Оникс", "10000": "Бездна" };
-const STAR_LABEL = { "1": "Фарм", "3": "Базовый", "5": "Лёгкий", "10": "Удача", "25": "Везучий", "50": "Подарки", "75": "Победа", "100": "Фортуна", "250": "Джекпот", "500": "NFT" };
+// ============================================================
+//                     СПРАВОЧНИКИ
+// ============================================================
+
 const COIN_CASES = [
-    { id: "10", name: "Пыль", price: 10, emoji: "📦", tag: "Старт", preview: ["💨","🪙","❤️"] },
-    { id: "50", name: "Пепел", price: 50, emoji: "💼", tag: "Обычный", preview: ["🪙","❤️","🐻"] },
-    { id: "250", name: "Мелл", price: 250, emoji: "🔥", tag: "Хайроллер", preview: ["❤️","🌹","🐻"] },
-    { id: "1000", name: "Telega", price: 1000, emoji: "💎", tag: "Редкий", preview: ["🌹","🚀","💍"] },
-    { id: "5000", name: "Оникс", price: 5000, emoji: "👑", tag: "Элита", preview: ["🚀","💍","🐻"] },
-    { id: "10000", name: "Бездна", price: 10000, emoji: "🌌", tag: "ТОП", preview: ["💍","🚀","👑"] },
+    { id: "10",    name: "Пыль",   price: 10,    emoji: "📦", tag: "Старт",     preview: ["💨","🪙","❤️"] },
+    { id: "50",    name: "Пепел",  price: 50,    emoji: "💼", tag: "Обычный",   preview: ["🪙","❤️","🧸"] },
+    { id: "250",   name: "Мелл",   price: 250,   emoji: "🔥", tag: "Хайроллер", preview: ["❤️","🌹","🧸"] },
+    { id: "1000",  name: "Telega", price: 1000,  emoji: "💎", tag: "Редкий",    preview: ["🌹","🚀","💍"] },
+    { id: "5000",  name: "Оникс",  price: 5000,  emoji: "👑", tag: "Элита",     preview: ["🚀","💍","🧸"] },
+    { id: "10000", name: "Бездна", price: 10000, emoji: "🌌", tag: "ТОП",       preview: ["💍","🚀","👑"] },
 ];
+
 const STAR_CASES = [
-    { id: "1", name: "Фарм", price: 1, emoji: "🌱", tag: "1⭐", preview: ["🪙","🪙","❤️"] },
-    { id: "3", name: "Базовый", price: 3, emoji: "🎯", tag: "3⭐", preview: ["🪙","❤️","🐻"] },
-    { id: "5", name: "Лёгкий", price: 5, emoji: "🎈", tag: "5⭐", preview: ["❤️","🐻","🌹"] },
-    { id: "10", name: "Удача", price: 10, emoji: "🍀", tag: "10⭐", preview: ["🐻","🌹","🚀"] },
-    { id: "25", name: "Везучий", price: 25, emoji: "🎪", tag: "25⭐", preview: ["🌹","🚀","💍"] },
-    { id: "50", name: "Подарки", price: 50, emoji: "🎁", tag: "50⭐", preview: ["🚀","💍","👑"] },
-    { id: "75", name: "Победа", price: 75, emoji: "🏆", tag: "75⭐", preview: ["💍","🚀","👑"] },
+    { id: "1",   name: "Фарм",    price: 1,   emoji: "🌱", tag: "1⭐",   preview: ["🪙","🪙","❤️"] },
+    { id: "3",   name: "Базовый", price: 3,   emoji: "🎯", tag: "3⭐",   preview: ["🪙","❤️","🧸"] },
+    { id: "5",   name: "Лёгкий",  price: 5,   emoji: "🎈", tag: "5⭐",   preview: ["❤️","🧸","🌹"] },
+    { id: "10",  name: "Удача",   price: 10,  emoji: "🍀", tag: "10⭐",  preview: ["🧸","🌹","🚀"] },
+    { id: "25",  name: "Везучий", price: 25,  emoji: "🎪", tag: "25⭐",  preview: ["🌹","🚀","💍"] },
+    { id: "50",  name: "Подарки", price: 50,  emoji: "🎁", tag: "50⭐",  preview: ["🚀","💍","👑"] },
+    { id: "75",  name: "Победа",  price: 75,  emoji: "🏆", tag: "75⭐",  preview: ["💍","🚀","👑"] },
     { id: "100", name: "Фортуна", price: 100, emoji: "⭐", tag: "100⭐", preview: ["💍","🚀","👑"] },
     { id: "250", name: "Джекпот", price: 250, emoji: "💥", tag: "250⭐", preview: ["💍","🚀","👑"] },
-    { id: "500", name: "NFT", price: 500, emoji: "🪐", tag: "500⭐", preview: ["🪐","💍","🚀"] },
+    { id: "500", name: "NFT",     price: 500, emoji: "🪐", tag: "500⭐", preview: ["🪐","💍","🚀"] },
 ];
 
-/* BOOTSTRAP */
-function bootstrap() {
-    if (DEMO) Object.assign(currentUser, loadDemo());
-    loadPetsState(); loadDecorState(); loadMusicState();
-    const u = tg.initDataUnsafe?.user || {};
-    currentUser.id = u.id || 0;
-    currentUser.first_name = u.first_name || "";
-    currentUser.last_name = u.last_name || "";
-    currentUser.username = u.username || "";
-    currentUser.avatar_url = u.photo_url || "";
-    currentUser.rank = currentUser.rank || 1;
-    currentUser.total_users = currentUser.total_users || 1;
-    currentUser.ref_link = `https://t.me/${BOT_USERNAME}?start=${currentUser.id}`;
+const VIP_CASES = [
+    { id: "vip_15", name: "Особый VIP",    price: 15, emoji: "🎩", tag: "15⭐", preview: ["🧸","🌹","💎"] },
+    { id: "vip_50", name: "VIP Владельца", price: 50, emoji: "👑", tag: "50⭐", preview: ["🚀","💍","🪐"] },
+];
 
-    try {
-        initLottie();
-        buildCases(); buildStarCases(); buildCarouselDots(); buildTopUpOptions();
-        buildShopGrid(); buildVipGrid(); buildPetsGrid(); renderDecorShopPanel();
-        buildWheel("wheel", WHEEL_CONFIG["wheel"].items);
-        buildWheel("wheel-free", WHEEL_CONFIG["wheel-free"].items);
-        buildWheel("wheel-vip", WHEEL_CONFIG["wheel-vip"].items);
-        buildCoinEdges();
-        bindCarouselSwipe(); bindEdgeSwipe(); bindSaperLevels();
-        seedAmbientDrops(); initMusic();
-        renderAll(); renderActivePet(); startFreeCaseTimer(); startHappyTimer(); renderTopToday();
-        startFreeWheelTimer();
-    } catch (e) { console.error(e); toast("Ошибка: " + e.message, "error", 5000); }
+// ============================================================
+//                     SIDE MENU
+// ============================================================
 
-    setTimeout(() => { document.getElementById("global-loader").classList.add("hidden"); document.getElementById("app").classList.remove("hidden"); }, 800);
+function openSideMenu() {
+    document.getElementById("side-menu").classList.add("open");
+    document.getElementById("side-overlay").classList.add("open");
+    haptic("light");
 }
-function renderAll() {
-    renderProfile(); renderSideMenu(); renderDropsFeed();
-    renderLeaderboard(); setBalance(currentUser.balance, false);
-    renderMusicPlayer(); renderMyMusic(); renderMiniPlayer();
-}
-function renderTopToday() {
-    const top = generateLeaderboard();
-    const winner = top[0];
-    const nameEl = document.getElementById("top-today-name");
-    const balEl = document.getElementById("top-today-balance");
-    if (nameEl) nameEl.textContent = winner ? winner.username : "—";
-    if (balEl) balEl.textContent = winner ? `${winner.balance.toLocaleString("ru-RU")} 🪙` : "";
+function closeSideMenu() {
+    document.getElementById("side-menu").classList.remove("open");
+    document.getElementById("side-overlay").classList.remove("open");
 }
 
-/* SIDE MENU */
-function openSideMenu() { document.getElementById("side-menu").classList.add("open"); document.getElementById("side-overlay").classList.add("open"); haptic("light"); }
-function closeSideMenu() { document.getElementById("side-menu").classList.remove("open"); document.getElementById("side-overlay").classList.remove("open"); }
-document.querySelectorAll(".side-item[data-tab]").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const tab = btn.dataset.tab;
-        if (!tab) return;
-        document.querySelectorAll(".side-item").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        switchTab(tab); closeSideMenu();
+function bindSideMenu() {
+    document.querySelectorAll(".side-item[data-tab]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const tab = btn.dataset.tab;
+            if (!tab) return;
+            document.querySelectorAll(".side-item").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            switchTab(tab);
+            closeSideMenu();
+        });
     });
-});
-// FIX: Support button — не переключает таб, просто открывает модалку + main tab активен
-const sideSupportBtn = document.getElementById("side-support-btn");
-if (sideSupportBtn) {
-    sideSupportBtn.addEventListener("click", () => {
-        closeSideMenu();
-        // Сначала переключаемся на главную, чтобы контент был не пустой
-        switchTab("home");
-        document.querySelectorAll(".side-item").forEach(b => b.classList.remove("active"));
-        document.querySelector('.side-item[data-tab="home"]').classList.add("active");
-        openSupport();
-    });
+    const sideSupportBtn = document.getElementById("side-support-btn");
+    if (sideSupportBtn) {
+        sideSupportBtn.addEventListener("click", () => {
+            closeSideMenu();
+            switchTab("home");
+            document.querySelectorAll(".side-item").forEach(b => b.classList.remove("active"));
+            const homeBtn = document.querySelector('.side-item[data-tab="home"]');
+            if (homeBtn) homeBtn.classList.add("active");
+            openSupport();
+        });
+    }
 }
+
 function renderSideMenu() {
     const u = tg.initDataUnsafe?.user || {};
     const avatar = document.getElementById("side-avatar");
     if (avatar) {
-        if (currentUser.avatar_url) { avatar.src = currentUser.avatar_url; avatar.onerror = () => { avatar.src = makeInitialsAvatar(currentUser.first_name, currentUser.last_name, currentUser.username); avatar.onerror = null; }; }
-        else avatar.src = makeInitialsAvatar(u.first_name || currentUser.first_name, u.last_name || currentUser.last_name, u.username || currentUser.username);
+        const src = currentUser.avatar_url || makeInitialsAvatar(u.first_name, u.last_name, u.username);
+        avatar.src = src;
     }
     const nameEl = document.getElementById("side-name");
     if (nameEl) nameEl.textContent = [u.first_name || currentUser.first_name, u.last_name || currentUser.last_name].filter(Boolean).join(" ") || "Игрок";
@@ -512,6 +452,7 @@ function renderSideMenu() {
     if (unEl) unEl.textContent = (u.username || currentUser.username) ? `@${u.username || currentUser.username}` : `ID: ${currentUser.id}`;
     const balEl = document.getElementById("side-balance-val");
     if (balEl) balEl.textContent = currentUser.balance.toLocaleString("ru-RU");
+
     const sidePetSlot = document.getElementById("side-pet-slot");
     const sidePetBtn = document.getElementById("side-pet-btn");
     if (sidePetSlot && hasPet("cat")) {
@@ -531,65 +472,192 @@ function bindEdgeSwipe() {
     if (!el) return;
     let startX = 0, startY = 0;
     const onStart = (e) => { const t = e.touches ? e.touches[0] : e; startX = t.clientX; startY = t.clientY; };
-    const onMove = (e) => { const t = e.touches ? e.touches[0] : e; const dx = t.clientX - startX, dy = t.clientY - startY; if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy) && dx > 0) openSideMenu(); };
+    const onMove = (e) => {
+        const t = e.touches ? e.touches[0] : e;
+        const dx = t.clientX - startX, dy = t.clientY - startY;
+        if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy) && dx > 0) openSideMenu();
+    };
     el.addEventListener("touchstart", onStart, { passive: true });
     el.addEventListener("touchmove", onMove, { passive: true });
     el.addEventListener("click", openSideMenu);
 }
 
-/* ПРОФИЛЬ */
+// ============================================================
+//                     ПРОФИЛЬ
+// ============================================================
+
 function renderProfile() {
     const u = tg.initDataUnsafe?.user || {};
+
     const avatarEl = document.getElementById("profile-avatar");
     if (avatarEl) {
-        if (currentUser.avatar_url) { avatarEl.src = currentUser.avatar_url; avatarEl.onerror = () => { avatarEl.src = makeInitialsAvatar(currentUser.first_name, currentUser.last_name, currentUser.username); avatarEl.onerror = null; }; }
-        else avatarEl.src = makeInitialsAvatar(u.first_name || currentUser.first_name, u.last_name || currentUser.last_name, u.username || currentUser.username);
+        const src = currentUser.avatar_url || makeInitialsAvatar(u.first_name, u.last_name, u.username);
+        avatarEl.src = src;
         avatarEl.className = "profile-avatar";
-        const frame = FRAMES.find(f => f.id === state.frameId);
+        const frameId = currentUser.frame_id || state.frameId;
+        const frame = FRAMES_META[frameId];
         if (frame && frame.cls) avatarEl.classList.add(frame.cls);
     }
+
     const nameEl = document.getElementById("profile-name");
     if (nameEl) {
         nameEl.textContent = [u.first_name || currentUser.first_name, u.last_name || currentUser.last_name].filter(Boolean).join(" ") || "Игрок";
         nameEl.className = "profile-name";
-        const color = NAME_COLORS.find(c => c.id === state.nameColor);
+        const colorId = currentUser.name_color || state.nameColor;
+        const color = NAME_COLORS_META[colorId];
         if (color && color.cls) nameEl.classList.add(color.cls);
+        if (currentUser.premium) nameEl.textContent = "⭐ " + nameEl.textContent;
     }
+
     const unEl = document.getElementById("profile-username");
     if (unEl) unEl.textContent = (u.username || currentUser.username) ? `@${u.username || currentUser.username}` : `ID: ${currentUser.id}`;
+
     const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     setText("profile-badge", `#${currentUser.rank} из ${currentUser.total_users}`);
     setText("profile-cases", currentUser.cases_opened);
     setText("profile-stars", currentUser.stars_spent);
     setText("profile-refs", currentUser.referrals);
+    setText("profile-vip", `${currentUser.vip_emoji} ${currentUser.vip_name}`);
     setText("ref-link", currentUser.ref_link || "—");
     setText("home-cases", currentUser.cases_opened);
-    setText("home-wagered", formatNum(currentUser.total_wagered));
-    setText("home-best", formatNum(currentUser.best_drop));
+    setText("home-wagered", formatNum(currentUser.balance || 0));
+    setText("home-best", formatNum(currentUser.cases_opened || 0));
+
     const happy = document.getElementById("happy-banner");
-    if (happy) happy.style.display = isHappyHours() ? "flex" : "none";
+    if (happy) happy.style.display = currentUser.happy_hours ? "flex" : "none";
+
+    renderDailyStreak();
+    renderQuests();
 }
 
-/* ПИТОМЕЦ */
+// ============================================================
+//                     СТРИК
+// ============================================================
+
+function renderDailyStreak() {
+    const banner = document.getElementById("daily-streak");
+    if (!banner) return;
+    const day = currentUser.streak_day || 1;
+    const canClaim = currentUser.streak_can_claim;
+
+    const rewards = [15, 25, 40, 60, 85, 115, 150];
+    const reward = rewards[Math.min(day - 1, rewards.length - 1)];
+
+    banner.innerHTML = `
+        <div class="streak-header">
+            <div class="streak-title">🔥 Стрик · день ${day}</div>
+            <div class="streak-days">${rewards.map((r, i) => `<span class="${i + 1 === day ? 'active' : ''}">${i + 1}</span>`).join("")}</div>
+        </div>
+        <div class="streak-reward">+${reward} 🪙</div>
+        <button class="streak-btn" ${canClaim ? '' : 'disabled'} onclick="claimStreak()">
+            ${canClaim ? 'Забрать' : 'Уже получено'}
+        </button>
+    `;
+}
+
+async function claimStreak() {
+    if (!currentUser.streak_can_claim) return;
+    haptic("medium");
+    try {
+        const r = await apiCall("/api/streak/claim", {});
+        setBalance(r.balance, true);
+        toast(`🔥 День ${r.day}: +${r.reward} 🪙`, "success", 3500);
+        hapticNotify("success");
+        await refreshMe();
+        renderProfile();
+        renderDropsFeed();
+    } catch (e) {
+        toast(e.message, "error");
+    }
+}
+
+// ============================================================
+//                     КВЕСТЫ
+// ============================================================
+
+function renderQuests() {
+    const box = document.getElementById("quests-list");
+    if (!box) return;
+    const quests = currentUser.quests || {};
+    const ids = Object.keys(quests);
+    if (!ids.length) { box.innerHTML = ""; return; }
+
+    box.innerHTML = ids.map(qid => {
+        const q = quests[qid];
+        const pct = Math.min(100, Math.floor((q.progress / q.target) * 100));
+        const done = q.progress >= q.target && !q.claimed;
+        const claimed = q.claimed;
+        return `
+            <div class="quest-item ${claimed ? 'claimed' : ''} ${done ? 'done' : ''}">
+                <div class="quest-emoji">${q.emoji}</div>
+                <div class="quest-info">
+                    <div class="quest-title">${escapeHtml(q.title)}</div>
+                    <div class="quest-progress">
+                        <div class="quest-bar" style="width:${pct}%"></div>
+                    </div>
+                    <div class="quest-meta">${q.progress}/${q.target} · +${q.reward} 🪙</div>
+                </div>
+                ${claimed ? '<div class="quest-check">✓</div>' : done ? `<button class="quest-btn" onclick="claimQuest('${qid}')">Забрать</button>` : ''}
+            </div>
+        `;
+    }).join("");
+}
+
+async function claimQuest(qid) {
+    haptic("medium");
+    try {
+        const r = await apiCall("/api/quests/claim", { quest_id: qid });
+        setBalance(r.balance, true);
+        toast(`✅ +${r.reward} 🪙`, "success");
+        hapticNotify("success");
+        await refreshMe();
+        renderProfile();
+        renderDropsFeed();
+    } catch (e) {
+        toast(e.message, "error");
+    }
+}
+
+// ============================================================
+//                     ПИТОМЕЦ (активный)
+// ============================================================
+
 function renderActivePet() {
     const positions = ["tl", "tr", "bl", "br"];
-    positions.forEach(p => { const el = document.getElementById(`profile-pet-${p}`); if (el) { el.style.display = "none"; el.innerHTML = ""; } });
+    positions.forEach(p => {
+        const el = document.getElementById(`profile-pet-${p}`);
+        if (el) { el.style.display = "none"; el.innerHTML = ""; }
+    });
     const headerSlot = document.getElementById("header-pet-slot");
     if (headerSlot) { headerSlot.style.display = "none"; headerSlot.innerHTML = ""; }
     if (state.petLottie) { state.petLottie.destroy(); state.petLottie = null; }
     if (state.headerPetLottie) { state.headerPetLottie.destroy(); state.headerPetLottie = null; }
     if (!hasPet("cat")) return;
-    if (state.petInHeader) {
-        if (headerSlot) { headerSlot.style.display = "block"; setTimeout(() => { state.headerPetLottie = loadLottie(headerSlot, LOTTIE_URLS.cat, "headerPet"); }, 50); }
+
+    const inHeader = currentUser.pet_in_header ?? state.petInHeader;
+    const pos = currentUser.pet_pos || state.petPos;
+    const size = currentUser.pet_size || state.petSize;
+
+    if (inHeader) {
+        if (headerSlot) {
+            headerSlot.style.display = "block";
+            setTimeout(() => { state.headerPetLottie = loadLottie(headerSlot, LOTTIE_URLS.cat, "headerPet"); }, 50);
+        }
     } else {
-        const pos = state.petPos;
         const slot = document.getElementById(`profile-pet-${pos}`);
-        if (slot) { slot.style.display = "block"; slot.className = `pet-slot-abs pet-pos-${pos} pet-size-${state.petSize}`; setTimeout(() => { state.petLottie = loadLottie(slot, LOTTIE_URLS.cat, "profilePet"); }, 50); }
+        if (slot) {
+            slot.style.display = "block";
+            slot.className = `pet-slot-abs pet-pos-${pos} pet-size-${size}`;
+            setTimeout(() => { state.petLottie = loadLottie(slot, LOTTIE_URLS.cat, "profilePet"); }, 50);
+        }
     }
     renderSideMenu();
 }
 
-/* БАЛАНС */
+// ============================================================
+//                     БАЛАНС
+// ============================================================
+
 let balanceAnimFrame = null;
 function animateBalance(from, to, duration = 700) {
     const els = ["coins", "profile-balance", "side-balance-val"].map(id => document.getElementById(id)).filter(Boolean);
@@ -606,36 +674,107 @@ function animateBalance(from, to, duration = 700) {
     }
     balanceAnimFrame = requestAnimationFrame(tick);
 }
+
 function setBalance(v, animate = true, fromValue = null) {
     const old = fromValue !== null ? fromValue : currentUser.balance;
     currentUser.balance = v;
-    if (animate && old !== v) { animateBalance(old, v, 700); const pill = document.getElementById("balance-pill"); if (pill) { pill.classList.add("bump"); setTimeout(() => pill.classList.remove("bump"), 400); } }
-    else { ["coins", "profile-balance", "side-balance-val"].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = v.toLocaleString("ru-RU"); }); }
-    saveDemo();
+    if (animate && old !== v) {
+        animateBalance(old, v, 700);
+        const pill = document.getElementById("balance-pill");
+        if (pill) { pill.classList.add("bump"); setTimeout(() => pill.classList.remove("bump"), 400); }
+    } else {
+        ["coins", "profile-balance", "side-balance-val"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = v.toLocaleString("ru-RU");
+        });
+    }
 }
 
-/* ЛИДЕРБОРД */
-function generateLeaderboard() {
-    const list = AMBIENT_NAMES.slice(0, 20).map(name => { let seed = 0; for (const ch of name) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0; return { username: name, balance: 60_000 + (seed % 900_000), cases: 100 + (seed % 900), isMine: false }; });
-    list.push({ username: currentUser.first_name || currentUser.username || "Ты", balance: currentUser.balance, cases: currentUser.cases_opened, isMine: true });
-    list.sort((a, b) => b.balance - a.balance);
-    list.forEach((u, i) => { u.rank = i + 1; if (u.isMine) { currentUser.rank = i + 1; currentUser.total_users = list.length; } });
-    return list;
-}
-function renderLeaderboard() {
+// ============================================================
+//                     ЛИДЕРБОРД
+// ============================================================
+
+async function renderLeaderboard() {
     const box = document.getElementById("leaderboard-list");
     if (!box) return;
-    const top = generateLeaderboard();
-    box.innerHTML = top.map(u => {
-        const cls = u.rank === 1 ? "gold" : u.rank === 2 ? "silver" : u.rank === 3 ? "bronze" : "";
-        return `<div class="leader-row ${u.isMine ? 'me' : ''}"><div class="leader-rank ${cls}">#${u.rank}</div><div class="leader-name">${u.isMine ? '⭐ ' : ''}${escapeHtml(u.username)}</div><div class="leader-balance">${u.balance.toLocaleString("ru-RU")} 🪙</div></div>`;
-    }).join("");
-    const badge = document.getElementById("profile-badge");
-    if (badge) badge.textContent = `#${currentUser.rank} из ${currentUser.total_users}`;
-    renderTopToday();
+    try {
+        const data = await apiCall("/api/leaderboard");
+        const top = data.top || [];
+        const me = data.me;
+        let html = top.map(u => renderLeaderRow(u)).join("");
+        if (me) html += `<div class="leader-sep"></div>` + renderLeaderRow(me);
+        box.innerHTML = html;
+    } catch (e) { console.error("leaderboard:", e); }
 }
 
-/* НАВИГАЦИЯ */
+function renderLeaderRow(u) {
+    const frameCls = u.frame_id ? `frame-${u.frame_id}` : "";
+    const nameCls = u.name_color ? `name-color-${u.name_color}` : "";
+    const premiumBadge = u.premium ? `<span class="premium-badge">⭐</span>` : "";
+    const rankCls = u.rank === 1 ? "gold" : u.rank === 2 ? "silver" : u.rank === 3 ? "bronze" : "";
+    const avatar = u.avatar_url || makeInitialsAvatar(null, null, u.username || "Anon");
+    return `
+        <div class="leader-row ${u.is_me ? 'me' : ''}">
+            <div class="leader-rank ${rankCls}">#${u.rank}</div>
+            <img class="leader-avatar ${frameCls}" src="${avatar}" alt="">
+            <div class="leader-name ${nameCls}">${premiumBadge}${escapeHtml(u.username)}</div>
+            <div class="leader-balance">${u.balance.toLocaleString("ru-RU")} 🪙</div>
+        </div>`;
+}
+
+async function renderDropsFeed() {
+    const box = document.getElementById("drops-feed");
+    if (!box) return;
+    try {
+        const data = await apiCall("/api/drops");
+        const drops = data.drops || [];
+        if (!drops.length) {
+            box.innerHTML = `<div class="drop-row"><div class="drop-text">Пока пусто. Открой первый кейс!</div></div>`;
+            return;
+        }
+        box.innerHTML = drops.map(d => `
+            <div class="drop-row">
+                <div class="drop-icon">🎉</div>
+                <div class="drop-text">${escapeHtml(d.label)}</div>
+                <div class="drop-value win">+${d.delta.toLocaleString("ru-RU")} 🪙</div>
+            </div>`).join("");
+    } catch (e) { console.error("drops:", e); }
+}
+
+async function renderDropsGlobal() {
+    const box = document.getElementById("drops-global");
+    if (!box) return;
+    try {
+        const data = await apiCall("/api/drops/global");
+        const drops = data.drops || [];
+        if (!drops.length) {
+            box.innerHTML = `<div class="drop-row"><div class="drop-text">Скоро здесь появятся победители...</div></div>`;
+            return;
+        }
+        box.innerHTML = drops.map(d => `
+            <div class="drop-row">
+                <div class="drop-icon">🔥</div>
+                <div class="drop-text"><b>@${escapeHtml(d.username)}</b> · ${escapeHtml(d.label)}</div>
+                <div class="drop-value win">+${d.delta.toLocaleString("ru-RU")} 🪙</div>
+            </div>`).join("");
+    } catch (e) { console.error("drops global:", e); }
+}
+
+async function renderTopToday() {
+    try {
+        const data = await apiCall("/api/leaderboard");
+        const winner = data.top && data.top[0];
+        const nameEl = document.getElementById("top-today-name");
+        const balEl = document.getElementById("top-today-balance");
+        if (nameEl && winner) nameEl.textContent = winner.username;
+        if (balEl && winner) balEl.textContent = `${winner.balance.toLocaleString("ru-RU")} 🪙`;
+    } catch (_) {}
+}
+
+// ============================================================
+//                     НАВИГАЦИЯ
+// ============================================================
+
 function switchTab(tabId) {
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
     const el = document.getElementById(`tab-${tabId}`);
@@ -643,28 +782,36 @@ function switchTab(tabId) {
     document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tabId));
     document.querySelectorAll(".side-item[data-tab]").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tabId));
     if (tabId !== "games") closeGameView();
-    if (tabId === "about" && !lottieInstances.about && typeof lottie !== "undefined") { const slot = document.getElementById("about-lottie"); if (slot) lottieInstances.about = loadLottie(slot, LOTTIE_URLS.about, "about"); }
+    if (tabId === "about" && !lottieInstances.about && typeof lottie !== "undefined") {
+        const slot = document.getElementById("about-lottie");
+        if (slot) lottieInstances.about = loadLottie(slot, LOTTIE_URLS.about, "about");
+    }
     haptic("light");
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
-document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
 
 function switchShopCat(cat) {
     state.currentShopCat = cat;
     document.querySelectorAll("#tab-shop .cat-tab").forEach(b => b.classList.toggle("active", b.dataset.cat === cat));
     document.querySelectorAll("#tab-shop .shop-panel").forEach(p => p.classList.remove("active"));
-    document.getElementById(`shop-panel-${cat}`).classList.add("active");
+    const panel = document.getElementById(`shop-panel-${cat}`);
+    if (panel) panel.classList.add("active");
     haptic("light");
 }
+
 function switchCaseCat(cat) {
     state.currentCaseCat = cat;
     document.querySelectorAll("#tab-cases .cat-tab").forEach(b => b.classList.toggle("active", b.dataset.cat === cat));
     document.querySelectorAll("#tab-cases .cases-panel").forEach(p => p.classList.remove("active"));
-    document.getElementById(`cases-panel-${cat}`).classList.add("active");
+    const panel = document.getElementById(`cases-panel-${cat}`);
+    if (panel) panel.classList.add("active");
     haptic("light");
 }
 
-/* ИГРЫ */
+// ============================================================
+//                     ИГРЫ
+// ============================================================
+
 function openGame(gameId) {
     const menu = document.getElementById("games-menu");
     if (menu) menu.classList.add("hidden");
@@ -675,6 +822,7 @@ function openGame(gameId) {
     haptic("light");
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
+
 function closeGameView() {
     document.querySelectorAll(".game-view").forEach(v => v.classList.add("hidden"));
     const menu = document.getElementById("games-menu");
@@ -682,8 +830,12 @@ function closeGameView() {
     resetSaperState();
 }
 
-/* КАРУСЕЛЬ */
+// ============================================================
+//                     КАРУСЕЛЬ
+// ============================================================
+
 let currentSlide = 0, carouselTimer = null;
+
 function buildCarouselDots() {
     const track = document.getElementById("carousel-track");
     if (!track) return;
@@ -693,6 +845,7 @@ function buildCarouselDots() {
     dots.innerHTML = Array.from({ length: n }, (_, i) => `<i class="${i === 0 ? 'active' : ''}"></i>`).join("");
     startCarouselAuto();
 }
+
 function showSlide(i) {
     const track = document.getElementById("carousel-track");
     if (!track) return;
@@ -701,74 +854,240 @@ function showSlide(i) {
     track.style.transform = `translate3d(-${currentSlide * 100}%, 0, 0)`;
     document.querySelectorAll("#carousel-dots i").forEach((d, idx) => d.classList.toggle("active", idx === currentSlide));
 }
-function startCarouselAuto() { if (carouselTimer) clearInterval(carouselTimer); carouselTimer = setInterval(() => showSlide(currentSlide + 1), 6500); }
+
+function startCarouselAuto() {
+    if (carouselTimer) clearInterval(carouselTimer);
+    carouselTimer = setInterval(() => showSlide(currentSlide + 1), 6500);
+}
+
 function bindCarouselSwipe() {
     const el = document.getElementById("carousel");
     if (!el) return;
-    let startX = 0, startY = 0, dx = 0, isDragging = false, startT = 0;
-    const onStart = (e) => { const t = e.touches ? e.touches[0] : e; startX = t.clientX; startY = t.clientY; dx = 0; isDragging = true; startT = Date.now(); if (carouselTimer) clearInterval(carouselTimer); };
-    const onMove = (e) => { if (!isDragging) return; const t = e.touches ? e.touches[0] : e; dx = t.clientX - startX; };
+    let startX = 0, dx = 0, isDragging = false, startT = 0;
+    const onStart = (e) => {
+        const t = e.touches ? e.touches[0] : e;
+        startX = t.clientX; dx = 0; isDragging = true; startT = Date.now();
+        if (carouselTimer) clearInterval(carouselTimer);
+    };
+    const onMove = (e) => {
+        if (!isDragging) return;
+        const t = e.touches ? e.touches[0] : e;
+        dx = t.clientX - startX;
+    };
     const onEnd = () => {
-        if (!isDragging) return; isDragging = false;
+        if (!isDragging) return;
+        isDragging = false;
         const dt = Date.now() - startT;
         const speed = Math.abs(dx) / Math.max(dt, 1);
-        if (Math.abs(dx) > 50 || (Math.abs(dx) > 20 && speed > 0.5)) { showSlide(dx > 0 ? currentSlide - 1 : currentSlide + 1); haptic("light"); }
+        if (Math.abs(dx) > 50 || (Math.abs(dx) > 20 && speed > 0.5)) {
+            showSlide(dx > 0 ? currentSlide - 1 : currentSlide + 1);
+            haptic("light");
+        }
         startCarouselAuto();
     };
     el.addEventListener("touchstart", onStart, { passive: true });
     el.addEventListener("touchmove", onMove, { passive: true });
     el.addEventListener("touchend", onEnd, { passive: true });
-    el.addEventListener("touchcancel", onEnd, { passive: true });
 }
 
-/* HAPPY TIMER */
+// ============================================================
+//                     HAPPY TIMER
+// ============================================================
+
 function startHappyTimer() {
     const el = document.getElementById("happy-timer");
     if (!el) return;
+
     function update() {
-        const now = new Date();
-        const h = now.getHours(), m = now.getMinutes();
-        if (h >= 20 && h < 22) { const left = (22 * 60) - (h * 60 + m); const hh = Math.floor(left / 60), mm = left % 60; el.textContent = `осталось ${hh}ч ${String(mm).padStart(2, "0")}м`; }
-        else { const target = h < 20 ? 20 : 32; const left = (target * 60) - (h * 60 + m); const hh = Math.floor(left / 60), mm = left % 60; el.textContent = `через ${hh}ч ${String(mm).padStart(2, "0")}м`; }
+        let left = currentUser.happy_seconds_left || 0;
+
+        if (currentUser.happy_hours && left > 0) {
+            const hh = Math.floor(left / 3600);
+            const mm = Math.floor((left % 3600) / 60);
+            el.textContent = `осталось ${hh}ч ${String(mm).padStart(2, "0")}м`;
+        } else {
+            const now = new Date();
+            const h = now.getHours(), m = now.getMinutes();
+            const target = h < 20 ? 20 : 32;
+            left = (target * 60) - (h * 60 + m);
+            const hh = Math.floor(left / 60), mm = left % 60;
+            el.textContent = `через ${hh}ч ${String(mm).padStart(2, "0")}м`;
+        }
+
+        // локальный декремент
+        if (currentUser.happy_hours && currentUser.happy_seconds_left > 0) {
+            currentUser.happy_seconds_left = Math.max(0, currentUser.happy_seconds_left - 60);
+        }
     }
-    update(); setInterval(update, 60000);
+    update();
+    setInterval(update, 60000);
 }
 
-/* КЕЙСЫ */
+// ============================================================
+//                     КЕЙСЫ — СБОРКА
+// ============================================================
+
 function buildCases() {
     const grid = document.getElementById("cases-grid");
     if (!grid) return;
-    grid.innerHTML = COIN_CASES.map(c => `<button class="case-btn" data-case="${c.id}"><div class="case-tag">${c.tag}</div><div class="case-icon">${c.emoji}</div><div class="case-name">${c.name}</div><div class="case-price">${c.price.toLocaleString("ru-RU")} 🪙</div><div class="case-items-preview">${c.preview.map(p => `<span>${p}</span>`).join("")}</div></button>`).join("");
+    grid.innerHTML = COIN_CASES.map(c => `
+        <button class="case-btn" data-case="${c.id}">
+            <div class="case-tag">${c.tag}</div>
+            <div class="case-icon">${c.emoji}</div>
+            <div class="case-name">${c.name}</div>
+            <div class="case-price">${c.price.toLocaleString("ru-RU")} 🪙</div>
+            <div class="case-items-preview">${c.preview.map(p => `<span>${p}</span>`).join("")}</div>
+        </button>`).join("");
     grid.querySelectorAll(".case-btn").forEach(btn => btn.addEventListener("click", () => openCase(btn.dataset.case)));
 }
+
 function buildStarCases() {
     const grid = document.getElementById("star-cases-grid");
     if (!grid) return;
-    grid.innerHTML = STAR_CASES.map(c => `<button class="case-btn star" data-star="${c.id}"><div class="case-tag">${c.tag}</div><div class="case-icon">${c.emoji}</div><div class="case-name">${c.name}</div><div class="case-price">${c.price} ⭐</div><div class="case-items-preview">${c.preview.map(p => `<span>${p}</span>`).join("")}</div></button>`).join("");
+    grid.innerHTML = STAR_CASES.map(c => `
+        <button class="case-btn star" data-star="${c.id}">
+            <div class="case-tag">${c.tag}</div>
+            <div class="case-icon">${c.emoji}</div>
+            <div class="case-name">${c.name}</div>
+            <div class="case-price">${c.price} ⭐</div>
+            <div class="case-items-preview">${c.preview.map(p => `<span>${p}</span>`).join("")}</div>
+        </button>`).join("");
     grid.querySelectorAll(".case-btn").forEach(btn => btn.addEventListener("click", () => openStarCase(btn.dataset.star)));
 }
+
+function buildVipCases() {
+    const grid = document.getElementById("vip-cases-grid");
+    if (!grid) return;
+    grid.innerHTML = VIP_CASES.map(c => `
+        <button class="case-btn star" data-vip="${c.id}">
+            <div class="case-tag">${c.tag}</div>
+            <div class="case-icon">${c.emoji}</div>
+            <div class="case-name">${c.name}</div>
+            <div class="case-price">${c.price} ⭐</div>
+            <div class="case-items-preview">${c.preview.map(p => `<span>${p}</span>`).join("")}</div>
+        </button>`).join("");
+    grid.querySelectorAll(".case-btn").forEach(btn => btn.addEventListener("click", () => openVipCase(btn.dataset.vip)));
+}
+
+// ============================================================
+//                     МОНЕТНЫЕ КЕЙСЫ
+// ============================================================
+
 async function openCase(caseId) {
     if (state.caseOpening) return;
     const caseData = COIN_CASES.find(c => c.id === caseId);
     if (!caseData) return;
-    if (currentUser.balance < caseData.price) { hapticNotify("error"); showInsufficientBalance(caseData.price, currentUser.balance); return; }
+    if (currentUser.balance < caseData.price) {
+        hapticNotify("error");
+        showInsufficientBalance(caseData.price, currentUser.balance);
+        return;
+    }
     await runCaseAnimation(`Кейс «${caseData.name}»`, () => apiCall("/api/open_case", { case_id: caseId }));
-}
-async function openStarCase(starId) {
-    if (state.caseOpening) return;
-    const caseData = STAR_CASES.find(c => c.id === starId);
-    if (!caseData) return;
-    if (DEMO) {
-        const coinsPrice = caseData.price * 10;
-        if (currentUser.balance < coinsPrice) { hapticNotify("error"); showInsufficientBalance(coinsPrice, currentUser.balance); return; }
-        await runCaseAnimation(`⭐ «${caseData.name}» · ${caseData.price}⭐`, () => apiCall("/api/open_star_case", { stars: caseData.price }));
-    } else toast("Звёздные кейсы — в боте ⭐", "info");
+    await refreshMe();
+    renderProfile();
+    renderLeaderboard();
+    updateFreeCaseUI();
 }
 
-function makeReelItemHTML(prize) {
-    const cls = `r-${prize.rarity}`;
-    return `<div class="ci-icon">${prize.emoji}</div><div class="ci-label">${escapeHtml(prize.label)}</div>`;
+// ============================================================
+//   ЗВЁЗДНЫЕ И VIP КЕЙСЫ
+// ============================================================
+
+function openStarCase(starId) {
+    const caseData = STAR_CASES.find(c => c.id === starId);
+    if (!caseData) return;
+    startStarPayment("star_case", { stars: caseData.price }, (result) => {
+        showStarCaseResult(caseData, result);
+        refreshMe().then(() => { renderProfile(); renderLeaderboard(); renderDropsFeed(); });
+    });
 }
+
+function showStarCaseResult(caseData, result) {
+    const modal = document.getElementById("case-modal");
+    const titleEl = document.getElementById("case-modal-title");
+    const resEl = document.getElementById("case-modal-result");
+    const reel = document.getElementById("case-reel");
+    if (!modal || !resEl) return;
+
+    if (reel) { reel.innerHTML = ""; reel.style.transform = "translate3d(0,0,0)"; }
+    if (titleEl) titleEl.textContent = `⭐ «${caseData.name}» · ${caseData.price}⭐`;
+
+    if (result.type === "gift") {
+        resEl.innerHTML = `
+            <div style="font-size:56px;margin-bottom:12px">${result.emoji}</div>
+            <span style="color:#ffd700;text-shadow:0 0 30px currentColor;font-size:24px">🎁 ПОДАРОК!</span>
+            <div style="margin-top:14px;font-size:22px;color:#fff">${escapeHtml(result.name)}</div>
+            <div style="margin-top:6px;font-size:14px;color:#8a8aa0">Отправлен в Telegram</div>`;
+        hapticNotify("success");
+    } else {
+        const reward = result.reward || 0;
+        const cost = result.cost || caseData.price * 10;
+        const profit = reward - cost;
+        const profitColor = profit >= 0 ? "#22dd88" : "#ff3b5b";
+        const profitSign = profit >= 0 ? "+" : "";
+        resEl.innerHTML = `
+            <div style="font-size:32px;margin-bottom:8px">${reward > 0 ? "🏆" : "💔"}</div>
+            <span style="color:${reward > 0 ? '#ffd700' : '#ff3b5b'};text-shadow:0 0 30px currentColor;font-size:22px">${reward > 0 ? "ПОБЕДА!" : "Проигрыш"}</span>
+            <div style="margin-top:14px;font-size:20px;color:#fff">+${reward.toLocaleString("ru-RU")} 🪙</div>
+            <div style="margin-top:6px;font-size:15px;color:${profitColor}">Чистыми: <b>${profitSign}${profit.toLocaleString("ru-RU")}</b> 🪙</div>`;
+        hapticNotify(reward > 0 ? "success" : "error");
+    }
+
+    modal.classList.remove("hidden");
+    setTimeout(() => {
+        modal.classList.add("hidden");
+        if (resEl) resEl.innerHTML = "";
+    }, 3500);
+}
+
+function openVipCase(vipId) {
+    const caseData = VIP_CASES.find(c => c.id === vipId);
+    if (!caseData) return;
+    startStarPayment("vip_case", { vip_id: vipId }, (result) => {
+        showVipCaseResult(caseData, result);
+        refreshMe().then(() => { renderProfile(); renderLeaderboard(); renderDropsFeed(); });
+    });
+}
+
+function showVipCaseResult(caseData, result) {
+    const modal = document.getElementById("case-modal");
+    const titleEl = document.getElementById("case-modal-title");
+    const resEl = document.getElementById("case-modal-result");
+    const reel = document.getElementById("case-reel");
+    if (!modal || !resEl) return;
+
+    if (reel) { reel.innerHTML = ""; reel.style.transform = "translate3d(0,0,0)"; }
+    if (titleEl) titleEl.textContent = `${caseData.emoji} ${caseData.name}`;
+
+    if (result.type === "gift") {
+        resEl.innerHTML = `
+            <div style="font-size:56px;margin-bottom:12px">${result.emoji}</div>
+            <span style="color:#ffd700;text-shadow:0 0 30px currentColor;font-size:24px">🎁 ${escapeHtml(result.name)}</span>
+            <div style="margin-top:14px;font-size:16px;color:#8a8aa0">Отправлен в Telegram</div>`;
+    } else if (result.type === "nft") {
+        resEl.innerHTML = `
+            <div style="font-size:56px;margin-bottom:12px">🪐</div>
+            <span style="color:#c04cff;text-shadow:0 0 30px currentColor;font-size:24px">NFT!</span>
+            <div style="margin-top:14px;font-size:16px;color:#fff">Код: <b>${escapeHtml(result.code)}</b></div>
+            <div style="margin-top:6px;font-size:13px;color:#8a8aa0">Свяжись с поддержкой</div>`;
+    } else {
+        resEl.innerHTML = `
+            <div style="font-size:32px;margin-bottom:8px">👑</div>
+            <span style="color:#ffd700;text-shadow:0 0 30px currentColor;font-size:22px">VIP-выигрыш</span>
+            <div style="margin-top:14px;font-size:20px;color:#fff">+${(result.reward || 0).toLocaleString("ru-RU")} 🪙</div>`;
+    }
+
+    hapticNotify("success");
+    modal.classList.remove("hidden");
+    setTimeout(() => {
+        modal.classList.add("hidden");
+        if (resEl) resEl.innerHTML = "";
+    }, 3500);
+}
+
+// ============================================================
+//                     АНИМАЦИЯ КЕЙСА (для монетных)
+// ============================================================
 
 async function runCaseAnimation(title, apiFn) {
     if (state.caseOpening) return;
@@ -780,44 +1099,67 @@ async function runCaseAnimation(title, apiFn) {
     const titleEl = document.getElementById("case-modal-title");
     const resEl = document.getElementById("case-modal-result");
 
-    reel.style.transition = "none";
-    reel.style.transform = "translate3d(0, 0, 0)";
-    reel.style.willChange = "auto";
-    reel.innerHTML = "";
     if (titleEl) titleEl.textContent = title;
     if (resEl) resEl.innerHTML = "&nbsp;";
+    reel.style.transition = "none";
+    reel.style.transform = "translate3d(0,0,0)";
+    reel.innerHTML = "";
+    modal.classList.remove("hidden");
     void reel.offsetWidth;
+
+    let result;
+    try {
+        result = await apiFn();
+    } catch (e) {
+        toast(e.message || "Ошибка", "error");
+        modal.classList.add("hidden");
+        state.caseOpening = false;
+        if (e.status === 400 && /Недостаточно/.test(e.message || "")) {
+            const caseData = COIN_CASES.find(c => title.includes(c.name));
+            if (caseData) showInsufficientBalance(caseData.price, currentUser.balance);
+        }
+        return;
+    }
 
     const WINNER_INDEX = 50;
     const items = [];
     for (let i = 0; i < 60; i++) items.push(pickRandomPrize());
     items[WINNER_INDEX] = pickRandomPrize();
 
-    const fragment = document.createDocumentFragment();
+    const frag = document.createDocumentFragment();
     items.forEach(it => {
         const div = document.createElement("div");
         div.className = `case-item r-${it.rarity}`;
         div.innerHTML = makeReelItemHTML(it);
-        fragment.appendChild(div);
+        frag.appendChild(div);
     });
-    reel.appendChild(fragment);
+    reel.appendChild(frag);
 
-    modal.classList.remove("hidden");
-    void reel.offsetWidth;
+    let winnerPrize;
+    let winnerIndexOverride = null;
 
-    let result = null, apiError = null;
-    try { result = await apiFn(); } catch (e) { apiError = e; }
-
-    if (apiError) {
-        toast(apiError.message || "Ошибка", "error");
-        modal.classList.add("hidden");
-        state.caseOpening = false;
-        return;
+    if (result.gift) {
+        winnerPrize = { kind: "gift", gift: result.gift.id, emoji: result.gift.emoji, label: result.gift.name, rarity: "legendary" };
+    } else if (result.win) {
+        const realRarity = MULT_TO_RARITY[result.multiplier_index]?.rarity || "common";
+        winnerPrize = pickPrizeByRarity(realRarity);
+    } else {
+        // Проигрыш — базовая пустая
+        winnerPrize = CASE_PRIZES[0];
+        // Near-miss: показываем легендарный слот рядом с маркером
+        if (result.near_miss && result.hint_index != null) {
+            const nearPrize = CASE_PRIZES.find(p => p.rarity === "legendary") || CASE_PRIZES[0];
+            const nearIdx = WINNER_INDEX + 1;  // на 1 вправо от маркера
+            if (items[nearIdx]) {
+                const nearEl = reel.children[nearIdx];
+                if (nearEl) {
+                    nearEl.className = `case-item r-legendary`;
+                    nearEl.innerHTML = makeReelItemHTML(nearPrize);
+                }
+            }
+        }
     }
 
-    // Определяем настоящий приз по рарити
-    const realRarity = MULT_TO_RARITY[result.multiplier_index]?.rarity || "common";
-    const winnerPrize = result.win ? pickPrizeByRarity(realRarity) : CASE_PRIZES[0]; // для проигрыша — пусто
     const winnerEl = reel.children[WINNER_INDEX];
     if (winnerEl) {
         winnerEl.className = `case-item r-${winnerPrize.rarity}`;
@@ -828,94 +1170,194 @@ async function runCaseAnimation(title, apiFn) {
     let wrapWidth = 340;
     const wrapEl = modal.querySelector(".case-reel-wrap");
     if (wrapEl) wrapWidth = wrapEl.getBoundingClientRect().width || 340;
-    const ITEM_WIDTH = 100 + 6;
-    const targetX = -(WINNER_INDEX * ITEM_WIDTH + ITEM_WIDTH / 2 - wrapWidth / 2);
-    const jitter = (Math.random() - 0.5) * (ITEM_WIDTH * 0.4);
+    const ITEM_W = 96;
+    const targetX = -(WINNER_INDEX * ITEM_W + ITEM_W / 2 - wrapWidth / 2);
+    const jitter = (Math.random() - 0.5) * (ITEM_W * 0.3);
 
-    reel.style.willChange = "transform";
     reel.style.transition = "transform 3.6s cubic-bezier(0.32, 0.72, 0, 1)";
     reel.style.transform = `translate3d(${targetX + jitter}px, 0, 0)`;
 
-    setTimeout(() => { if (state.caseOpening) showCaseResult(result, winnerPrize); }, 3700);
+    setTimeout(() => {
+        if (!state.caseOpening) return;
+        showCaseResult(result, winnerPrize);
+    }, 3700);
 }
 
 function showCaseResult(result, prize) {
-    if (!state.caseOpening || !result) return;
-    state.caseOpening = false;
     const modal = document.getElementById("case-modal");
     const resEl = document.getElementById("case-modal-result");
     const isJackpot = result.jackpot;
-    if (result.win) {
+
+    if (result.gift) {
+        resEl.innerHTML = `
+            <div style="font-size:48px;margin-bottom:8px">${result.gift.emoji}</div>
+            <span style="color:#ffd700;text-shadow:0 0 30px currentColor">🎁 ПОДАРОК!</span>
+            <div style="margin-top:14px;font-size:22px;color:#fff">${escapeHtml(result.gift.name)}</div>`;
+        hapticNotify("success");
+    } else if (result.win) {
         const profit = result.reward - result.cost;
         const profitColor = profit >= 0 ? "#22dd88" : "#ff3b5b";
         const profitSign = profit >= 0 ? "+" : "";
-        const prizeText = prize.kind === "gift" ? `${prize.emoji} ${prize.label}` : `${prize.emoji} ${result.reward.toLocaleString("ru-RU")} 🪙`;
-        resEl.innerHTML = `<div style="font-size:32px;margin-bottom:8px">${prize.emoji}</div><span style="color:${isJackpot ? '#ff3b5b' : '#ffd700'};text-shadow:0 0 30px currentColor">${isJackpot ? "🎉 JACKPOT!" : "🏆 ПОБЕДА!"}</span><div style="margin-top:14px;font-size:20px;color:#fff">${prizeText}</div><div style="margin-top:6px;font-size:15px;color:${profitColor}">Чистыми: <b>${profitSign}${profit.toLocaleString("ru-RU")}</b> 🪙</div>`;
+        // LDW: даже если ушли в минус — показываем "ПОБЕДА"
+        const headerText = isJackpot ? "🎉 JACKPOT!" : (result.ldw ? "🎉 ВЫИГРЫШ!" : "🏆 ПОБЕДА!");
+        resEl.innerHTML = `
+            <div style="font-size:32px;margin-bottom:8px">${prize.emoji}</div>
+            <span style="color:${isJackpot ? '#ff3b5b' : '#ffd700'};text-shadow:0 0 30px currentColor">${headerText}</span>
+            <div style="margin-top:14px;font-size:20px;color:#fff">${result.reward.toLocaleString("ru-RU")} 🪙</div>
+            <div style="margin-top:6px;font-size:14px;color:${profitColor}">Чистыми: <b>${profitSign}${profit.toLocaleString("ru-RU")}</b> 🪙</div>`;
         hapticNotify("success");
     } else {
-        resEl.innerHTML = `<span style="color:#ff3b5b;font-size:22px">💔 Проигрыш</span><div style="margin-top:14px;font-size:15px;color:#ff3b5b">Чистыми: <b>-${result.cost.toLocaleString("ru-RU")}</b> 🪙</div>`;
+        resEl.innerHTML = `
+            <span style="color:#ff3b5b;font-size:22px">💔 Проигрыш</span>
+            <div style="margin-top:14px;font-size:15px;color:#ff3b5b">Чистыми: <b>-${result.cost.toLocaleString("ru-RU")}</b> 🪙</div>`;
         hapticNotify("error");
     }
-    const balanceBefore = result.balance - result.reward + result.cost;
-    setBalance(result.balance, true, balanceBefore);
-    renderProfile(); renderLeaderboard();
 
-    state.caseOpening = true;
+    if (result.balance !== undefined) setBalance(result.balance, true);
+    renderProfile();
+    renderDropsFeed();
+
+    // DON: если сервер предложил удвоение
+    const autoCloseMs = result.don_available > 0 ? 6000 : (result.cost === 0 ? 3500 : 2400);
     setTimeout(() => {
         modal.classList.add("hidden");
         const reel = document.getElementById("case-reel");
-        if (reel) { reel.style.transition = "none"; reel.style.transform = "translate3d(0, 0, 0)"; reel.style.willChange = "auto"; reel.innerHTML = ""; }
+        if (reel) { reel.style.transition = "none"; reel.style.transform = "translate3d(0,0,0)"; reel.innerHTML = ""; }
         state.caseOpening = false;
-    }, 2400);
+
+        if (result.don_available > 0) {
+            showDonOffer(result.don_available);
+        }
+    }, autoCloseMs);
 }
+
 function forceCloseCase() {
     state.caseOpening = false;
     const modal = document.getElementById("case-modal");
     if (modal) modal.classList.add("hidden");
     const reel = document.getElementById("case-reel");
-    if (reel) { reel.style.transition = "none"; reel.style.transform = "translate3d(0, 0, 0)"; reel.style.willChange = "auto"; reel.innerHTML = ""; }
+    if (reel) { reel.style.transition = "none"; reel.style.transform = "translate3d(0,0,0)"; reel.innerHTML = ""; }
 }
 
-/* БЕСПЛАТНЫЙ КЕЙС */
+// ============================================================
+//                     DOUBLE OR NOTHING
+// ============================================================
+
+let donTimerId = null;
+let donAmount = 0;
+
+function showDonOffer(amount) {
+    donAmount = amount;
+    const modal = document.getElementById("don-modal");
+    const amountEl = document.getElementById("don-amount");
+    const doubleEl = document.getElementById("don-double");
+    if (!modal) return;
+    if (amountEl) amountEl.textContent = amount.toLocaleString("ru-RU");
+    if (doubleEl) doubleEl.textContent = (amount * 2).toLocaleString("ru-RU");
+    modal.classList.remove("hidden");
+    haptic("medium");
+
+    // Таймер 30 сек
+    if (donTimerId) clearTimeout(donTimerId);
+    donTimerId = setTimeout(() => {
+        closeDonOffer();
+    }, 30000);
+}
+
+function closeDonOffer() {
+    if (donTimerId) { clearTimeout(donTimerId); donTimerId = null; }
+    const modal = document.getElementById("don-modal");
+    if (modal) modal.classList.add("hidden");
+    donAmount = 0;
+}
+
+async function donChoose(take) {
+    if (!donAmount) { closeDonOffer(); return; }
+    haptic("medium");
+    try {
+        const r = await apiCall("/api/don", { take });
+        if (r.win) {
+            toast(`🔥 УДВОИЛ! +${r.reward.toLocaleString("ru-RU")} 🪙`, "success", 4000);
+            hapticNotify("success");
+        } else if (r.skipped) {
+            toast(`💰 Забрал ${r.amount.toLocaleString("ru-RU")} 🪙`, "info");
+        } else {
+            toast(`💀 Не повезло. -${r.lost.toLocaleString("ru-RU")} 🪙`, "error", 4000);
+            hapticNotify("error");
+        }
+        if (r.balance !== undefined) setBalance(r.balance, true);
+        await refreshMe();
+        renderProfile();
+        renderDropsFeed();
+    } catch (e) {
+        toast(e.message, "error");
+    }
+    closeDonOffer();
+}
+
+// ============================================================
+//                     БЕСПЛАТНЫЙ КЕЙС
+// ============================================================
+
 let freeCaseTimerId = null;
-const FREE_CASE_COOLDOWN = 24 * 60 * 60 * 1000;
-function startFreeCaseTimer() { if (freeCaseTimerId) clearInterval(freeCaseTimerId); updateFreeCaseUI(); freeCaseTimerId = setInterval(updateFreeCaseUI, 1000); }
+const FREE_CASE_COOLDOWN = 6 * 60 * 60 * 1000;
+
+function startFreeCaseTimer() {
+    if (freeCaseTimerId) clearInterval(freeCaseTimerId);
+    updateFreeCaseUI();
+    freeCaseTimerId = setInterval(updateFreeCaseUI, 1000);
+}
+
 function updateFreeCaseUI() {
     const card = document.getElementById("free-case-card");
     const timer = document.getElementById("free-case-timer");
     if (!card || !timer) return;
-    const diff = Date.now() - (currentUser.last_free_case || 0);
-    if (diff >= FREE_CASE_COOLDOWN) { card.classList.remove("disabled"); timer.textContent = "Готов к открытию!"; timer.style.color = "var(--gold)"; }
-    else {
+    const last = currentUser.last_free_case || "1970-01-01 00:00:00";
+    const lastDt = new Date(last.replace(" ", "T"));
+    const diff = Date.now() - lastDt.getTime();
+    if (diff >= FREE_CASE_COOLDOWN || isNaN(lastDt.getTime())) {
+        card.classList.remove("disabled");
+        timer.textContent = "Готов к открытию!";
+        timer.style.color = "var(--gold)";
+    } else {
         card.classList.add("disabled");
         const left = FREE_CASE_COOLDOWN - diff;
-        const h = Math.floor(left / 3_600_000), m = Math.floor((left % 3_600_000) / 60_000), s = Math.floor((left % 60_000) / 1000);
+        const h = Math.floor(left / 3_600_000);
+        const m = Math.floor((left % 3_600_000) / 60_000);
+        const s = Math.floor((left % 60_000) / 1000);
         timer.textContent = `Через ${h}ч ${String(m).padStart(2, "0")}м ${String(s).padStart(2, "0")}с`;
         timer.style.color = "var(--text-dim)";
     }
 }
+
 async function openFreeCase() {
     if (state.caseOpening) return;
-    if (Date.now() - (currentUser.last_free_case || 0) < FREE_CASE_COOLDOWN) { toast("Ещё не готов", "error"); return; }
-    await runCaseAnimation("🎁 Бесплатный кейс", () => apiCall("/api/free_case"));
-    renderProfile(); renderLeaderboard();
+    await runCaseAnimation("🎁 Бесплатный кейс", () => apiCall("/api/free_case", {}));
+    await refreshMe();
+    renderProfile();
+    updateFreeCaseUI();
 }
 
-/* КОЛЁСА — с подарками */
-function buildWheel(wheelId, items) {
+// ============================================================
+//                     КОЛЁСА
+// ============================================================
+
+function buildWheel(wheelId, values, emoji, labels) {
     const inner = document.getElementById(`${wheelId}-inner`);
     if (!inner) return;
     inner.innerHTML = "";
-    const total = items.length, seg = 360 / total;
-    items.forEach((it, i) => {
+    const n = values.length;
+    const seg = 360 / n;
+    for (let i = 0; i < n; i++) {
         const label = document.createElement("div");
         label.className = "wheel-seg-label";
         const angle = i * seg + seg / 2;
         label.style.transform = `rotate(${angle - 90}deg) translate(90px, 0)`;
-        label.textContent = it.label;
+        label.textContent = labels[i];
         inner.appendChild(label);
-    });
+    }
 }
+
 let wheelRotations = { "wheel": 0, "wheel-free": 0, "wheel-vip": 0 };
 
 async function spinWheelGeneric(wheelId, apiPath, btnId, resultId) {
@@ -925,14 +1367,20 @@ async function spinWheelGeneric(wheelId, apiPath, btnId, resultId) {
     haptic("medium");
     const wheelEl = document.getElementById(wheelId);
     const resultEl = document.getElementById(resultId);
-    resultEl.textContent = ""; resultEl.className = "game-result";
+    resultEl.textContent = "";
+    resultEl.className = "game-result";
 
     let result;
-    try { result = await apiCall(apiPath, {}); }
-    catch (e) { toast(e.message, "error"); btn.disabled = false; return; }
+    try {
+        result = await apiCall(apiPath, {});
+    } catch (e) {
+        toast(e.message, "error");
+        btn.disabled = false;
+        return;
+    }
 
-    const items = WHEEL_CONFIG[wheelId].items;
-    const seg = 360 / items.length;
+    const cfg = WHEEL_CONFIG[wheelId];
+    const seg = 360 / cfg.values.length;
     const current = wheelRotations[wheelId];
     const normalizedCurrent = ((current % 360) + 360) % 360;
     const targetIn360 = (360 - (result.index * seg + seg / 2)) % 360;
@@ -940,10 +1388,9 @@ async function spinWheelGeneric(wheelId, apiPath, btnId, resultId) {
     wheelRotations[wheelId] += 360 * 5 + delta;
     wheelEl.style.transform = `rotate(${wheelRotations[wheelId]}deg)`;
 
-    setTimeout(() => {
-        const item = items[result.index];
+    setTimeout(async () => {
         if (result.reward > 0) {
-            resultEl.innerHTML = `${item.emoji} +${result.reward.toLocaleString("ru-RU")} 🪙`;
+            resultEl.innerHTML = `${cfg.emoji[result.index]} +${result.reward.toLocaleString("ru-RU")} 🪙`;
             resultEl.classList.add("win");
             hapticNotify("success");
         } else {
@@ -951,188 +1398,356 @@ async function spinWheelGeneric(wheelId, apiPath, btnId, resultId) {
             resultEl.classList.add("lose");
             hapticNotify("error");
         }
-        animateBalance(currentUser.balance, result.balance, 700);
-        currentUser.balance = result.balance;
-        saveDemo();
-        renderProfile(); renderLeaderboard();
+        // Подарок
+        if (result.gift) {
+            resultEl.innerHTML += `<br><span style="color:#ffd700;font-size:15px;margin-top:6px;display:inline-block">🎁 БОНУС: ${result.gift.emoji} ${escapeHtml(result.gift.name)}!</span>`;
+        }
+        if (result.balance !== undefined) setBalance(result.balance, true);
+        await refreshMe();
+        renderProfile();
+        renderDropsFeed();
         btn.disabled = false;
         wheelEl.style.transition = "none";
         wheelRotations[wheelId] = wheelRotations[wheelId] % 360;
         wheelEl.style.transform = `rotate(${wheelRotations[wheelId]}deg)`;
-        setTimeout(() => { wheelEl.style.transition = "transform 5s var(--ease-smooth)"; }, 50);
+        setTimeout(() => { wheelEl.style.transition = "transform 5s cubic-bezier(0.32, 0.72, 0, 1)"; }, 50);
+        if (wheelId === "wheel-free") updateFreeWheelButton();
     }, 5100);
 }
 
-function spinWheel() { return spinWheelGeneric("wheel", "/api/spin_wheel", "spin-btn", "wheel-result"); }
+function spinWheel()     { return spinWheelGeneric("wheel", "/api/spin_wheel", "spin-btn", "wheel-result"); }
 function spinWheelFree() { return spinWheelGeneric("wheel-free", "/api/spin_wheel_free", "spin-free-btn", "wheel-free-result"); }
-function spinWheelVip() { return spinWheelGeneric("wheel-vip", "/api/spin_wheel_vip", "spin-vip-btn", "wheel-vip-result"); }
+
+function spinWheelVip() {
+    startStarPayment("vip_wheel", {}, (result) => {
+        const idx = result.index || 0;
+        const reward = result.reward || 0;
+        const cfg = WHEEL_CONFIG["wheel-vip"];
+
+        const wheelEl = document.getElementById("wheel-vip");
+        const resultEl = document.getElementById("wheel-vip-result");
+        if (!wheelEl || !resultEl) return;
+
+        const seg = 360 / cfg.values.length;
+        const current = wheelRotations["wheel-vip"];
+        const normalizedCurrent = ((current % 360) + 360) % 360;
+        const targetIn360 = (360 - (idx * seg + seg / 2)) % 360;
+        const delta = (targetIn360 - normalizedCurrent + 360) % 360;
+        wheelRotations["wheel-vip"] += 360 * 5 + delta;
+        wheelEl.style.transform = `rotate(${wheelRotations["wheel-vip"]}deg)`;
+
+        setTimeout(async () => {
+            if (reward > 0) {
+                resultEl.innerHTML = `${cfg.emoji[idx]} +${reward.toLocaleString("ru-RU")} 🪙`;
+                resultEl.classList.add("win");
+            } else {
+                resultEl.textContent = "💀 Пусто";
+                resultEl.classList.add("lose");
+            }
+            // Подарок
+            if (result.gift) {
+                const g = result.gift;
+                const gName = g.name || g.gift_name || "Подарок";
+                const gEmoji = g.emoji || "🎁";
+                resultEl.innerHTML += `<br><span style="color:#ffd700;font-size:15px;margin-top:6px;display:inline-block">🎁 БОНУС: ${gEmoji} ${escapeHtml(gName)}!</span>`;
+            }
+            wheelEl.style.transition = "none";
+            wheelRotations["wheel-vip"] = wheelRotations["wheel-vip"] % 360;
+            wheelEl.style.transform = `rotate(${wheelRotations["wheel-vip"]}deg)`;
+            setTimeout(() => { wheelEl.style.transition = "transform 5s cubic-bezier(0.32, 0.72, 0, 1)"; }, 50);
+            await refreshMe();
+            renderProfile();
+            renderLeaderboard();
+            renderDropsFeed();
+        }, 5100);
+    });
+}
 
 let freeWheelTimer = null;
+const FREE_WHEEL_COOLDOWN = 4 * 60 * 60 * 1000;
+
 function startFreeWheelTimer() {
     if (freeWheelTimer) clearInterval(freeWheelTimer);
     updateFreeWheelButton();
     freeWheelTimer = setInterval(updateFreeWheelButton, 1000);
 }
+
 function updateFreeWheelButton() {
     const btn = document.getElementById("spin-free-btn");
     if (!btn) return;
-    const diff = Date.now() - (currentUser.last_free_wheel || 0);
-    const cooldown = 60 * 60 * 1000;
-    if (diff >= cooldown) { btn.disabled = false; btn.textContent = "Крутить бесплатно"; }
-    else { const left = cooldown - diff; const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000); btn.disabled = true; btn.textContent = `Через ${m}м ${String(s).padStart(2,"0")}с`; }
+    const last = currentUser.last_free_wheel || "1970-01-01 00:00:00";
+    const lastDt = new Date(last.replace(" ", "T"));
+    const diff = Date.now() - lastDt.getTime();
+    if (diff >= FREE_WHEEL_COOLDOWN || isNaN(lastDt.getTime())) {
+        btn.disabled = false;
+        btn.textContent = "Крутить бесплатно";
+    } else {
+        const left = FREE_WHEEL_COOLDOWN - diff;
+        const h = Math.floor(left / 3_600_000);
+        const m = Math.floor((left % 3_600_000) / 60_000);
+        const s = Math.floor((left % 60_000) / 1000);
+        btn.disabled = true;
+        btn.textContent = `Через ${h}ч ${String(m).padStart(2, "0")}м ${String(s).padStart(2, "0")}с`;
+    }
 }
 
-/* МОНЕТКА 3D — БЕЗ автосброса, полноценное вращение */
+// ============================================================
+//                     МОНЕТКА 3D
+// ============================================================
+
 async function playCoin(choice) {
     if (state.coinPlaying) return;
     state.coinPlaying = true;
     haptic("medium");
-    const coinEl = document.getElementById("coin3d");
+
+    const coinEl   = document.getElementById("coin3d");
     const resultEl = document.getElementById("coin-result");
     const btnEagle = document.getElementById("coin-eagle");
-    const btnKing = document.getElementById("coin-king");
-    btnEagle.disabled = true; btnKing.disabled = true;
-    resultEl.textContent = ""; resultEl.className = "game-result";
+    const btnKing  = document.getElementById("coin-king");
+
+    btnEagle.disabled = true;
+    btnKing.disabled  = true;
+    resultEl.textContent = "";
+    resultEl.className = "game-result";
 
     let result;
-    try { result = await apiCall("/api/play_coin", { choice }); }
-    catch (e) { toast(e.message, "error"); btnEagle.disabled = false; btnKing.disabled = false; state.coinPlaying = false; return; }
+    try {
+        result = await apiCall("/api/play_coin", { choice });
+    } catch (e) {
+        toast(e.message, "error");
+        if (e.status === 400 && /Недостаточно/.test(e.message || "")) {
+            showInsufficientBalance(50, currentUser.balance);
+        }
+        btnEagle.disabled = false;
+        btnKing.disabled  = false;
+        state.coinPlaying = false;
+        return;
+    }
 
-    // Кумулятивное вращение: 8-14 оборотов + финальный угол
     const spins = 8 + Math.floor(Math.random() * 6);
     const finalAngle = result.side === "eagle" ? 0 : 180;
+
     const currentRotation = state.coinRotation || 0;
     const baseTarget = 360 * spins;
-    // Приводим к чёткому положению относительно текущего
     const normalizedCurrent = ((currentRotation % 360) + 360) % 360;
     const delta = (finalAngle - normalizedCurrent + 360) % 360;
     state.coinRotation = currentRotation + baseTarget + delta;
 
-    coinEl.style.transition = `transform ${2.8 + Math.random() * 0.6}s cubic-bezier(0.32, 0.72, 0, 1)`;
-    coinEl.style.transform = `rotateY(${state.coinRotation}deg)`;
+    // Сброс transform без transition — потом анимация
+    coinEl.style.transition = "none";
+    coinEl.style.transform  = `rotateY(${state.coinRotation}deg) translateZ(0)`;
+    void coinEl.offsetWidth;   // принудительный reflow
 
-    setTimeout(() => {
+    const duration = 3.2 + Math.random() * 0.6;
+    coinEl.style.transition = `transform ${duration}s cubic-bezier(0.32, 0.72, 0, 1)`;
+    coinEl.style.transform  = `rotateY(${state.coinRotation}deg) translateZ(0)`;
+
+    setTimeout(async () => {
         if (result.win) {
             resultEl.innerHTML = `🎉 ${result.side === "eagle" ? "🦅 Орёл" : "👑 Решка"} — победа! <b>+${result.reward}</b> 🪙`;
-            resultEl.classList.add("win"); hapticNotify("success");
+            resultEl.classList.add("win");
+            hapticNotify("success");
         } else {
             resultEl.innerHTML = `💔 ${result.side === "eagle" ? "🦅 Орёл" : "👑 Решка"} — проигрыш`;
-            resultEl.classList.add("lose"); hapticNotify("error");
+            resultEl.classList.add("lose");
+            hapticNotify("error");
         }
-        const before = result.balance - result.reward + 10;
-        animateBalance(before, result.balance, 700);
-        currentUser.balance = result.balance; saveDemo();
-        renderProfile(); renderLeaderboard();
-        btnEagle.disabled = false; btnKing.disabled = false;
+        if (result.balance !== undefined) setBalance(result.balance, true);
+        await refreshMe();
+        renderProfile();
+        renderDropsFeed();
+        btnEagle.disabled = false;
+        btnKing.disabled  = false;
         state.coinPlaying = false;
-    }, 3000);
+    }, Math.round(duration * 1000) + 200);
 }
-/* Создаём боковые грани монеты */
+
 function buildCoinEdges() {
     const coin = document.getElementById("coin3d");
     if (!coin) return;
-    // Удаляем старые edges
+
+    // Удаляем старые рёбра, если были (36 сегментов — legacy-код)
     coin.querySelectorAll(".coin-edge").forEach(e => e.remove());
-    const SEGMENTS = 24;
-    const radius = 80;
-    const thickness = 20;
-    for (let i = 0; i < SEGMENTS; i++) {
-        const angle = (360 / SEGMENTS) * i;
-        const edge = document.createElement("div");
-        edge.className = "coin-edge";
-        edge.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
-        edge.style.position = "absolute";
-        edge.style.width = `${thickness}px`;
-        edge.style.height = "160px";
-        edge.style.left = `${80 - thickness / 2}px`;
-        edge.style.top = "0";
-        edge.style.background = "linear-gradient(180deg, #8a6a00, #d4a017, #8a6a00)";
-        edge.style.borderRadius = "2px";
-        edge.style.backfaceVisibility = "visible";
-        edge.style.transformOrigin = "center center";
-        // Слегка затемняем боковые для объёма
-        const bright = 0.7 + 0.3 * Math.cos(angle * Math.PI / 180);
-        edge.style.filter = `brightness(${bright})`;
-        coin.appendChild(edge);
-    }
+
+    // Одно кольцо-подложка вместо 36 сегментов
+    const edge = document.createElement("div");
+    edge.className = "coin-edge";
+    coin.insertBefore(edge, coin.firstChild);
 }
 
-/* КОСТИ */
-const DICE_ROTATIONS = { 1:{x:0,y:0}, 2:{x:-90,y:0}, 3:{x:0,y:-90}, 4:{x:0,y:90}, 5:{x:90,y:0}, 6:{x:0,y:180} };
-function setDiceToValue(diceEl, value, delay = 0) {
+// ============================================================
+//                     КОСТИ
+// ============================================================
+
+const DICE_ROTATIONS = {
+    1: { x: 0,   y: 0 }, 2: { x: 90,  y: 0 }, 3: { x: 0,   y: -90 },
+    4: { x: 0,   y: 90 }, 5: { x: -90, y: 0 }, 6: { x: 0,   y: 180 },
+};
+
+function setDiceToValue(el, value, delay = 0) {
     const rot = DICE_ROTATIONS[value] || DICE_ROTATIONS[1];
-    const extraX = 360 * (4 + Math.floor(Math.random() * 3));
-    const extraY = 360 * (4 + Math.floor(Math.random() * 3));
-    const extraZ = 90 * (Math.floor(Math.random() * 4) - 2);
-    const duration = 2.2 + Math.random() * 0.5;
-    diceEl.style.transition = `transform ${duration}s cubic-bezier(0.32, 0.72, 0, 1) ${delay}s`;
-    diceEl.style.transform = `rotateX(${rot.x + extraX}deg) rotateY(${rot.y + extraY}deg) rotateZ(${extraZ}deg)`;
+    const extraX = 360 * (3 + Math.floor(Math.random() * 3));
+    const extraY = 360 * (3 + Math.floor(Math.random() * 3));
+    const duration = 2.4 + Math.random() * 0.5;
+    el.style.transition = `transform ${duration}s cubic-bezier(0.32, 0.72, 0, 1) ${delay}s`;
+    el.style.transform = `rotateX(${rot.x + extraX}deg) rotateY(${rot.y + extraY}deg) translateZ(0)`;
 }
+
 async function rollDice() {
     if (state.rolling) return;
-    if (currentUser.balance < 10) { hapticNotify("error"); showInsufficientBalance(10, currentUser.balance); return; }
-    state.rolling = true; haptic("medium");
+    if (currentUser.balance < 50) {
+        hapticNotify("error");
+        showInsufficientBalance(50, currentUser.balance);
+        return;
+    }
+    state.rolling = true;
+    haptic("medium");
     const d1el = document.getElementById("dice1"), d2el = document.getElementById("dice2");
     const resultEl = document.getElementById("dice-result");
-    resultEl.textContent = ""; resultEl.className = "game-result";
-    const balanceBefore = currentUser.balance;
+    resultEl.textContent = "";
+    resultEl.className = "game-result";
 
     let result;
-    try { result = await apiCall("/api/roll_dice"); }
-    catch (e) { toast(e.message, "error"); state.rolling = false; return; }
+    try {
+        result = await apiCall("/api/roll_dice", {});
+    } catch (e) {
+        toast(e.message, "error");
+        state.rolling = false;
+        return;
+    }
 
-    d1el.style.transition = "none"; d2el.style.transition = "none";
-    d1el.style.transform = "rotateX(0) rotateY(0) rotateZ(0)"; d2el.style.transform = "rotateX(0) rotateY(0) rotateZ(0)";
+    d1el.style.transition = "none";
+    d2el.style.transition = "none";
+    d1el.style.transform = "rotateX(0) rotateY(0)";
+    d2el.style.transform = "rotateX(0) rotateY(0)";
     void d1el.offsetWidth; void d2el.offsetWidth;
     setDiceToValue(d1el, result.dice[0], 0);
-    setDiceToValue(d2el, result.dice[1], 0.1 + Math.random() * 0.15);
+    setDiceToValue(d2el, result.dice[1], 0.15);
 
-    setTimeout(() => {
+    setTimeout(async () => {
         const e1 = ["⚀","⚁","⚂","⚃","⚄","⚅"][result.dice[0] - 1];
         const e2 = ["⚀","⚁","⚂","⚃","⚄","⚅"][result.dice[1] - 1];
-        if (result.win) { resultEl.innerHTML = `🎲 ${e1} + ${e2} = <b>${result.total}</b> · <span style="color:#22dd88">+${result.reward} 🪙</span>`; resultEl.classList.add("win"); hapticNotify("success"); }
-        else { resultEl.innerHTML = `🎲 ${e1} + ${e2} = <b>${result.total}</b> · <span style="color:#ff3b5b">проигрыш</span>`; resultEl.classList.add("lose"); hapticNotify("error"); }
-        animateBalance(balanceBefore - 10, result.balance, 700);
-        currentUser.balance = result.balance; saveDemo();
-        renderProfile(); renderLeaderboard(); state.rolling = false;
+        if (result.win) {
+            resultEl.innerHTML = `🎲 ${e1} + ${e2} = <b>${result.total}</b> · <span style="color:#22dd88">+${result.reward} 🪙</span>`;
+            resultEl.classList.add("win");
+            hapticNotify("success");
+        } else {
+            resultEl.innerHTML = `🎲 ${e1} + ${e2} = <b>${result.total}</b> · <span style="color:#ff3b5b">проигрыш</span>`;
+            resultEl.classList.add("lose");
+            hapticNotify("error");
+        }
+        if (result.balance !== undefined) setBalance(result.balance, true);
+        await refreshMe();
+        renderProfile();
+        renderDropsFeed();
+        state.rolling = false;
     }, 2900);
 }
 
-/* САПЁР */
+// ============================================================
+//                     САПЁР — ГИБРИД
+// ============================================================
+
 function bindSaperLevels() {
     document.querySelectorAll(".saper-level").forEach(btn => {
         btn.addEventListener("click", () => {
-            state.saperConfig = { size: parseInt(btn.dataset.size), mines: parseInt(btn.dataset.mines), cost: parseInt(btn.dataset.cost) };
-            startSaperGame();
+            const level = btn.dataset.level;
+            const size = parseInt(btn.dataset.size);
+            const mines = parseInt(btn.dataset.mines);
+            // Показываем карточку выбора режима
+            openSaperModeSelect(level, size, mines);
         });
     });
 }
-async function startSaperGame() {
-    const cfg = state.saperConfig;
+
+function openSaperModeSelect(level, size, mines) {
+    const costCoins = { easy: 10, medium: 25, hard: 50 }[level] || 10;
+    const costStars = { easy: 5, medium: 15, hard: 25 }[level] || 5;
+    const label = { easy: "Лёгкий", medium: "Средний", hard: "Хард" }[level] || level;
+    const modal = document.getElementById("saper-mode-modal");
+    if (!modal) return;
+
+    document.getElementById("saper-mode-title").textContent = `💣 Сапёр · ${label}`;
+    document.getElementById("saper-mode-info").textContent = `${size}×${size} · ${mines} мин`;
+
+    const coinsBtn = document.getElementById("saper-mode-coins");
+    const starsBtn = document.getElementById("saper-mode-stars");
+    if (coinsBtn) {
+        coinsBtn.textContent = `🪙 Играть за ${costCoins} · RTP 88%`;
+        coinsBtn.onclick = () => { closeModal("saper-mode-modal"); startSaperGame(level, "coins"); };
+    }
+    if (starsBtn) {
+        starsBtn.textContent = `⭐ Премиум ${costStars} · RTP 96% + 🎁`;
+        starsBtn.onclick = () => {
+            closeModal("saper-mode-modal");
+            startStarPayment("saper", { level }, (result) => {
+                toast(`💣 Премиум-сапёр куплен: +${result.stake} 🪙`, "success", 4000);
+                setTimeout(() => startSaperGame(level, "stars"), 800);
+            });
+        };
+    }
+    modal.classList.remove("hidden");
+    haptic("light");
+}
+
+async function startSaperGame(level, mode) {
+    const cfgSizes = { easy: { size: 3, mines: 2 }, medium: { size: 5, mines: 5 }, hard: { size: 7, mines: 10 } };
+    const cfg = cfgSizes[level];
     if (!cfg) return;
-    if (currentUser.balance < cfg.cost) { hapticNotify("error"); showInsufficientBalance(cfg.cost, currentUser.balance); return; }
-    if (DEMO) { const before = currentUser.balance; currentUser.balance -= cfg.cost; currentUser.total_wagered += cfg.cost; setBalance(currentUser.balance, true, before); saveDemo(); }
-    else { try { await apiCall("/api/saper/start", { cost: cfg.cost }); } catch (e) { toast(e.message, "error"); return; } }
+
+    const costCoins = { easy: 10, medium: 25, hard: 50 }[level] || 10;
+
+    if (mode === "coins" && currentUser.balance < costCoins) {
+        hapticNotify("error");
+        showInsufficientBalance(costCoins, currentUser.balance);
+        return;
+    }
+
+    let result;
+    try {
+        // Сервер сам сгенерирует мины и запомнит их
+        result = await apiCall("/api/saper/start", { level, mode });
+    } catch (e) {
+        toast(e.message, "error");
+        return;
+    }
     haptic("medium");
+
     document.getElementById("saper-setup").classList.add("hidden");
     document.getElementById("saper-play").classList.remove("hidden");
     document.getElementById("saper-cashout").style.display = "none";
+
     const grid = document.getElementById("saper-grid");
     grid.style.gridTemplateColumns = `repeat(${cfg.size}, 1fr)`;
     grid.innerHTML = "";
-    document.getElementById("saper-info").textContent = `${cfg.size}×${cfg.size} · ${cfg.mines} мин · ставка ${cfg.cost} 🪙`;
-    const resEl = document.getElementById("saper-result"); resEl.textContent = ""; resEl.className = "game-result";
+    document.getElementById("saper-info").textContent =
+        `${cfg.size}×${cfg.size} · ${cfg.mines} мин · ${mode === "coins" ? "🪙" : "⭐"}`;
+
+    const resEl = document.getElementById("saper-result");
+    resEl.textContent = "";
+    resEl.className = "game-result";
+
     const total = cfg.size * cfg.size;
-    const mines = new Set();
-    while (mines.size < cfg.mines) mines.add(Math.floor(Math.random() * total));
     const totalSafe = total - cfg.mines;
-    state.saperActive = true; state.saperSafe = 0; state.saperTotal = totalSafe;
+
+    state.saperActive = true;
+    state.saperSafe = 0;
+    state.saperTotal = totalSafe;
+    state.saperConfig = { level, mode, ...cfg };
+    state.saperCost = costCoins;
+    // Мины больше не храним локально — они только на сервере
+    state.saperMines = [];
+
     for (let i = 0; i < total; i++) {
-        const cell = document.createElement("div"); cell.className = "cell";
-        cell.addEventListener("click", () => handleSaperClick(cell, mines.has(i), i, mines));
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.addEventListener("click", () => handleSaperClickServer(cell, i));
         grid.appendChild(cell);
     }
+
+    if (result.balance !== undefined) setBalance(result.balance, true);
 }
+
 function updateCashoutButton() {
     const btn = document.getElementById("saper-cashout");
     const valEl = document.getElementById("saper-cashout-value");
@@ -1141,167 +1756,344 @@ function updateCashoutButton() {
     if (!cfg || state.saperSafe === 0) { btn.style.display = "none"; return; }
     const pct = state.saperSafe / state.saperTotal;
     const mult = 1 + pct * 1.5;
-    const reward = Math.floor(cfg.cost * mult);
+    const reward = Math.floor((state.saperCost || 10) * mult);
     btn.style.display = "block";
     valEl.textContent = reward.toLocaleString("ru-RU");
 }
-async function handleSaperClick(cell, isMine, index, mines) {
+
+async function handleSaperClickServer(cell, index) {
     if (!state.saperActive) return;
     if (cell.classList.contains("opened") || cell.classList.contains("mine")) return;
-    if (isMine) {
-        cell.textContent = "💣"; cell.classList.add("mine"); hapticNotify("error");
-        document.querySelectorAll("#saper-grid .cell").forEach((c, idx) => { if (mines.has(idx) && c !== cell) { c.textContent = "💣"; c.classList.add("mine"); } });
+    if (cell.classList.contains("pending")) return;
+    // Блокируем клетку на время запроса — защита от спам-тапов
+    cell.classList.add("pending");
+
+    let resp;
+    try {
+        resp = await apiCall("/api/saper/click", { index });
+    } catch (e) {
+        cell.classList.remove("pending");
+        if (e.status === 409) return; // клетка уже открыта — тихо игнорим
+        toast(e.message, "error");
+        return;
+    }
+
+    cell.classList.remove("pending");
+
+    if (resp.boom) {
+        // Попал на мину
+        cell.textContent = "💣";
+        cell.classList.add("mine");
+        hapticNotify("error");
+
+        // Раскрываем остальные мины (сервер прислал их позиции)
+        const allCells = document.querySelectorAll("#saper-grid .cell");
+        (resp.mines || []).forEach(idx => {
+            if (allCells[idx] && allCells[idx] !== cell) {
+                allCells[idx].textContent = "💣";
+                allCells[idx].classList.add("mine");
+            }
+        });
         await finishSaper();
     } else {
-        cell.textContent = "✅"; cell.classList.add("opened");
-        state.saperSafe++; haptic("light");
+        // Безопасная клетка
+        cell.textContent = "✅";
+        cell.classList.add("opened");
+        state.saperSafe = resp.opened_count;
+        haptic("light");
         updateCashoutButton();
-        if (state.saperSafe >= state.saperTotal) await saperCashOut();
+        // Если открыл все безопасные — авто-финиш
+        if (state.saperSafe >= state.saperTotal) {
+            await saperCashOut();
+        }
     }
 }
-async function saperCashOut() { if (!state.saperActive || state.saperSafe === 0) return; state.saperActive = false; await finishSaper(); }
-async function finishSaper() {
-    const cellsOpened = state.saperSafe;
-    let result;
-    try {
-        if (DEMO) {
-            const cfg = state.saperConfig;
-            const pct = state.saperTotal > 0 ? cellsOpened / state.saperTotal : 0;
-            const mult = 1 + pct * 1.5;
-            const reward = Math.floor(cfg.cost * mult);
-            const finalReward = applyHappy(reward);
-            const before = currentUser.balance;
-            currentUser.balance += finalReward; currentUser.cases_opened++;
-            if (finalReward > currentUser.best_drop) currentUser.best_drop = finalReward;
-            addDrop("Сапёр", finalReward - cfg.cost, finalReward > cfg.cost * 2.5); saveDemo();
-            result = { reward: finalReward, balance: currentUser.balance, _before: before };
-        } else { result = await apiCall("/api/saper/finish", { cells_opened: cellsOpened }); }
-    } catch (e) { toast(e.message, "error"); return; }
-    const el = document.getElementById("saper-result");
-    if (result.reward > 0) { el.innerHTML = `<span style="color:#22dd88">✅ +${result.reward} 🪙 (${cellsOpened} клеток)</span>`; el.classList.add("win"); hapticNotify("success"); }
-    else { el.innerHTML = `<span style="color:#ff3b5b">💥 Пусто</span>`; el.classList.add("lose"); }
-    setBalance(result.balance, true, result._before || (result.balance - result.reward));
-    renderProfile(); renderLeaderboard();
-    document.getElementById("saper-cashout").style.display = "none";
+
+async function saperCashOut() {
+    if (!state.saperActive || state.saperSafe === 0) return;
     state.saperActive = false;
-}
-function resetSaperState() {
-    state.saperActive = false; state.saperSafe = 0; state.saperConfig = null;
-    const setup = document.getElementById("saper-setup"), play = document.getElementById("saper-play");
-    if (setup) setup.classList.remove("hidden"); if (play) play.classList.add("hidden");
-    const grid = document.getElementById("saper-grid"); if (grid) grid.innerHTML = "";
-    const res = document.getElementById("saper-result"); if (res) { res.textContent = ""; res.className = "game-result"; }
-    const btn = document.getElementById("saper-cashout"); if (btn) btn.style.display = "none";
+    await finishSaper();
 }
 
-/* МАГАЗИН */
+async function finishSaper() {
+    if (!state.saperConfig) return;
+    const cfg = state.saperConfig;
+    // Мгновенно ставим флаг — защита от повторного вызова
+    state.saperActive = false;
+    state.saperSafe = 0;
+    state.saperConfig = null;
+
+    let result;
+    try {
+        // cells_opened больше не отправляем — сервер считает сам
+        result = await apiCall("/api/saper/finish", {
+            level: cfg.level,
+            mode: cfg.mode,
+        });
+    } catch (e) {
+        toast(e.message, "error");
+        return;
+    }
+
+    const el = document.getElementById("saper-result");
+    if (result.reward > 0) {
+        el.innerHTML = `<span style="color:#22dd88">✅ +${result.reward} 🪙 (${result.opened} клеток, ×${result.multiplier.toFixed(2)})</span>`;
+        el.classList.add("win");
+        hapticNotify("success");
+    } else {
+        el.innerHTML = `<span style="color:#ff3b5b">💥 Пусто</span>`;
+        el.classList.add("lose");
+    }
+
+    if (result.gift) {
+        const g = result.gift;
+        el.innerHTML += `<br><span style="color:#ffd700;font-size:15px;margin-top:6px;display:inline-block">🎁 БОНУС: ${g.emoji} ${escapeHtml(g.name)}!</span>`;
+    }
+
+    if (result.balance !== undefined) setBalance(result.balance, true);
+    await refreshMe();
+    renderProfile();
+    renderDropsFeed();
+    document.getElementById("saper-cashout").style.display = "none";
+}
+
+function resetSaperState() {
+    state.saperActive = false;
+    state.saperSafe = 0;
+    state.saperConfig = null;
+    const setup = document.getElementById("saper-setup"), play = document.getElementById("saper-play");
+    if (setup) setup.classList.remove("hidden");
+    if (play) play.classList.add("hidden");
+    const grid = document.getElementById("saper-grid");
+    if (grid) grid.innerHTML = "";
+    const res = document.getElementById("saper-result");
+    if (res) { res.textContent = ""; res.className = "game-result"; }
+    const btn = document.getElementById("saper-cashout");
+    if (btn) btn.style.display = "none";
+}
+
+// ============================================================
+//                     МАГАЗИН
+// ============================================================
+
 const COIN_PACKS = [
-    { coins: 100, stars: 10, cls: "", bonus: null },
-    { coins: 250, stars: 25, cls: "", bonus: "+10%" },
-    { coins: 500, stars: 50, cls: "", bonus: null },
-    { coins: 1000, stars: 100, cls: "gold", bonus: "+15%" },
-    { coins: 2500, stars: 250, cls: "", bonus: null },
-    { coins: 5000, stars: 500, cls: "gold", bonus: "+20%" },
-    { coins: 10000, stars: 1000, cls: "epic", bonus: "+25%" },
-    { coins: 25000, stars: 2500, cls: "mega", bonus: "+30%" },
+    { coins: 100,   stars: 10,   bonus: null,   cls: "" },
+    { coins: 250,   stars: 25,   bonus: "+5%",  cls: "" },
+    { coins: 500,   stars: 50,   bonus: "+10%", cls: "" },
+    { coins: 1000,  stars: 100,  bonus: "+15%", cls: "gold" },
+    { coins: 2500,  stars: 250,  bonus: "+20%", cls: "gold" },
+    { coins: 5000,  stars: 500,  bonus: "+25%", cls: "epic" },
+    { coins: 10000, stars: 1000, bonus: "+30%", cls: "mega" },
 ];
+
 const VIP_ITEMS = [
-    { id: "vip_day", name: "VIP на 1 день", emoji: "👑", cost: 25 },
-    { id: "vip_week", name: "VIP на неделю", emoji: "👑", cost: 100 },
-    { id: "vip_month", name: "VIP на месяц", emoji: "👑", cost: 300 },
-    { id: "no_ads", name: "Без рекламы", emoji: "🚫", cost: 50 },
+    { id: "vip_day",   name: "VIP на 1 день", emoji: "👑", cost: 25 },
+    { id: "vip_week",  name: "VIP на неделю", emoji: "👑", cost: 100 },
+    { id: "vip_month", name: "VIP на месяц",  emoji: "👑", cost: 300 },
+    { id: "no_ads",    name: "Без рекламы",   emoji: "🚫", cost: 50 },
 ];
 
 function buildTopUpOptions() {
     const box = document.getElementById("topup-options");
     if (!box) return;
     const quick = COIN_PACKS.slice(0, 4);
-    box.innerHTML = quick.map(o => `<div class="topup-card" onclick="buyCoins(${o.coins})">${o.bonus ? `<div class="topup-card-badge">${o.bonus}</div>` : ''}<div class="topup-card-coin">🪙</div><div class="topup-card-amount">${o.coins.toLocaleString("ru-RU")}</div><div class="topup-card-price">${o.stars} ⭐</div></div>`).join("") + `<div class="topup-card custom" onclick="openCustomTopUp()"><div class="topup-card-coin">✨</div><div><div class="topup-card-amount">Своя сумма</div><div class="topup-card-price">от 100 🪙</div></div></div>`;
+    box.innerHTML = quick.map(o => `
+        <div class="topup-card" onclick="buyCoins(${o.coins})">
+            ${o.bonus ? `<div class="topup-card-badge">${o.bonus}</div>` : ''}
+            <div class="topup-card-coin">🪙</div>
+            <div class="topup-card-amount">${o.coins.toLocaleString("ru-RU")}</div>
+            <div class="topup-card-price">${o.stars} ⭐</div>
+        </div>`).join("")
+        + `<div class="topup-card custom" onclick="openCustomTopUp()"><div class="topup-card-coin">✨</div><div><div class="topup-card-amount">Своя сумма</div><div class="topup-card-price">от 100 🪙</div></div></div>`;
 }
+
 function buildShopGrid() {
     const grid = document.getElementById("shop-grid");
     if (!grid) return;
+    const disc = currentUser.vip_discount || 0;
     let html = "";
     COIN_PACKS.forEach(o => {
-        if (o.cls === "mega") html += `<button class="shop-card coins mega" onclick="buyCoins(${o.coins})">${o.bonus ? `<div class="shop-badge best">${o.bonus}</div>` : ''}<div class="coin-big">💎</div><div class="coin-info"><div class="coin-amount">${o.coins.toLocaleString("ru-RU")} монет</div><div class="coin-stars">${o.stars} ⭐</div></div></button>`;
-        else html += `<button class="shop-card coins ${o.cls}" onclick="buyCoins(${o.coins})">${o.bonus ? `<div class="coin-bonus">${o.bonus}</div>` : ''}<div class="coin-big">🪙</div><div class="coin-amount">${o.coins.toLocaleString("ru-RU")}</div><div class="coin-stars">${o.stars} ⭐</div></button>`;
+        const total = Math.floor(o.coins * (1 + (parseInt(o.bonus) || 0) / 100));
+        const finalStars = disc > 0 ? Math.max(1, Math.floor(o.stars * (100 - disc) / 100)) : o.stars;
+        const discLine = disc > 0 ? ` <span style="color:#22dd88;font-size:11px">-${disc}%</span>` : "";
+        if (o.cls === "mega") {
+            html += `<button class="shop-card coins mega" onclick="buyCoins(${o.coins})">
+                ${o.bonus ? `<div class="shop-badge best">${o.bonus}</div>` : ''}
+                <div class="coin-big">💎</div>
+                <div class="coin-info">
+                    <div class="coin-amount">${total.toLocaleString("ru-RU")} монет</div>
+                    <div class="coin-stars">${finalStars} ⭐${discLine}</div>
+                </div>
+            </button>`;
+        } else {
+            html += `<button class="shop-card coins ${o.cls}" onclick="buyCoins(${o.coins})">
+                ${o.bonus ? `<div class="coin-bonus">${o.bonus}</div>` : ''}
+                <div class="coin-big">🪙</div>
+                <div class="coin-amount">${total.toLocaleString("ru-RU")}</div>
+                <div class="coin-stars">${finalStars} ⭐${discLine}</div>
+            </button>`;
+        }
     });
     grid.innerHTML = html;
 }
+
+function buyCoins(coins) {
+    startStarPayment("buy_coins", { base: coins }, (result) => {
+        toast(`✅ Зачислено ${result.total.toLocaleString("ru-RU")} монет`, "success", 4000);
+        closeModal("topup-modal");
+        renderProfile();
+    });
+}
+
+function openCustomTopUp() { document.getElementById("custom-modal").classList.remove("hidden"); }
+
+function submitCustomTopUp() {
+    const v = parseInt(document.getElementById("custom-coins-input").value);
+    if (!v || v < 100 || v > 100000) { toast("Введите число от 100 до 100 000", "error"); return; }
+    closeModal("custom-modal");
+    startStarPayment("buy_coins", { custom: v }, (result) => {
+        toast(`✅ Зачислено ${result.total.toLocaleString("ru-RU")} монет`, "success", 4000);
+        closeModal("topup-modal");
+    });
+}
+
+// ============================================================
+//                     УКРАШЕНИЯ
+// ============================================================
+
 function renderDecorShopPanel() {
     const content = document.getElementById("shop-perks-content");
-    if (!content) return;
-    const items = state.currentDecorTab === "color" ? NAME_COLORS : FRAMES;
-    const current = state.currentDecorTab === "color" ? state.nameColor : state.frameId;
-    content.innerHTML = items.map(it => {
-        const isActive = current === it.id;
-        const isFree = it.price === 0;
-        const priceText = isFree ? "Бесплатно" : `${it.price} ${it.currency === 'stars' ? '⭐' : '🪙'}`;
+    if (!content || !DECOR_PRICES) return;
+    const items = state.currentDecorTab === "color" ? NAME_COLORS_META : FRAMES_META;
+    const prices = DECOR_PRICES[state.currentDecorTab] || {};
+    const current = state.currentDecorTab === "color"
+        ? (currentUser.name_color || state.nameColor)
+        : (currentUser.frame_id || state.frameId);
+
+    content.innerHTML = Object.keys(items).map(id => {
+        const it = items[id];
+        const price = prices[id] || { price: 0, currency: "coins" };
+        const isActive = current === id;
+        const isFree = price.price === 0;
+        const priceText = isFree ? "Бесплатно" : `${price.price.toLocaleString("ru-RU")} ${price.currency === 'stars' ? '⭐' : '🪙'}`;
         let previewStyle = "";
         if (state.currentDecorTab === "color") {
             const colors = { "": "#fff", gold: "#ffd700", blue: "#00aaff", pink: "#ff3b8b", purple: "#c04cff", green: "#22dd88", red: "#ff5c5c", cyan: "#00ffe1" };
-            if (it.id === "rainbow") previewStyle = "background: linear-gradient(90deg, #ff3b5b, #ffd700, #22dd88, #00aaff, #c04cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;";
-            else previewStyle = `color: ${colors[it.id] || "#fff"};`;
+            if (id === "rainbow") {
+                previewStyle = "background: linear-gradient(90deg, #ff3b5b, #ffd700, #22dd88, #00aaff, #c04cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;";
+            } else {
+                previewStyle = `color: ${colors[id] || "#fff"};`;
+            }
         } else {
             const borders = { "": "#8a8aa0", gold: "#ffd700", blue: "#00aaff", neon: "#22dd88", ocean: "#00ffe1", fire: "#ff3b5b", sunset: "#ff8c5c", legendary: "#c04cff", royal: "#d4a8ff" };
-            previewStyle = `border-color: ${borders[it.id] || "#8a8aa0"};`;
+            previewStyle = `border-color: ${borders[id] || "#8a8aa0"};`;
         }
-        return `<div class="decor-item ${isActive ? 'active' : ''}" onclick="selectDecor('${it.id}')"><div class="decor-preview" style="${previewStyle}">Aa</div><div class="decor-info"><div class="decor-name">${it.name}</div><div class="decor-price">${priceText}</div></div>${isActive ? '<div class="decor-status">✓</div>' : ''}</div>`;
+        return `
+            <div class="decor-item ${isActive ? 'active' : ''}" onclick="selectDecor('${id}')">
+                <div class="decor-preview" style="${previewStyle}">Aa</div>
+                <div class="decor-info">
+                    <div class="decor-name">${it.name}</div>
+                    <div class="decor-price">${priceText}</div>
+                </div>
+                ${isActive ? '<div class="decor-status">✓</div>' : ''}
+            </div>`;
     }).join("");
 }
+
 function switchDecorTab(tab, btn) {
     state.currentDecorTab = tab;
     document.querySelectorAll(".decor-tab").forEach(b => b.classList.remove("active"));
     if (btn) btn.classList.add("active");
     renderDecorShopPanel();
 }
-function selectDecor(id) {
-    const items = state.currentDecorTab === "color" ? NAME_COLORS : FRAMES;
-    const item = items.find(x => x.id === id);
+
+async function selectDecor(id) {
+    if (!DECOR_PRICES) return;
+    const prices = DECOR_PRICES[state.currentDecorTab] || {};
+    const item = prices[id];
     if (!item) return;
-    if (item.price > 0) {
-        if (item.currency === "coins") {
-            if (currentUser.balance < item.price) { hapticNotify("error"); showInsufficientBalance(item.price, currentUser.balance); return; }
-            const before = currentUser.balance;
-            currentUser.balance -= item.price; saveDemo();
-            setBalance(currentUser.balance, true, before);
+
+    const decorType = state.currentDecorTab === "color" ? "color" : "frame";
+
+    if (item.currency === "stars" && item.price > 0) {
+        startStarPayment("decor", { type: decorType, id }, (result) => {
+            if (decorType === "color") { state.nameColor = id; currentUser.name_color = id; }
+            else { state.frameId = id; currentUser.frame_id = id; }
+            saveDecorState();
+            renderProfile();
+            renderDecorShopPanel();
+            renderLeaderboard();
+            toast("✅ Применено", "success");
+        });
+        return;
+    }
+
+    // Монетные — сервер сам проверит и спишет
+    try {
+        const r = await apiCall("/api/decor", { type: decorType, id });
+        if (decorType === "color") { state.nameColor = id; currentUser.name_color = r.name_color || id; }
+        else { state.frameId = id; currentUser.frame_id = r.frame_id || id; }
+        if (r.balance !== undefined) setBalance(r.balance, true);
+        saveDecorState();
+        renderProfile();
+        renderDecorShopPanel();
+        renderLeaderboard();
+        toast("✅ Применено", "success");
+        hapticNotify("success");
+    } catch (e) {
+        if (e.status === 400 && /Недостаточно/.test(e.message || "")) {
+            showInsufficientBalance(item.price, currentUser.balance);
         } else {
-            toast(`Оплата ${item.price} ⭐ будет на сервере`, "info");
+            toast(e.message, "error");
         }
     }
-    if (state.currentDecorTab === "color") state.nameColor = id;
-    else state.frameId = id;
-    saveDecorState(); renderProfile(); renderDecorShopPanel();
-    toast("✅ Применено", "success"); hapticNotify("success");
 }
+
 function openDecorShop() { switchTab("shop"); switchShopCat("perks"); }
+
+// ============================================================
+//                     VIP-ПОДПИСКИ
+// ============================================================
+
 function buildVipGrid() {
     const grid = document.getElementById("shop-vip");
     if (!grid) return;
-    grid.innerHTML = VIP_ITEMS.map(p => `<button class="shop-card vip" onclick="buyVip('${p.id}', ${p.cost})"><div class="shop-coin">${p.emoji}</div><div class="shop-name">${p.name}</div><div class="shop-price">${p.cost} ⭐</div></button>`).join("");
+    grid.innerHTML = VIP_ITEMS.map(p => `
+        <button class="shop-card vip" onclick="buyVip('${p.id}')">
+            <div class="shop-coin">${p.emoji}</div>
+            <div class="shop-name">${p.name}</div>
+            <div class="shop-price">${p.cost} ⭐</div>
+        </button>`).join("");
 }
+
+function buyVip(subId) {
+    startStarPayment("vip_sub", { sub_id: subId }, (result) => {
+        toast(`✅ VIP активирован на ${result.days} дней!`, "success", 4000);
+    });
+}
+
+// ============================================================
+//                     ПИТОМЦЫ
+// ============================================================
+
 function buildPetsGrid() {
     const grid = document.getElementById("shop-pets");
-    if (!grid) return;
-    grid.innerHTML = PETS_LIST.map(p => { const owned = hasPet(p.id); return `<button class="shop-card pet ${owned ? 'owned' : ''}" onclick="${owned ? `openPetsManager()` : `openPetModal('${p.id}')`}"><div class="shop-coin">${p.emoji}</div><div class="shop-name">${p.name}</div><div class="shop-price">${owned ? "Настроить" : p.price + " ⭐"}</div></button>`; }).join("");
+    if (!grid || !PETS_LIST) return;
+    grid.innerHTML = PETS_LIST.map(p => {
+        const owned = hasPet(p.id);
+        return `
+            <button class="shop-card pet ${owned ? 'owned' : ''}" onclick="${owned ? `openPetsManager()` : `openPetModal('${p.id}')`}">
+                <div class="shop-coin">${p.emoji}</div>
+                <div class="shop-name">${p.name}</div>
+                <div class="shop-price">${owned ? "Настроить" : p.price + " ⭐"}</div>
+            </button>`;
+    }).join("");
 }
-async function buyCoins(coins) {
-    haptic("medium");
-    const before = currentUser.balance;
-    try {
-        const data = await apiCall("/api/invoice/coins", { coins });
-        if (DEMO) { setBalance(currentUser.balance, true, before); renderProfile(); renderLeaderboard(); toast(`🧪 Демо: +${coins} 🪙`, "success", 3000); closeModal("topup-modal"); return; }
-        if (tg.openInvoice) tg.openInvoice(data.invoice_link, (status) => { if (status === "paid") { toast("✅ Оплата прошла!", "success", 3500); hapticNotify("success"); apiCall("/api/me").then(me => { Object.assign(currentUser, me); renderAll(); }); } });
-        else tg.openLink(data.invoice_link);
-        closeModal("topup-modal");
-    } catch (e) { toast(e.message, "error"); }
-}
-async function buyVip(id, cost) { toast("💎 VIP появится на сервере", "info"); }
 
-/* ПИТОМЕЦ */
 let petToBuy = null;
+
 function openPetModal(petId) {
-    const pet = PETS_LIST.find(p => p.id === petId);
+    const pet = PETS_LIST ? PETS_LIST.find(p => p.id === petId) : null;
     if (!pet) return;
     petToBuy = pet;
     const owned = hasPet(pet.id);
@@ -1310,26 +2102,23 @@ function openPetModal(petId) {
     const btn = document.getElementById("pet-buy-btn");
     const preview = document.getElementById("pet-preview");
     if (titleEl) titleEl.textContent = `${pet.emoji} ${pet.name}`;
-    if (descEl) descEl.textContent = pet.desc;
+    if (descEl) descEl.textContent = "Милый анимированный питомец";
     if (btn) { btn.textContent = owned ? "Уже куплено" : `Купить за ${pet.price} ⭐`; btn.disabled = owned; }
     preview.innerHTML = "";
-    setTimeout(() => { state.previewLottie = loadLottie(preview, pet.url, "previewPet"); }, 50);
+    setTimeout(() => { state.previewLottie = loadLottie(preview, LOTTIE_URLS.cat, "previewPet"); }, 50);
     document.getElementById("pet-modal").classList.remove("hidden");
     haptic("light");
 }
+
 function confirmBuyPet() {
     if (!petToBuy) return;
     if (hasPet(petToBuy.id)) { toast("Уже куплено", "info"); return; }
-    if (DEMO) {
-        state.ownedPets.push(petToBuy.id);
-        savePetsState(); renderActivePet(); buildPetsGrid();
+
+    startStarPayment("pet", { pet_id: petToBuy.id }, (result) => {
         closeModal("pet-modal");
-        toast(`🐱 ${petToBuy.name} добавлен!`, "success", 3000);
-        hapticNotify("success");
+        toast(`🐱 Питомец добавлен!`, "success", 3000);
         setTimeout(openPetsManager, 600);
-        return;
-    }
-    toast("Оплата Stars будет на сервере", "info");
+    });
 }
 
 function openPetsManager() {
@@ -1345,13 +2134,9 @@ function openPetsManager() {
         { id: "tl", name: "↖ Верх-лево" },
         { id: "tr", name: "↗ Верх-право" },
         { id: "bl", name: "↙ Низ-лево" },
-        { id: "br", name: "↘ Низ-право" }
+        { id: "br", name: "↘ Низ-право" },
     ];
-    const sizes = [
-        { id: "sm", name: "S" },
-        { id: "md", name: "M" },
-        { id: "lg", name: "L" }
-    ];
+    const sizes = [{ id: "sm", name: "S" }, { id: "md", name: "M" }, { id: "lg", name: "L" }];
     content.innerHTML = `
         <div class="pm-item">
             <div class="pm-item-header">
@@ -1377,34 +2162,29 @@ function openPetsManager() {
                 <div class="pm-btns">
                     ${sizes.map(s => `<button class="pm-btn ${state.petSize === s.id ? 'active' : ''}" onclick="setPetSize('${s.id}')">${s.name}</button>`).join("")}
                 </div>
-            </div>
-            ` : ''}
+            </div>` : ''}
             <button class="pm-btn pm-remove" onclick="removePet('cat')">Убрать питомца</button>
-        </div>
-    `;
+        </div>`;
     modal.classList.remove("hidden");
     haptic("light");
 }
 
-function setPetPos(pos) { state.petPos = pos; savePetsState(); renderActivePet(); openPetsManager(); haptic("light"); }
-function setPetSize(size) { state.petSize = size; savePetsState(); renderActivePet(); openPetsManager(); haptic("light"); }
-function setPetInHeader(v) { state.petInHeader = !!v; savePetsState(); renderActivePet(); openPetsManager(); haptic("light"); }
+function setPetPos(pos) { state.petPos = pos; currentUser.pet_pos = pos; savePetsState(); renderActivePet(); openPetsManager(); haptic("light"); }
+function setPetSize(size) { state.petSize = size; currentUser.pet_size = size; savePetsState(); renderActivePet(); openPetsManager(); haptic("light"); }
+function setPetInHeader(v) { state.petInHeader = !!v; currentUser.pet_in_header = !!v; savePetsState(); renderActivePet(); openPetsManager(); haptic("light"); }
 function removePet(id) {
-    state.ownedPets = state.ownedPets.filter(x => x !== id);
-    savePetsState(); renderActivePet(); buildPetsGrid();
+    currentUser.owned_pets = (currentUser.owned_pets || []).filter(x => x !== id);
+    renderActivePet();
+    buildPetsGrid();
     closeModal("pets-manager-modal");
-    toast("Питомец убран", "info");
+    toast("Питомец убран (локально)", "info");
 }
 
-/* МОДАЛКИ */
+// ============================================================
+//                     МОДАЛКИ
+// ============================================================
+
 function openTopUp() { document.getElementById("topup-modal").classList.remove("hidden"); haptic("light"); }
-function openCustomTopUp() { document.getElementById("custom-modal").classList.remove("hidden"); }
-function submitCustomTopUp() {
-    const v = parseInt(document.getElementById("custom-coins-input").value);
-    if (!v || v < 100 || v > 100000) { toast("Введите число от 100 до 100 000", "error"); return; }
-    closeModal("custom-modal");
-    buyCoins(v);
-}
 function closeModal(id) { const el = document.getElementById(id); if (el) el.classList.add("hidden"); }
 
 function showInsufficientBalance(need, have) {
@@ -1413,35 +2193,32 @@ function showInsufficientBalance(need, have) {
     const grid = document.getElementById("insufficient-grid");
     if (text) text.textContent = `Не хватает ${(need - have).toLocaleString("ru-RU")} 🪙. Пополни баланс:`;
     if (grid) {
-        grid.innerHTML = COIN_PACKS.filter(p => p.cls !== "mega").slice(0, 4).map(o => `
+        grid.innerHTML = COIN_PACKS.slice(0, 4).map(o => `
             <div class="topup-card" onclick="buyCoins(${o.coins});closeModal('insufficient-modal')">
                 <div class="topup-card-coin">🪙</div>
                 <div class="topup-card-amount">${o.coins.toLocaleString("ru-RU")}</div>
                 <div class="topup-card-price">${o.stars} ⭐</div>
-            </div>
-        `).join("");
+            </div>`).join("");
     }
     modal.classList.remove("hidden");
     haptic("light");
 }
 
-/* ПОДДЕРЖКА */
+// ============================================================
+//                     ПОДДЕРЖКА
+// ============================================================
+
 let selectedTopic = "Вопрос";
 function selectTopic(btn) {
     document.querySelectorAll(".support-topic").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     selectedTopic = btn.dataset.topic;
 }
-function openSupport() {
-    document.getElementById("support-modal").classList.remove("hidden");
-}
+function openSupport() { document.getElementById("support-modal").classList.remove("hidden"); }
 function closeSupportModal() {
     closeModal("support-modal");
-    // FIX: возвращаемся на главную, чтобы не было пустого экрана
     switchTab("home");
-    document.querySelectorAll(".side-item[data-tab]").forEach(b => {
-        b.classList.toggle("active", b.dataset.tab === "home");
-    });
+    document.querySelectorAll(".side-item[data-tab]").forEach(b => b.classList.toggle("active", b.dataset.tab === "home"));
 }
 async function submitSupport() {
     const text = document.getElementById("support-text").value.trim();
@@ -1451,27 +2228,35 @@ async function submitSupport() {
         toast("✅ Отправлено", "success");
         document.getElementById("support-text").value = "";
         closeSupportModal();
+    } catch (e) { toast(e.message, "error"); }
+}
+
+// ============================================================
+//                     WELCOME BACK
+// ============================================================
+
+async function claimWelcomeBack() {
+    try {
+        const r = await apiCall("/api/welcome_back", {});
+        setBalance(r.balance, true);
+        toast(`💎 Бонус возвращения: +${r.reward} 🪙`, "success", 4000);
+        hapticNotify("success");
+        await refreshMe();
+        renderProfile();
+        closeModal("welcome-modal");
     } catch (e) {
         toast(e.message, "error");
+        closeModal("welcome-modal");
     }
 }
 
-/* DAILY */
+// ============================================================
+//                     DAILY
+// ============================================================
+
 async function claimDaily() {
-    const btn = document.getElementById("daily-btn");
-    btn.disabled = true;
-    const before = currentUser.balance;
-    try {
-        const r = await apiCall("/api/daily");
-        setBalance(r.balance, true, before);
-        renderProfile();
-        renderLeaderboard();
-        toast(`🎁 Бонус: +${r.reward} 🪙`, "success", 3500);
-        hapticNotify("success");
-    } catch (e) {
-        toast(e.message, "error");
-        btn.disabled = false;
-    }
+    // legacy — теперь через стрик
+    return claimStreak();
 }
 
 function copyRef() {
@@ -1481,258 +2266,107 @@ function copyRef() {
         .catch(() => toast("Не удалось", "error"));
 }
 
-/* МУЗЫКА */
-const DEFAULT_TRACKS = [
-    { id: "t1", name: "🌃 Neon Dreams",     url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", builtin: true },
-    { id: "t2", name: "🚗 Midnight Drive",  url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", builtin: true },
-    { id: "t3", name: "⚡ Cyber Pulse",      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", builtin: true },
-    { id: "t4", name: "🌅 Golden Sunset",   url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", builtin: true },
-    { id: "t5", name: "🌌 Deep Space",      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", builtin: true },
-    { id: "t6", name: "💎 Lifeless Theme",  url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", builtin: true },
-];
-let musicAudio = null, currentTrackId = null, musicPlaying = false, myTracks = [];
+function resetDemo() {
+    if (!confirm("Сбросить локальные настройки?")) return;
+    [LS_PETS_KEY, LS_DECOR_KEY, LS_MUSIC_KEY].forEach(k => {
+        try { localStorage.removeItem(k); } catch (_) {}
+    });
+    location.reload();
+}
 
-function loadMusicState() {
+// ============================================================
+//                     МУЗЫКА (в разработке)
+// ============================================================
+
+function initMusic() { renderMusicPlayer(); renderMiniPlayer(); renderMyMusic(); }
+function renderMusicPlayer() {}
+function renderMiniPlayer() {}
+function renderMyMusic() {}
+function updatePlayButtons() {}
+function toggleMusic() { toast("🚧 Музыка в разработке", "info"); }
+function musicPrev() {}
+function musicNext() {}
+function musicShuffle() {}
+function musicToggleRepeat() {}
+function selectMusic() {}
+function openMusicPicker() { toast("🚧 В разработке", "info"); }
+function openAddMusicModal() { toast("🚧 В разработке", "info"); }
+
+// ============================================================
+//                     BOOTSTRAP
+// ============================================================
+
+async function bootstrap() {
+    loadPetsState();
+    loadDecorState();
+
+    const u = tg.initDataUnsafe?.user || {};
+    currentUser.id = u.id || 0;
+    currentUser.first_name = u.first_name || "";
+    currentUser.last_name = u.last_name || "";
+    currentUser.username = u.username || "";
+
     try {
-        const raw = localStorage.getItem(LS_MUSIC_KEY);
-        if (raw) {
-            const p = JSON.parse(raw);
-            myTracks = Array.isArray(p.tracks) ? p.tracks : [];
-            currentTrackId = p.current || null;
+        initLottie();
+        buildCases();
+        buildStarCases();
+        buildVipCases();
+        buildCarouselDots();
+        buildTopUpOptions();
+        buildVipGrid();
+        buildWheel("wheel",      WHEEL_CONFIG["wheel"].values,      WHEEL_CONFIG["wheel"].emoji,      WHEEL_CONFIG["wheel"].labels);
+        buildWheel("wheel-free", WHEEL_CONFIG["wheel-free"].values, WHEEL_CONFIG["wheel-free"].emoji, WHEEL_CONFIG["wheel-free"].labels);
+        buildWheel("wheel-vip",  WHEEL_CONFIG["wheel-vip"].values,  WHEEL_CONFIG["wheel-vip"].emoji,  WHEEL_CONFIG["wheel-vip"].labels);
+        buildCoinEdges();
+        bindCarouselSwipe();
+        bindEdgeSwipe();
+        bindSaperLevels();
+        bindSideMenu();
+        initMusic();
+
+        // Грузим user + цены магазина параллельно
+        await Promise.all([refreshMe(), loadShopPrices()]);
+
+        // Строим гриды, которые зависят от цен
+        buildShopGrid();
+        buildPetsGrid();
+        renderDecorShopPanel();
+
+        renderProfile();
+        renderSideMenu();
+        renderDropsFeed();
+        renderDropsGlobal();
+        renderLeaderboard();
+        renderTopToday();
+        setBalance(currentUser.balance, false);
+        renderActivePet();
+
+        startFreeCaseTimer();
+        startFreeWheelTimer();
+        startHappyTimer();
+
+        // Welcome back — если сервер не вернул streak_can_claim, но и недавно заходил,
+        // покажем модалку вручную (по флагу из /me)
+        if (currentUser.welcome_back_available) {
+            setTimeout(() => {
+                document.getElementById("welcome-modal").classList.remove("hidden");
+            }, 2000);
         }
-    } catch (_) {}
-    if (!currentTrackId && DEFAULT_TRACKS.length) currentTrackId = DEFAULT_TRACKS[0].id;
-}
-function initMusic() {
-    if (!musicAudio) {
-        musicAudio = new Audio();
-        musicAudio.loop = false;
-        musicAudio.volume = 0.5;
-        musicAudio.addEventListener("timeupdate", updateMusicProgress);
-        musicAudio.addEventListener("ended", onMusicEnded);
-        musicAudio.addEventListener("loadedmetadata", updateMusicProgress);
-        musicAudio.addEventListener("play", () => { musicPlaying = true; updatePlayButtons(); });
-        musicAudio.addEventListener("pause", () => { musicPlaying = false; updatePlayButtons(); });
-    }
-    bindMusicProgressBar();
-    renderMusicPlayer();
-    renderMyMusic();
-    renderMiniPlayer();
-}
-function bindMusicProgressBar() {
-    const mainBar = document.getElementById("music-progress-click");
-    const miniBar = document.getElementById("mini-progress-wrap");
-    [mainBar, miniBar].forEach(el => {
-        if (!el) return;
-        el.addEventListener("click", (e) => {
-            if (!musicAudio || !musicAudio.duration) return;
-            const rect = el.getBoundingClientRect();
-            const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-            musicAudio.currentTime = pct * musicAudio.duration;
-            updateMusicProgress();
+
+        document.querySelectorAll(".nav-btn").forEach(btn => {
+            btn.addEventListener("click", () => switchTab(btn.dataset.tab));
         });
-    });
-}
-function saveMusic() { try { localStorage.setItem(LS_MUSIC_KEY, JSON.stringify({ tracks: myTracks, current: currentTrackId })); } catch (_) {} }
-function allTracks() { return [...DEFAULT_TRACKS, ...myTracks]; }
-function findTrack(id) { return allTracks().find(t => t.id === id); }
-function fmtTime(s) { if (!s || isNaN(s)) return "0:00"; const m = Math.floor(s / 60); const sec = Math.floor(s % 60); return `${m}:${String(sec).padStart(2, "0")}`; }
+    } catch (e) {
+        console.error("Bootstrap error:", e);
+        toast("Ошибка: " + e.message, "error", 5000);
+    }
 
-function renderMusicPlayer() {
-    const track = findTrack(currentTrackId);
-    const titleEl = document.getElementById("music-track-title");
-    const subEl = document.getElementById("music-track-sub");
-    const coverImg = document.getElementById("music-cover-img");
-    if (!track) {
-        if (titleEl) titleEl.textContent = "Выбери трек";
-        if (subEl) subEl.textContent = "Моя коллекция";
-        return;
-    }
-    if (titleEl) titleEl.textContent = track.name;
-    if (subEl) subEl.textContent = track.builtin ? "Библиотека Lifeless" : "Мой трек";
-    if (coverImg) coverImg.src = `https://placehold.co/400x400/1a0d3e/ffd700?text=${encodeURIComponent(track.name.split(" ")[0] || "🎵")}`;
-    updatePlayButtons();
-    updateRepeatIcon();
-}
-function renderMiniPlayer() {
-    const track = findTrack(currentTrackId);
-    const titleEl = document.getElementById("mini-track-title");
-    if (titleEl) titleEl.textContent = track ? track.name : "Выбери трек";
-    updatePlayButtons();
-}
-function updatePlayButtons() {
-    const useId = musicPlaying ? "#ic-pause" : "#ic-play-mini";
-    ["mini-play-icon", "music-main-icon"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = `<use href="${useId}"/>`;
-    });
-    const mini = document.getElementById("mini-player");
-    const main = document.querySelector(".music-player-card");
-    if (mini) mini.classList.toggle("playing", musicPlaying);
-    if (main) main.classList.toggle("playing", musicPlaying);
-    const eq = document.getElementById("mini-eq");
-    if (eq) eq.classList.toggle("playing", musicPlaying);
-}
-function updateRepeatIcon() {
-    const useId = state.musicRepeat === "one" ? "#ic-repeat-one" : "#ic-repeat";
-    ["mini-repeat-icon", "music-repeat-icon"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = `<use href="${useId}"/>`;
-    });
-    const mini = document.getElementById("mini-repeat-btn");
-    const main = document.getElementById("music-repeat-btn");
-    if (mini) mini.classList.toggle("active", state.musicRepeat !== "off");
-    if (main) main.classList.toggle("active", state.musicRepeat !== "off");
-}
-function updateMusicProgress() {
-    const bar = document.getElementById("music-progress-bar");
-    const miniBar = document.getElementById("mini-progress-bar");
-    const curTime = document.getElementById("music-current-time");
-    const dur = document.getElementById("music-duration");
-    if (!musicAudio) return;
-    const pct = musicAudio.duration ? (musicAudio.currentTime / musicAudio.duration) * 100 : 0;
-    if (bar) bar.style.width = pct + "%";
-    if (miniBar) miniBar.style.width = pct + "%";
-    if (curTime) curTime.textContent = fmtTime(musicAudio.currentTime);
-    if (dur) dur.textContent = fmtTime(musicAudio.duration);
-}
-function toggleMusic() {
-    const track = findTrack(currentTrackId);
-    if (!track) return;
-    if (musicPlaying) {
-        musicAudio.pause();
-    } else {
-        if (musicAudio.src !== track.url) musicAudio.src = track.url;
-        musicAudio.play().catch(() => { toast("Не удалось воспроизвести", "error"); });
-    }
-    haptic("light");
-}
-function musicPrev() {
-    const tracks = allTracks(); if (!tracks.length) return;
-    let idx = tracks.findIndex(t => t.id === currentTrackId);
-    if (state.musicShuffle) idx = Math.floor(Math.random() * tracks.length);
-    else idx = (idx - 1 + tracks.length) % tracks.length;
-    currentTrackId = tracks[idx].id;
-    const wasPlaying = musicPlaying;
-    if (wasPlaying) { musicAudio.pause(); }
-    renderMusicPlayer(); renderMiniPlayer();
-    if (wasPlaying) setTimeout(() => toggleMusic(), 50);
-    else saveMusic();
-}
-function musicNext() {
-    const tracks = allTracks(); if (!tracks.length) return;
-    let idx = tracks.findIndex(t => t.id === currentTrackId);
-    if (state.musicShuffle) {
-        let next;
-        do { next = Math.floor(Math.random() * tracks.length); } while (tracks.length > 1 && next === idx);
-        idx = next;
-    } else idx = (idx + 1) % tracks.length;
-    currentTrackId = tracks[idx].id;
-    const wasPlaying = musicPlaying;
-    if (wasPlaying) musicAudio.pause();
-    renderMusicPlayer(); renderMiniPlayer();
-    if (wasPlaying) setTimeout(() => toggleMusic(), 50);
-    else saveMusic();
-}
-function musicShuffle() {
-    state.musicShuffle = !state.musicShuffle;
-    toast(state.musicShuffle ? "🔀 Перемешать: вкл" : "🔀 Перемешать: выкл", "info", 1500);
-    haptic("light");
-    document.querySelectorAll('[onclick="musicShuffle()"]').forEach(el => el.classList.toggle("active", state.musicShuffle));
-}
-function musicToggleRepeat() {
-    if (state.musicRepeat === "off") state.musicRepeat = "all";
-    else if (state.musicRepeat === "all") state.musicRepeat = "one";
-    else state.musicRepeat = "off";
-    updateRepeatIcon();
-    const labels = { off: "🔁 Повтор: выкл", all: "🔁 Повтор: всё", one: "🔂 Повтор: один" };
-    toast(labels[state.musicRepeat], "info", 1500);
-    haptic("light");
-}
-function onMusicEnded() {
-    if (state.musicRepeat === "one") {
-        musicAudio.currentTime = 0;
-        musicAudio.play();
-    } else {
-        musicNext();
-    }
-}
-function renderMyMusic() {
-    const box = document.getElementById("music-my-list");
-    if (!box) return;
-    const all = [...DEFAULT_TRACKS, ...myTracks];
-    box.innerHTML = all.map(t => `
-        <div class="music-item ${t.id === currentTrackId ? 'active' : ''}" onclick="selectMusic('${t.id}')">
-            <span class="music-item-emoji">🎵</span>
-            <span class="music-item-name">${escapeHtml(t.name)}</span>
-            ${!t.builtin ? `<button class="music-item-del" onclick="event.stopPropagation();deleteTrack('${t.id}')">✕</button>` : ''}
-        </div>
-    `).join("");
-}
-function selectMusic(id) {
-    const track = findTrack(id);
-    if (!track) return;
-    currentTrackId = id;
-    const wasPlaying = musicPlaying;
-    if (wasPlaying) musicAudio.pause();
-    renderMusicPlayer();
-    renderMiniPlayer();
-    if (wasPlaying) setTimeout(() => toggleMusic(), 50);
-    renderMyMusic();
-    saveMusic();
-    haptic("light");
-}
-function openMusicPicker() {
-    renderMusicLibrary();
-    document.getElementById("music-modal").classList.remove("hidden");
-}
-function renderMusicLibrary() {
-    const box = document.getElementById("music-list");
-    if (!box) return;
-    const query = (document.getElementById("music-search")?.value || "").toLowerCase();
-    const all = [...DEFAULT_TRACKS, ...myTracks].filter(t => t.name.toLowerCase().includes(query));
-    if (!all.length) {
-        box.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-dim)">Ничего не найдено</div>`;
-        return;
-    }
-    box.innerHTML = all.map(t => `
-        <button class="music-item ${t.id === currentTrackId ? 'active' : ''}" onclick="selectMusic('${t.id}');closeModal('music-modal')">
-            <span class="music-item-emoji">🎵</span>
-            <span class="music-item-name">${escapeHtml(t.name)}</span>
-            ${!t.builtin ? '<span style="color:var(--gold);font-size:11px">моё</span>' : ''}
-        </button>
-    `).join("");
-}
-function openAddMusicModal() {
-    document.getElementById("add-music-url").value = "";
-    document.getElementById("add-music-name").value = "";
-    document.getElementById("add-music-modal").classList.remove("hidden");
-}
-function submitAddMusic() {
-    const url = document.getElementById("add-music-url").value.trim();
-    const name = document.getElementById("add-music-name").value.trim() || "Мой трек";
-    if (!url || !url.startsWith("http")) { toast("Введите корректную ссылку", "error"); return; }
-    const id = "my_" + Date.now();
-    myTracks.push({ id, name, url, builtin: false });
-    saveMusic();
-    renderMyMusic();
-    closeModal("add-music-modal");
-    toast("✅ Трек добавлен", "success");
-}
-function deleteTrack(id) {
-    myTracks = myTracks.filter(t => t.id !== id);
-    if (currentTrackId === id) {
-        currentTrackId = DEFAULT_TRACKS[0].id;
-        if (musicPlaying) musicAudio.pause();
-    }
-    saveMusic();
-    renderMyMusic();
-    renderMusicPlayer();
-    renderMiniPlayer();
-    toast("Удалено", "info");
+    setTimeout(() => {
+        document.getElementById("global-loader").classList.add("hidden");
+        document.getElementById("app").classList.remove("hidden");
+    }, 800);
 }
 
-/* СТАРТ */
 if (document.readyState === "loading") {
     window.addEventListener("DOMContentLoaded", bootstrap);
 } else {
