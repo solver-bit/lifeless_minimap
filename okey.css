@@ -3958,3 +3958,56 @@ textarea.modal-input {
    UTILS
    ============================================================ */
 .hidden { display: none !important; }
+
+/* ============================================================
+   HOTFIX v16.1 — скролл, хедер, нижний бар
+   Перекрывает брейкпоинты 768/1024. Убирает "desktop-режим" —
+   Mini App везде выглядит как телефон, отцентрированный на экране.
+   ============================================================ */
+
+@media (min-width: 768px) {
+    body {
+        padding: 0;              /* убираем padding — хедер фикс. и центрируется */
+        align-items: flex-start;
+    }
+    #app {
+        max-width: 480px;        /* всегда мобильная ширина */
+        min-height: 100vh;       /* возвращаем, иначе схлопнется */
+        margin: 0 auto;
+        border-radius: 0;        /* никаких скруглений — это телефон */
+        border: none;
+        box-shadow: none;
+        overflow: visible;       /* ВАЖНО: не hidden — ломал скролл */
+    }
+    .header {
+        max-width: 480px;        /* хедер ровно по ширине app */
+        border-radius: 0 0 var(--r-2xl) var(--r-2xl);
+    }
+    .content {
+        max-width: 100%;         /* не расширяем — внутри 480px */
+        padding: 16px;
+    }
+    .bottom-nav {
+        max-width: 480px;
+        position: fixed;         /* возвращаем fixed, а не sticky */
+        border-radius: var(--r-2xl) var(--r-2xl) 0 0;
+    }
+    /* Сетки снова в 2 колонки */
+    .cases-grid                    { grid-template-columns: repeat(2, 1fr); }
+    .games-grid                    { grid-template-columns: repeat(2, 1fr); }
+    .shop-grid                     { grid-template-columns: repeat(2, 1fr); }
+    .shop-panel .shop-card.coins.mega { grid-column: span 2; }
+    .about-photos img              { height: 140px; }
+    .profile-stats                 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+    #app       { max-width: 480px; }
+    .header    { max-width: 480px; }
+    .content   { max-width: 100%; padding: 16px; }
+    .bottom-nav { max-width: 480px; }
+    .cases-grid, .games-grid, .shop-grid { grid-template-columns: repeat(2, 1fr); }
+    .shop-panel .shop-card.coins.mega { grid-column: span 2; }
+    .wheel-container { margin: 22px 0 32px; }
+    .coin-scene, .scene-3d { max-width: none; margin-left: 0; margin-right: 0; }
+}
