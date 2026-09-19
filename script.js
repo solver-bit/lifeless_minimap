@@ -1,47 +1,88 @@
 cat > landing/script.js << 'JSEOF'
+// CURSOR — dot, ring, glow
+const dot = document.getElementById('cursor-dot');
+const ring = document.getElementById('cursor-ring');
 const glow = document.getElementById('cursor-glow');
-let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+
+let mx = innerWidth / 2, my = innerHeight / 2;
+let dx = mx, dy = my;
+let rx = mx, ry = my;
 let gx = mx, gy = my;
 
 document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
 
-function animateCursor() {
-    gx += (mx - gx) * 0.08;
-    gy += (my - gy) * 0.08;
-    glow.style.transform = `translate3d(${gx}px, ${gy}px, 0)`;
-    requestAnimationFrame(animateCursor);
-}
-animateCursor();
+function animCursor() {
+    dx += (mx - dx) * 0.6;
+    dy += (my - dy) * 0.6;
+    rx += (mx - rx) * 0.15;
+    ry += (my - ry) * 0.15;
+    gx += (mx - gx) * 0.06;
+    gy += (my - gy) * 0.06;
 
-const heroLion = document.querySelector('.hero-lion');
-if (heroLion) {
+    dot.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+    ring.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
+    glow.style.transform = `translate3d(${gx}px, ${gy}px, 0)`;
+
+    requestAnimationFrame(animCursor);
+}
+animCursor();
+
+// Hover on interactive
+document.querySelectorAll('a, button, .cta, .tilt, .gallery-item, .feature').forEach(el => {
+    el.addEventListener('mouseenter', () => ring.classList.add('hover'));
+    el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
+});
+
+// SCROLL PROGRESS
+const bar = document.getElementById('scrollBar');
+function updateScroll() {
+    const h = document.documentElement.scrollHeight - innerHeight;
+    bar.style.width = (scrollY / h * 100) + '%';
+}
+addEventListener('scroll', updateScroll, { passive: true });
+updateScroll();
+
+// HEADER SHRINK
+const header = document.getElementById('header');
+addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', scrollY > 100);
+}, { passive: true });
+
+// HERO LION PARALLAX
+const lion = document.querySelector('.hero-lion');
+const lionBlur = document.querySelector('.hero-lion-blur');
+if (lion) {
     document.addEventListener('mousemove', e => {
-        const x = (e.clientX / window.innerWidth - 0.5) * 40;
-        const y = (e.clientY / window.innerHeight - 0.5) * 40;
-        heroLion.style.transform = `translate(${x}px, calc(-50% + ${y}px))`;
+        const x = (e.clientX / innerWidth - 0.5) * 30;
+        const y = (e.clientY / innerHeight - 0.5) * 30;
+        lion.style.transform = `translate(${x}px, ${y}px)`;
+        if (lionBlur) lionBlur.style.transform = `translate(${x * 0.5}px, ${y * 0.5}px) scale(1.1)`;
     });
 }
 
+// TILT CARDS
 document.querySelectorAll('.tilt').forEach(el => {
     el.addEventListener('mousemove', e => {
         const r = el.getBoundingClientRect();
         const x = (e.clientX - r.left) / r.width - 0.5;
         const y = (e.clientY - r.top) / r.height - 0.5;
-        el.style.transform = `perspective(1000px) rotateY(${x * 8}deg) rotateX(${-y * 8}deg) translateY(-4px)`;
+        el.style.transform = `perspective(1000px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg) translateY(-4px)`;
     });
     el.addEventListener('mouseleave', () => { el.style.transform = ''; });
 });
 
+// MAGNETIC BUTTONS
 document.querySelectorAll('.magnetic').forEach(el => {
     el.addEventListener('mousemove', e => {
         const r = el.getBoundingClientRect();
         const x = e.clientX - r.left - r.width / 2;
         const y = e.clientY - r.top - r.height / 2;
-        el.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
+        el.style.transform = `translate(${x * 0.12}px, ${y * 0.12}px)`;
     });
     el.addEventListener('mouseleave', () => { el.style.transform = ''; });
 });
 
+// REVEAL ON SCROLL
 const io = new IntersectionObserver(entries => {
     entries.forEach(e => {
         if (e.isIntersecting) {
@@ -49,6 +90,37 @@ const io = new IntersectionObserver(entries => {
             io.unobserve(e.target);
         }
     });
-}, { threshold: 0.12 });
+}, { threshold: 0.1, rootMargin: '0px 0px -100px 0px' });
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// COUNTERS
+const counters = document.querySelectorAll('[data-count]');
+const cio = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const el = e.target;
+        const target = parseInt(el.dataset.count);
+        let cur = 0;
+        const step = Math.max(1, Math.floor(target / 40));
+        const tick = () => {
+            cur += step;
+            if (cur >= target) { el.textContent = target; return; }
+            el.textContent = cur;
+            requestAnimationFrame(tick);
+        };
+        tick();
+        cio.unobserve(el);
+    });
+}, { threshold: 0.5 });
+counters.forEach(el => cio.observe(el));
+
+// SMOOTH ANCHOR
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+        const id = a.getAttribute('href');
+        if (id === '#' || id.length < 2) return;
+        const t = document.querySelector(id);
+        if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    });
+});
 JSEOF

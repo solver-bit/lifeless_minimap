@@ -1,4 +1,4 @@
-cat > landing/index.html << 'HTMLEOF'
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -7,85 +7,165 @@ cat > landing/index.html << 'HTMLEOF'
 <title>LIFELESS — Игровая экосистема в Telegram</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<div class="noise"></div>
+<div class="scroll-progress"><div class="scroll-progress-bar" id="scrollBar"></div></div>
+
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
 <div id="cursor-glow"></div>
 
-<header>
-    <div class="logo">LIFELESS</div>
+<header id="header">
+    <div class="logo">
+        <span class="logo-mark">◈</span>
+        <span>LIFELESS</span>
+    </div>
     <nav>
         <a href="#about">О проекте</a>
+        <a href="#gallery">Скрины</a>
         <a href="#features">Возможности</a>
         <a href="#how">Как играть</a>
-        <a href="https://t.me/durvww" class="nav-cta">Канал →</a>
+        <a href="https://t.me/durvww" class="nav-cta">Канал <span>→</span></a>
     </nav>
 </header>
 
 <section class="hero">
     <div class="hero-bg-text">LIFELESS</div>
-    <img class="hero-lion" src="assets/lion.png" alt="">
-    <div class="hero-content">
-        <div class="hero-tag">TG · GAMING · STARS</div>
-        <h1>Игровая<br>экосистема<br>в Telegram</h1>
-        <p>Кейсы, колёса, реальные подарки. Начни с бесплатного кейса — без вложений.</p>
-        <a href="https://t.me/Solver_Life_bot" class="cta magnetic">
-            Открыть приложение
-            <span class="cta-arrow">→</span>
-        </a>
+    <div class="hero-lion-wrap">
+        <img class="hero-lion-blur" src="durov4.jpg" alt="">
+        <img class="hero-lion" src="durov4.jpg" alt="">
     </div>
-    <div class="hero-scroll">scroll ↓</div>
+    <div class="hero-content">
+        <div class="hero-tag"><span class="dot"></span> LIVE · TG · GAMING</div>
+        <h1>Игровая<br><em>экосистема</em><br>в Telegram</h1>
+        <p class="hero-desc">Кейсы, колёса, реальные подарки. Начни с бесплатного кейса — без вложений.</p>
+        <div class="hero-cta-row">
+            <a href="https://t.me/Solver_Life_bot" class="cta magnetic">
+                <span>Открыть приложение</span>
+                <span class="cta-arrow">→</span>
+            </a>
+            <a href="#features" class="cta-ghost">Узнать больше</a>
+        </div>
+    </div>
+    <div class="hero-scroll">
+        <div class="hero-scroll-line"></div>
+        <span>SCROLL</span>
+    </div>
+    <div class="hero-meta">
+        <div class="hero-meta-item">
+            <div class="hero-meta-num">16</div>
+            <div class="hero-meta-label">КЕЙСОВ</div>
+        </div>
+        <div class="hero-meta-item">
+            <div class="hero-meta-num">6</div>
+            <div class="hero-meta-label">ИГР</div>
+        </div>
+        <div class="hero-meta-item">
+            <div class="hero-meta-num">24/7</div>
+            <div class="hero-meta-label">ОНЛАЙН</div>
+        </div>
+    </div>
 </section>
 
 <div class="marquee">
     <div class="marquee-track">
-        <span>КЕЙСЫ</span><span>·</span>
-        <span>ПОДАРКИ</span><span>·</span>
-        <span>ФОРТУНА</span><span>·</span>
-        <span>STARS</span><span>·</span>
-        <span>VIP</span><span>·</span>
-        <span>САПЁР</span><span>·</span>
-        <span>КОЛЁСА</span><span>·</span>
-        <span>СТРИКИ</span><span>·</span>
-        <span>КЕЙСЫ</span><span>·</span>
-        <span>ПОДАРКИ</span><span>·</span>
-        <span>ФОРТУНА</span><span>·</span>
-        <span>STARS</span><span>·</span>
-        <span>VIP</span><span>·</span>
-        <span>САПЁР</span><span>·</span>
-        <span>КОЛЁСА</span><span>·</span>
-        <span>СТРИКИ</span><span>·</span>
+        <span>КЕЙСЫ</span><span class="dot">◆</span>
+        <span>ПОДАРКИ</span><span class="dot">◆</span>
+        <span>ФОРТУНА</span><span class="dot">◆</span>
+        <span>STARS</span><span class="dot">◆</span>
+        <span>VIP</span><span class="dot">◆</span>
+        <span>САПЁР</span><span class="dot">◆</span>
+        <span>КОЛЁСА</span><span class="dot">◆</span>
+        <span>СТРИКИ</span><span class="dot">◆</span>
+        <span>КЕЙСЫ</span><span class="dot">◆</span>
+        <span>ПОДАРКИ</span><span class="dot">◆</span>
+        <span>ФОРТУНА</span><span class="dot">◆</span>
+        <span>STARS</span><span class="dot">◆</span>
+        <span>VIP</span><span class="dot">◆</span>
+        <span>САПЁР</span><span class="dot">◆</span>
+        <span>КОЛЁСА</span><span class="dot">◆</span>
+        <span>СТРИКИ</span><span class="dot">◆</span>
     </div>
 </div>
 
 <section class="about reveal" id="about">
     <div class="section-label">01 · О ПРОЕКТЕ</div>
     <div class="about-grid">
-        <h2>Мы не делаем<br>ставки.<br>Мы делаем игру.</h2>
+        <h2>Мы не делаем<br>ставки.<br>Мы делаем <em>игру</em>.</h2>
         <div class="about-text">
             <p>Lifeless — независимая игровая экосистема внутри Telegram. Кейсы, колёса, кости, сапёр — всё в одном приложении.</p>
             <p>Выигрывай реальные подарки Telegram, прокачивай профиль, соревнуйся в топе. Никаких вложений на старте — первый кейс бесплатный.</p>
+            <div class="about-tags">
+                <span>TG Mini App</span>
+                <span>Telegram Stars</span>
+                <span>Real Gifts</span>
+            </div>
         </div>
     </div>
     <div class="stats">
-        <div class="stat"><div class="stat-num">16</div><div class="stat-label">кейсов</div></div>
-        <div class="stat"><div class="stat-num">6</div><div class="stat-label">игр</div></div>
-        <div class="stat"><div class="stat-num">∞</div><div class="stat-label">подарков</div></div>
-        <div class="stat"><div class="stat-num">24/7</div><div class="stat-label">онлайн</div></div>
+        <div class="stat">
+            <div class="stat-num" data-count="16">0</div>
+            <div class="stat-label">кейсов</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num" data-count="6">0</div>
+            <div class="stat-label">игр</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">∞</div>
+            <div class="stat-label">подарков</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">24/7</div>
+            <div class="stat-label">онлайн</div>
+        </div>
+    </div>
+</section>
+
+<section class="gallery reveal" id="gallery">
+    <div class="section-label">02 · ИНТЕРФЕЙС</div>
+    <h2>Загляни <em>внутрь</em></h2>
+    <div class="gallery-grid">
+        <div class="gallery-item tilt">
+            <img src="durov1.jpg" alt="">
+            <div class="gallery-overlay"><span>Кейсы</span></div>
+        </div>
+        <div class="gallery-item tilt">
+            <img src="durov2.jpg" alt="">
+            <div class="gallery-overlay"><span>Колесо</span></div>
+        </div>
+        <div class="gallery-item tilt">
+            <img src="durov3.jpg" alt="">
+            <div class="gallery-overlay"><span>Профиль</span></div>
+        </div>
+        <div class="gallery-item tilt">
+            <img src="durov5.jpg" alt="">
+            <div class="gallery-overlay"><span>Магазин</span></div>
+        </div>
+        <div class="gallery-item tilt">
+            <img src="durov6.jpg" alt="">
+            <div class="gallery-overlay"><span>Сапёр</span></div>
+        </div>
+        <div class="gallery-item tilt">
+            <img src="durov7.jpg" alt="">
+            <div class="gallery-overlay"><span>Подарки</span></div>
+        </div>
     </div>
 </section>
 
 <section class="features reveal" id="features">
-    <div class="section-label">02 · ВОЗМОЖНОСТИ</div>
-    <h2>Что внутри</h2>
+    <div class="section-label">03 · ВОЗМОЖНОСТИ</div>
+    <h2>Что <em>внутри</em></h2>
     <div class="features-grid">
-        <div class="feature tilt">
+        <div class="feature feature-large tilt">
             <div class="feature-num">01</div>
             <div class="feature-icon">🎰</div>
             <h3>16 кейсов</h3>
-            <p>От 10 монет до 500 звёзд. Реальные подарки Telegram внутри.</p>
+            <p>От 10 монет до 500 звёзд. Реальные подарки Telegram внутри — от дешёвых до коллекционных.</p>
         </div>
         <div class="feature tilt">
             <div class="feature-num">02</div>
@@ -97,45 +177,45 @@ cat > landing/index.html << 'HTMLEOF'
             <div class="feature-num">03</div>
             <div class="feature-icon">💣</div>
             <h3>Сапёр</h3>
-            <p>Гибрид: играй за монеты или за звёзды с шансом на подарок.</p>
+            <p>Играй за монеты или за звёзды с шансом на подарок.</p>
         </div>
         <div class="feature tilt">
             <div class="feature-num">04</div>
             <div class="feature-icon">🎁</div>
-            <h3>Подарки Telegram</h3>
-            <p>Настоящие подарки отправляются прямо в твой Telegram-аккаунт.</p>
+            <h3>Подарки</h3>
+            <p>Настоящие подарки отправляются в твой Telegram.</p>
         </div>
-        <div class="feature tilt">
+        <div class="feature feature-wide tilt">
             <div class="feature-num">05</div>
             <div class="feature-icon">🔥</div>
             <h3>Стрики и квесты</h3>
-            <p>Заходи каждый день, выполняй задания, получай бонусы.</p>
+            <p>Заходи каждый день, выполняй задания, получай бонусы и поднимайся в топе игроков.</p>
         </div>
         <div class="feature tilt">
             <div class="feature-num">06</div>
             <div class="feature-icon">👑</div>
-            <h3>VIP-программа</h3>
-            <p>Повышай уровень, получай скидки и эксклюзивные награды.</p>
+            <h3>VIP</h3>
+            <p>Повышай уровень, получай скидки и эксклюзивы.</p>
         </div>
     </div>
 </section>
 
 <section class="how reveal" id="how">
-    <div class="section-label">03 · КАК ИГРАТЬ</div>
-    <h2>Три шага<br>до победы</h2>
+    <div class="section-label">04 · КАК ИГРАТЬ</div>
+    <h2>Три шага<br>до <em>победы</em></h2>
     <div class="steps">
         <div class="step">
-            <div class="step-num">1</div>
+            <div class="step-num">01</div>
             <h3>Открой бота</h3>
             <p>Нажми «Открыть приложение» — мини-приложение запустится прямо в Telegram.</p>
         </div>
         <div class="step">
-            <div class="step-num">2</div>
+            <div class="step-num">02</div>
             <h3>Забери бонус</h3>
             <p>Первый бесплатный кейс + стартовые монеты. Играй без вложений.</p>
         </div>
         <div class="step">
-            <div class="step-num">3</div>
+            <div class="step-num">03</div>
             <h3>Выигрывай</h3>
             <p>Открывай кейсы, крути колёса, выбивай подарки и выводи в Telegram.</p>
         </div>
@@ -143,11 +223,13 @@ cat > landing/index.html << 'HTMLEOF'
 </section>
 
 <section class="cta-final reveal">
+    <div class="cta-final-glow"></div>
     <div class="cta-final-inner">
-        <h2>Готов испытать удачу?</h2>
+        <div class="cta-final-tag">READY?</div>
+        <h2>Готов испытать <em>удачу?</em></h2>
         <p>Присоединяйся к игрокам Lifeless прямо сейчас</p>
         <a href="https://t.me/Solver_Life_bot" class="cta cta-large magnetic">
-            Открыть приложение
+            <span>Открыть приложение</span>
             <span class="cta-arrow">→</span>
         </a>
     </div>
@@ -156,12 +238,17 @@ cat > landing/index.html << 'HTMLEOF'
 <footer>
     <div class="footer-grid">
         <div class="footer-brand">
-            <div class="footer-logo">LIFELESS</div>
+            <div class="footer-logo">◈ LIFELESS</div>
             <p>Игровая экосистема в Telegram</p>
+            <div class="footer-status">
+                <span class="status-dot"></span>
+                <span>Все системы работают</span>
+            </div>
         </div>
         <div>
             <div class="footer-label">ПРОЕКТ</div>
             <a href="#about">О нас</a>
+            <a href="#gallery">Интерфейс</a>
             <a href="#features">Возможности</a>
             <a href="https://t.me/durvww">Канал</a>
         </div>
@@ -184,3 +271,4 @@ cat > landing/index.html << 'HTMLEOF'
 <script src="script.js"></script>
 </body>
 </html>
+HTMLEOF
