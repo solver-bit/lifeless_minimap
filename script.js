@@ -3,17 +3,29 @@
 
     const isDesktop = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-    // CURSOR
-    const dot = document.getElementById('cursor-dot');
-    const ring = document.getElementById('cursor-ring');
-    const glow = document.getElementById('cursor-glow');
-
-    if (isDesktop && dot && ring && glow) {
-        let mx = window.innerWidth / 2, my = window.innerHeight / 2;
-        let dx = mx, dy = my;
-        let rx = mx, ry = my;
-        let gx = mx, gy = my;
+    // ============================================================
+    // SNAKE CURSOR
+    // ============================================================
+    if (isDesktop) {
+        const SEGMENTS_COUNT = 24;
+        const segments = [];
+        let mx = window.innerWidth / 2;
+        let my = window.innerHeight / 2;
         let active = false;
+
+        for (let i = 0; i < SEGMENTS_COUNT; i++) {
+            const el = document.createElement('div');
+            el.className = 'snake-segment' + (i === 0 ? ' snake-head' : '');
+            if (i > 0) {
+                const scale = 1 - (i / SEGMENTS_COUNT) * 0.85;
+                el.style.width = (14 * scale) + 'px';
+                el.style.height = (14 * scale) + 'px';
+                el.style.margin = `-${(14 * scale) / 2}px 0 0 -${(14 * scale) / 2}px`;
+                el.style.opacity = String(Math.max(0.15, 1 - i / SEGMENTS_COUNT));
+            }
+            document.body.appendChild(el);
+            segments.push({ el, x: mx, y: my });
+        }
 
         document.addEventListener('mousemove', e => {
             if (!active) {
@@ -24,29 +36,33 @@
             my = e.clientY;
         });
 
-        function animCursor() {
-            dx += (mx - dx) * 0.6;
-            dy += (my - dy) * 0.6;
-            rx += (mx - rx) * 0.15;
-            ry += (my - ry) * 0.15;
-            gx += (mx - gx) * 0.06;
-            gy += (my - gy) * 0.06;
+        function animateSnake() {
+            // Head follows mouse fast
+            segments[0].x += (mx - segments[0].x) * 0.45;
+            segments[0].y += (my - segments[0].y) * 0.45;
+            segments[0].el.style.transform = `translate3d(${segments[0].x}px, ${segments[0].y}px, 0)`;
 
-            dot.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
-            ring.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
-            glow.style.transform = `translate3d(${gx}px, ${gy}px, 0)`;
-
-            requestAnimationFrame(animCursor);
+            // Body follows previous
+            for (let i = 1; i < segments.length; i++) {
+                segments[i].x += (segments[i - 1].x - segments[i].x) * 0.55;
+                segments[i].y += (segments[i - 1].y - segments[i].y) * 0.55;
+                segments[i].el.style.transform = `translate3d(${segments[i].x}px, ${segments[i].y}px, 0)`;
+            }
+            requestAnimationFrame(animateSnake);
         }
-        animCursor();
+        animateSnake();
 
-        document.querySelectorAll('a, button, .tilt, .btn, .gallery-row').forEach(el => {
-            el.addEventListener('mouseenter', () => ring.classList.add('hover'));
-            el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
+        // Hover scale on head
+        const head = segments[0].el;
+        document.querySelectorAll('a, button, .product-card, .gallery-row').forEach(el => {
+            el.addEventListener('mouseenter', () => head.style.transform += ' scale(1.6)');
+            el.addEventListener('mouseleave', () => {});
         });
     }
 
+    // ============================================================
     // SCROLL PROGRESS
+    // ============================================================
     const bar = document.getElementById('scrollBar');
     if (bar) {
         function updateScroll() {
@@ -58,7 +74,9 @@
         updateScroll();
     }
 
+    // ============================================================
     // HEADER SHRINK
+    // ============================================================
     const header = document.getElementById('header');
     if (header) {
         window.addEventListener('scroll', () => {
@@ -66,7 +84,9 @@
         }, { passive: true });
     }
 
+    // ============================================================
     // BURGER MENU
+    // ============================================================
     const burger = document.getElementById('burger');
     const mobileMenu = document.getElementById('mobileMenu');
     if (burger && mobileMenu) {
@@ -84,20 +104,10 @@
         });
     }
 
-    // TILT CARDS
+    // ============================================================
+    // MAGNETIC BUTTONS
+    // ============================================================
     if (isDesktop) {
-        document.querySelectorAll('.tilt').forEach(el => {
-            el.addEventListener('mousemove', e => {
-                const r = el.getBoundingClientRect();
-                const x = (e.clientX - r.left) / r.width - 0.5;
-                const y = (e.clientY - r.top) / r.height - 0.5;
-                el.style.transform = `perspective(1000px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg) translateY(-4px)`;
-            });
-            el.addEventListener('mouseleave', () => {
-                el.style.transform = '';
-            });
-        });
-
         document.querySelectorAll('.magnetic').forEach(el => {
             el.addEventListener('mousemove', e => {
                 const r = el.getBoundingClientRect();
@@ -111,7 +121,9 @@
         });
     }
 
+    // ============================================================
     // REVEAL
+    // ============================================================
     if ('IntersectionObserver' in window) {
         const io = new IntersectionObserver(entries => {
             entries.forEach(e => {
@@ -121,10 +133,12 @@
                 }
             });
         }, { threshold: 0.1, rootMargin: '0px 0px -100px 0px' });
-        document.querySelectorAll('.section, .cta-final, .gallery-row, .feature, .step, .dev-card').forEach(el => io.observe(el));
+        document.querySelectorAll('.section, .cta-final, .gallery-row, .product-card, .roadmap-item, .dev-card').forEach(el => io.observe(el));
     }
 
+    // ============================================================
     // COUNTERS
+    // ============================================================
     const counters = document.querySelectorAll('[data-count]');
     if (counters.length && 'IntersectionObserver' in window) {
         const cio = new IntersectionObserver(entries => {
@@ -150,11 +164,39 @@
         counters.forEach(el => cio.observe(el));
     }
 
+    // ============================================================
+    // PRIVACY MODAL
+    // ============================================================
+    const privacyModal = document.getElementById('privacyModal');
+    const privacyClose = document.getElementById('privacyClose');
+    if (privacyModal && privacyClose) {
+        document.querySelectorAll('a[href="#privacy"]').forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                privacyModal.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+        function closePrivacy() {
+            privacyModal.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        privacyClose.addEventListener('click', closePrivacy);
+        privacyModal.addEventListener('click', e => {
+            if (e.target === privacyModal) closePrivacy();
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && privacyModal.classList.contains('open')) closePrivacy();
+        });
+    }
+
+    // ============================================================
     // SMOOTH ANCHOR
+    // ============================================================
     document.querySelectorAll('a[href^="#"]').forEach(a => {
         a.addEventListener('click', e => {
             const id = a.getAttribute('href');
-            if (!id || id === '#' || id.length < 2) return;
+            if (!id || id === '#' || id.length < 2 || id === '#privacy') return;
             const t = document.querySelector(id);
             if (t) {
                 e.preventDefault();

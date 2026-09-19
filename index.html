@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LIFELESS — Игровая экосистема в Telegram</title>
-<meta name="description" content="Кейсы, колёса, реальные подарки. Игровая экосистема внутри Telegram.">
+<title>LIFELESS — Технологическая компания</title>
+<meta name="description" content="LIFELESS — независимая технологическая компания. Игровая экосистема, магазин Telegram, OSINT-инструменты и крипто-сервисы.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,21 +15,17 @@
 <div class="noise"></div>
 <div class="scroll-progress"><div class="scroll-progress-bar" id="scrollBar"></div></div>
 
-<div id="cursor-dot"></div>
-<div id="cursor-ring"></div>
-<div id="cursor-glow"></div>
-
 <header id="header">
     <div class="logo">
         <span class="logo-mark">◈</span>
         <span>LIFELESS</span>
     </div>
     <nav>
-        <a href="#about">О проекте</a>
-        <a href="#gallery">Интерфейс</a>
-        <a href="#features">Возможности</a>
-        <a href="#dev">Разработчик</a>
-        <a href="#how">Как играть</a>
+        <a href="#company">Компания</a>
+        <a href="#products">Продукты</a>
+        <a href="#games">Игры</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#about">О нас</a>
         <a href="https://t.me/durvww" class="nav-cta" target="_blank">Канал <span>→</span></a>
     </nav>
     <button class="burger" id="burger" aria-label="Меню">
@@ -38,11 +34,12 @@
 </header>
 
 <div class="mobile-menu" id="mobileMenu">
-    <a href="#about">О проекте</a>
-    <a href="#gallery">Интерфейс</a>
-    <a href="#features">Возможности</a>
-    <a href="#dev">Разработчик</a>
-    <a href="#how">Как играть</a>
+    <a href="#company">Компания</a>
+    <a href="#products">Продукты</a>
+    <a href="#games">Игры</a>
+    <a href="#roadmap">Roadmap</a>
+    <a href="#about">О нас</a>
+    <a href="#privacy">Конфиденциальность</a>
     <a href="https://t.me/durvww" target="_blank">Канал →</a>
     <a href="https://t.me/Solver_Life_bot" class="mobile-cta" target="_blank">Открыть приложение</a>
 </div>
@@ -50,29 +47,29 @@
 <!-- ============ HERO ============ -->
 <section class="hero">
     <div class="hero-glow"></div>
-    <div class="hero-grid-lines"></div>
+    <div class="hero-glow-2"></div>
     <div class="hero-bg-text">LIFELESS</div>
 
     <div class="hero-inner">
         <div class="hero-left">
             <div class="hero-tag">
                 <span class="dot"></span>
-                LIVE · TELEGRAM · STARS
+                INDEPENDENT · SINCE 2025
             </div>
             <h1>
-                Игровая<br>
-                <em>экосистема</em><br>
-                в Telegram
+                Строим<br>
+                <em>технологии</em><br>
+                для людей
             </h1>
             <p class="hero-desc">
-                Кейсы, колёса, реальные подарки. Начни с бесплатного кейса — без вложений.
+                LIFELESS — независимая технологическая компания. Создаём продукты внутри Telegram и за его пределами: игры, магазины, аналитические инструменты и крипто-сервисы.
             </p>
             <div class="hero-actions">
-                <a href="https://t.me/Solver_Life_bot" class="btn btn-primary magnetic" target="_blank">
-                    <span>Открыть приложение</span>
+                <a href="#products" class="btn btn-primary magnetic">
+                    <span>Наши продукты</span>
                     <span class="btn-arrow">→</span>
                 </a>
-                <a href="#features" class="btn btn-ghost">Узнать больше</a>
+                <a href="#company" class="btn btn-ghost">О компании</a>
             </div>
         </div>
 
@@ -91,16 +88,16 @@
 
     <div class="hero-stats-row">
         <div class="hero-stat">
-            <div class="hero-stat-num" data-count="16">0</div>
-            <div class="hero-stat-label">КЕЙСОВ</div>
+            <div class="hero-stat-num" data-count="5">0</div>
+            <div class="hero-stat-label">НАПРАВЛЕНИЙ</div>
         </div>
         <div class="hero-stat">
-            <div class="hero-stat-num" data-count="6">0</div>
-            <div class="hero-stat-label">ИГР</div>
+            <div class="hero-stat-num" data-count="3">0</div>
+            <div class="hero-stat-label">В РАЗРАБОТКЕ</div>
         </div>
         <div class="hero-stat">
-            <div class="hero-stat-num" data-count="11">0</div>
-            <div class="hero-stat-label">ПОДАРКОВ</div>
+            <div class="hero-stat-num">100%</div>
+            <div class="hero-stat-label">НЕЗАВИСИМО</div>
         </div>
         <div class="hero-stat">
             <div class="hero-stat-num">24/7</div>
@@ -117,48 +114,101 @@
 <!-- ============ MARQUEE ============ -->
 <div class="marquee">
     <div class="marquee-track">
-        <span>КЕЙСЫ</span><span class="sep">◆</span>
-        <span>ПОДАРКИ</span><span class="sep">◆</span>
-        <span>ФОРТУНА</span><span class="sep">◆</span>
-        <span>STARS</span><span class="sep">◆</span>
-        <span>VIP</span><span class="sep">◆</span>
-        <span>САПЁР</span><span class="sep">◆</span>
-        <span>КОЛЁСА</span><span class="sep">◆</span>
-        <span>СТРИКИ</span><span class="sep">◆</span>
-        <span>КЕЙСЫ</span><span class="sep">◆</span>
-        <span>ПОДАРКИ</span><span class="sep">◆</span>
-        <span>ФОРТУНА</span><span class="sep">◆</span>
-        <span>STARS</span><span class="sep">◆</span>
-        <span>VIP</span><span class="sep">◆</span>
-        <span>САПЁР</span><span class="sep">◆</span>
-        <span>КОЛЁСА</span><span class="sep">◆</span>
-        <span>СТРИКИ</span><span class="sep">◆</span>
+        <span>GAMES</span><span class="sep">◆</span>
+        <span>TELEGRAM SHOP</span><span class="sep">◆</span>
+        <span>OSINT</span><span class="sep">◆</span>
+        <span>CRYPTO</span><span class="sep">◆</span>
+        <span>MINI APPS</span><span class="sep">◆</span>
+        <span>WEB3</span><span class="sep">◆</span>
+        <span>GAMES</span><span class="sep">◆</span>
+        <span>TELEGRAM SHOP</span><span class="sep">◆</span>
+        <span>OSINT</span><span class="sep">◆</span>
+        <span>CRYPTO</span><span class="sep">◆</span>
+        <span>MINI APPS</span><span class="sep">◆</span>
+        <span>WEB3</span><span class="sep">◆</span>
     </div>
 </div>
 
-<!-- ============ ABOUT ============ -->
-<section class="section about" id="about">
-    <div class="section-label">01 · О ПРОЕКТЕ</div>
+<!-- ============ COMPANY ============ -->
+<section class="section" id="company">
+    <div class="section-label">01 · КОМПАНИЯ</div>
     <div class="about-grid">
-        <h2>Мы не делаем<br>ставки.<br>Мы делаем <em>игру</em>.</h2>
+        <h2>Независимая.<br>Технологичная.<br><em>Своя.</em></h2>
         <div class="about-text">
-            <p class="lead">Lifeless — независимая игровая экосистема внутри Telegram.</p>
-            <p>Кейсы, колёса, кости, сапёр — всё в одном мини-приложении, которое запускается прямо в мессенджере. Без установок, без регистрации, без ожидания.</p>
-            <p>Выигрывай реальные подарки Telegram — от милых стикеров до коллекционных NFT. Прокачивай профиль, соревнуйся в топе, играй с друзьями.</p>
+            <p class="lead">LIFELESS — независимая технологическая компания, созданная одним разработчиком. Без инвесторов, без корпораций, без компромиссов.</p>
+            <p>Мы строим продукты, которые решают конкретные задачи: развлекают, экономят время, дают доступ к данным и открывают новые возможности. Начали с игровой экосистемы в Telegram — и не собираемся останавливаться.</p>
+            <p>Наша цель — выйти за пределы мессенджера и создать полноценную экосистему сервисов: от игр и магазинов до аналитических инструментов и крипто-продуктов.</p>
             <div class="about-tags">
-                <span>TG Mini App</span>
-                <span>Telegram Stars</span>
-                <span>Real Gifts</span>
-                <span>Без вложений</span>
+                <span>Собственные технологии</span>
+                <span>Без посредников</span>
+                <span>Фокус на продукт</span>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ============ GALLERY (Alternating) ============ -->
-<section class="section gallery-section" id="gallery">
-    <div class="section-label">02 · ИНТЕРФЕЙС</div>
-    <h2 class="section-title">Загляни <em>внутрь</em></h2>
+<!-- ============ PRODUCTS ============ -->
+<section class="section" id="products">
+    <div class="section-label">02 · ПРОДУКТЫ</div>
+    <h2 class="section-title">Что мы <em>делаем</em></h2>
+
+    <div class="products-grid">
+        <div class="product-card product-active">
+            <div class="product-status status-live">
+                <span class="status-dot"></span> LIVE
+            </div>
+            <div class="product-icon">🎰</div>
+            <h3>LIFELESS Games</h3>
+            <p>Игровая экосистема в Telegram. Кейсы, колёса, реальные подарки. 16 кейсов, 6 игр, VIP-программа и живой маркетплейс подарков.</p>
+            <a href="#games" class="product-link">Подробнее →</a>
+        </div>
+
+        <div class="product-card">
+            <div class="product-status status-dev">
+                <span class="status-dot-dev"></span> В РАЗРАБОТКЕ
+            </div>
+            <div class="product-icon">⭐</div>
+            <h3>LIFELESS Shop</h3>
+            <p>Магазин Telegram-услуг: звёзды, голда, премиум-подписки, номера, бусты. Быстро, безопасно, по лучшим ценам рынка.</p>
+            <div class="product-eta">ETA: Q1 2026</div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-status status-dev">
+                <span class="status-dot-dev"></span> В РАЗРАБОТКЕ
+            </div>
+            <div class="product-icon">🔍</div>
+            <h3>OSINT Combain</h3>
+            <p>Набор инструментов для анализа открытых данных. Поиск, агрегация, визуализация. Для журналистов, аналитиков и специалистов по безопасности.</p>
+            <div class="product-eta">ETA: Q2 2026</div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-status status-dev">
+                <span class="status-dot-dev"></span> В РАЗРАБОТКЕ
+            </div>
+            <div class="product-icon">💠</div>
+            <h3>LIFELESS Crypto</h3>
+            <p>Крипто-направление: кошельки, обменники, DeFi-сервисы. Фокус на простоту использования для новичков и надёжность для профи.</p>
+            <div class="product-eta">ETA: Q3 2026</div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-status status-plan">
+                <span class="status-dot-plan"></span> В ПЛАНАХ
+            </div>
+            <div class="product-icon">🌐</div>
+            <h3>Beyond Telegram</h3>
+            <p>Выход за пределы мессенджера: веб-версии, standalone-приложения, интеграции. Полноценная экосистема под брендом LIFELESS.</p>
+            <div class="product-eta">ETA: 2026-2027</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ GAMES (Flagship) ============ -->
+<section class="section" id="games">
+    <div class="section-label">03 · ФЛАГМАН · LIFELESS GAMES</div>
+    <h2 class="section-title">Наш первый <em>продукт</em></h2>
 
     <div class="gallery-alt">
         <div class="gallery-row">
@@ -168,7 +218,7 @@
             <div class="gallery-info">
                 <div class="gallery-num">01</div>
                 <h3>Кейсы</h3>
-                <p>16 кейсов с разными уровнями ставок — от 10 монет до 500 звёзд. Каждый кейс содержит реальные Telegram-подарки: от простых медвежат до коллекционных колец и алмазов.</p>
+                <p>16 кейсов с разными уровнями ставок — от 10 монет до 500 звёзд. Каждый содержит реальные Telegram-подарки: от простых медвежат до коллекционных колец.</p>
                 <div class="gallery-meta">
                     <span>от 10 🪙</span>
                     <span>до 500 ⭐</span>
@@ -183,7 +233,7 @@
             <div class="gallery-info">
                 <div class="gallery-num">02</div>
                 <h3>Колёса фортуны</h3>
-                <p>Три режима: обычное колесо за 200 монет, бесплатное раз в 12 часов и VIP-колесо за 50 звёзд с максимальными призами до 10 000 монет и шансом на крупный подарок.</p>
+                <p>Три режима: обычное за 200 монет, бесплатное раз в 12 часов и VIP за 50 звёзд — с максимальными призами до 10 000 монет.</p>
                 <div class="gallery-meta">
                     <span>3 режима</span>
                     <span>до 10 000 🪙</span>
@@ -198,10 +248,10 @@
             <div class="gallery-info">
                 <div class="gallery-num">03</div>
                 <h3>Профиль и ранги</h3>
-                <p>Соревнуйся в топе игроков, прокачивай VIP-уровень, устанавливай редкие цвета ника и рамки для аватарки. Всё отображается в общем лидерборде — от бронзы до платины.</p>
+                <p>Соревнуйся в топе игроков, прокачивай VIP-уровень, устанавливай редкие цвета ника и рамки. От бронзы до платины.</p>
                 <div class="gallery-meta">
                     <span>5 VIP-тиров</span>
-                    <span>20 цветов и рамок</span>
+                    <span>20+ украшений</span>
                 </div>
             </div>
         </div>
@@ -213,7 +263,7 @@
             <div class="gallery-info">
                 <div class="gallery-num">04</div>
                 <h3>Магазин</h3>
-                <p>7 пакетов монет с бонусами до 30%, питомцы, украшения, VIP-подписки и многое другое. Все покупки через Telegram Stars — быстро, безопасно, без карт.</p>
+                <p>7 пакетов монет с бонусами до 30%, питомцы, украшения, VIP-подписки. Все покупки через Telegram Stars — быстро и безопасно.</p>
                 <div class="gallery-meta">
                     <span>7 пакетов</span>
                     <span>+30% бонус</span>
@@ -228,7 +278,7 @@
             <div class="gallery-info">
                 <div class="gallery-num">05</div>
                 <h3>Сапёр</h3>
-                <p>Классический сапёр в двух режимах: за монеты или за звёзды. В премиум-режиме множитель растёт быстрее, а в конце партии есть шанс выбить реальный подарок Telegram.</p>
+                <p>Классический сапёр в двух режимах: за монеты или за звёзды. В премиум-режиме — шанс выбить реальный подарок Telegram.</p>
                 <div class="gallery-meta">
                     <span>3 сложности</span>
                     <span>RTP 96%</span>
@@ -243,7 +293,7 @@
             <div class="gallery-info">
                 <div class="gallery-num">06</div>
                 <h3>Реальные подарки</h3>
-                <p>11 разных подарков в 4 ценовых тирах: от 15⭐ (сердце, медведь) до 100⭐ (кубок, кольцо, алмаз). Подарки приходят прямо в твой аккаунт Telegram — мгновенно.</p>
+                <p>11 подарков в 4 ценовых тирах: от 15⭐ (сердце, медведь) до 100⭐ (кубок, кольцо, алмаз). Приходят мгновенно в твой Telegram.</p>
                 <div class="gallery-meta">
                     <span>11 подарков</span>
                     <span>4 тира</span>
@@ -253,79 +303,60 @@
     </div>
 </section>
 
-<!-- ============ FEATURES ============ -->
-<section class="section features" id="features">
-    <div class="section-label">03 · ВОЗМОЖНОСТИ</div>
-    <h2 class="section-title">Что <em>внутри</em></h2>
-    <div class="features-grid">
-        <div class="feature tilt">
-            <div class="feature-num">01</div>
-            <div class="feature-icon">🎰</div>
-            <h3>16 кейсов</h3>
-            <p>От 10 монет до 500 звёзд. Реальные подарки Telegram внутри — от дешёвых до коллекционных.</p>
+<!-- ============ ROADMAP ============ -->
+<section class="section" id="roadmap">
+    <div class="section-label">04 · ROADMAP</div>
+    <h2 class="section-title">Куда мы <em>идём</em></h2>
+
+    <div class="roadmap">
+        <div class="roadmap-item roadmap-done">
+            <div class="roadmap-marker"></div>
+            <div class="roadmap-date">Q4 2025</div>
+            <h3>LIFELESS Games — запуск</h3>
+            <p>Игровая экосистема внутри Telegram. Кейсы, колёса, реальные подарки, VIP-программа.</p>
         </div>
-        <div class="feature tilt">
-            <div class="feature-num">02</div>
-            <div class="feature-icon">🎡</div>
-            <h3>Колёса фортуны</h3>
-            <p>Три режима: обычное, бесплатное и VIP. Призы от 10 до 10 000 монет.</p>
+
+        <div class="roadmap-item roadmap-current">
+            <div class="roadmap-marker"></div>
+            <div class="roadmap-date">Q1 2026</div>
+            <h3>LIFELESS Shop — магазин Telegram</h3>
+            <p>Звёзды, голда, премиум, номера, бусты. Полноценный маркетплейс услуг для Telegram.</p>
         </div>
-        <div class="feature tilt">
-            <div class="feature-num">03</div>
-            <div class="feature-icon">💣</div>
-            <h3>Сапёр</h3>
-            <p>Играй за монеты или за звёзды — с шансом на реальный подарок при каждом заходе.</p>
+
+        <div class="roadmap-item">
+            <div class="roadmap-marker"></div>
+            <div class="roadmap-date">Q2 2026</div>
+            <h3>OSINT Combain</h3>
+            <p>Инструменты аналитики открытых данных. Поиск, агрегация, визуализация связей.</p>
         </div>
-        <div class="feature tilt">
-            <div class="feature-num">04</div>
-            <div class="feature-icon">🎁</div>
-            <h3>Подарки Telegram</h3>
-            <p>Настоящие подарки отправляются прямо в твой Telegram-аккаунт — мгновенно и без комиссий.</p>
+
+        <div class="roadmap-item">
+            <div class="roadmap-marker"></div>
+            <div class="roadmap-date">Q3 2026</div>
+            <h3>LIFELESS Crypto</h3>
+            <p>Крипто-направление: кошельки, обменники, DeFi-сервисы для широкой аудитории.</p>
         </div>
-        <div class="feature tilt">
-            <div class="feature-num">05</div>
-            <div class="feature-icon">🔥</div>
-            <h3>Стрики и квесты</h3>
-            <p>Заходи каждый день, выполняй задания, получай бонусы и поднимайся в топе игроков.</p>
-        </div>
-        <div class="feature tilt">
-            <div class="feature-num">06</div>
-            <div class="feature-icon">👑</div>
-            <h3>VIP-программа</h3>
-            <p>Повышай уровень, получай скидки до 15% и эксклюзивные награды.</p>
-        </div>
-        <div class="feature tilt">
-            <div class="feature-num">07</div>
-            <div class="feature-icon">⚡</div>
-            <h3>Счастливые часы</h3>
-            <p>Каждый вечер с 20:00 до 22:00 МСК все выигрыши увеличены на 20%.</p>
-        </div>
-        <div class="feature tilt">
-            <div class="feature-num">08</div>
-            <div class="feature-icon">🎲</div>
-            <h3>Кости и монетка</h3>
-            <p>Классические игры удачи. Ставка 50 монет — выигрыш до 250 монет.</p>
-        </div>
-        <div class="feature tilt">
-            <div class="feature-num">09</div>
-            <div class="feature-icon">🪙</div>
-            <h3>Бесплатный кейс</h3>
-            <p>Раз в 12 часов — бесплатно. От 10 до 500 монет внутри, без вложений.</p>
+
+        <div class="roadmap-item">
+            <div class="roadmap-marker"></div>
+            <div class="roadmap-date">2026-2027</div>
+            <h3>Выход за пределы Telegram</h3>
+            <p>Веб-версии продуктов, standalone-приложения, интеграции со сторонними платформами.</p>
         </div>
     </div>
 </section>
 
-<!-- ============ DEVELOPER ============ -->
-<section class="section dev" id="dev">
-    <div class="section-label">04 · РАЗРАБОТЧИК</div>
+<!-- ============ ABOUT ============ -->
+<section class="section" id="about">
+    <div class="section-label">05 · О НАС</div>
     <div class="dev-card">
         <div class="dev-visual">
             <div class="dev-monogram">L</div>
         </div>
         <div class="dev-info">
-            <h2>Один разработчик.<br><em>15 лет.</em></h2>
-            <p>Lifeless — независимый проект, полностью созданный одним человеком. Весь код, дизайн, экономика и механики — от начала до конца.</p>
-            <p>Без инвесторов, без команды, без корпораций. Только чистый интерес, тысячи часов работы и желание сделать качественный продукт.</p>
+            <h2>Независимая<br><em>разработка</em></h2>
+            <p>LIFELESS создаётся небольшой командой разработчиков-энтузиастов. Мы верим, что качественный продукт можно сделать без миллионов инвестиций — если есть ясная цель и желание.</p>
+            <p>Все наши продукты — собственные. Код, дизайн, экономика, маркетинг. Никаких готовых решений, никаких агрегаторов, никакого венчурного капитала.</p>
             <div class="dev-tags">
                 <span>Python</span>
                 <span>FastAPI</span>
@@ -338,36 +369,13 @@
     </div>
 </section>
 
-<!-- ============ HOW ============ -->
-<section class="section how" id="how">
-    <div class="section-label">05 · КАК ИГРАТЬ</div>
-    <h2 class="section-title">Три шага <em>до победы</em></h2>
-    <div class="steps">
-        <div class="step">
-            <div class="step-num">01</div>
-            <h3>Открой бота</h3>
-            <p>Нажми «Открыть приложение» — мини-приложение запустится прямо в Telegram. Ничего не нужно устанавливать.</p>
-        </div>
-        <div class="step">
-            <div class="step-num">02</div>
-            <h3>Забери бонус</h3>
-            <p>Первый бесплатный кейс + стартовые монеты. Играй без вложений — заработай первый выигрыш.</p>
-        </div>
-        <div class="step">
-            <div class="step-num">03</div>
-            <h3>Выигрывай</h3>
-            <p>Открывай кейсы, крути колёса, выбивай подарки. Всё приходит прямо в Telegram.</p>
-        </div>
-    </div>
-</section>
-
 <!-- ============ CTA FINAL ============ -->
 <section class="cta-final">
     <div class="cta-final-glow"></div>
     <div class="cta-final-inner">
-        <div class="cta-final-tag">READY?</div>
-        <h2>Готов испытать <em>удачу?</em></h2>
-        <p>Присоединяйся к игрокам Lifeless прямо сейчас</p>
+        <div class="cta-final-tag">GET STARTED</div>
+        <h2>Начни <em>сейчас</em></h2>
+        <p>Попробуй первый продукт LIFELESS — игровую экосистему в Telegram</p>
         <a href="https://t.me/Solver_Life_bot" class="btn btn-primary btn-large magnetic" target="_blank">
             <span>Открыть приложение</span>
             <span class="btn-arrow">→</span>
@@ -380,35 +388,79 @@
     <div class="footer-grid">
         <div class="footer-brand">
             <div class="footer-logo">◈ LIFELESS</div>
-            <p>Игровая экосистема в Telegram</p>
+            <p>Независимая технологическая компания</p>
             <div class="footer-status">
                 <span class="status-dot"></span>
                 <span>Все системы работают</span>
             </div>
         </div>
         <div class="footer-col">
-            <div class="footer-label">ПРОЕКТ</div>
+            <div class="footer-label">КОМПАНИЯ</div>
+            <a href="#company">О компании</a>
+            <a href="#products">Продукты</a>
+            <a href="#roadmap">Roadmap</a>
             <a href="#about">О нас</a>
-            <a href="#gallery">Интерфейс</a>
-            <a href="#features">Возможности</a>
-            <a href="#dev">Разработчик</a>
-            <a href="https://t.me/durvww" target="_blank">Канал</a>
         </div>
         <div class="footer-col">
-            <div class="footer-label">ИГРАТЬ</div>
+            <div class="footer-label">ПРОДУКТЫ</div>
+            <a href="#games">LIFELESS Games</a>
             <a href="https://t.me/Solver_Life_bot" target="_blank">Открыть бота</a>
             <a href="https://t.me/wwlifeless" target="_blank">Чат</a>
         </div>
         <div class="footer-col">
-            <div class="footer-label">ПОДДЕРЖКА</div>
+            <div class="footer-label">ПРАВОВОЕ</div>
+            <a href="#privacy">Конфиденциальность</a>
+            <a href="#privacy">Условия использования</a>
             <a href="https://t.me/wwsolver" target="_blank">Связаться</a>
         </div>
     </div>
     <div class="footer-bottom">
-        <div>© 2026 Lifeless. Все права защищены.</div>
+        <div>© 2026 LIFELESS. Все права защищены.</div>
         <div class="footer-disclaimer">18+ · Играй ответственно</div>
     </div>
 </footer>
+
+<!-- ============ PRIVACY MODAL ============ -->
+<div class="modal-overlay" id="privacyModal">
+    <div class="modal-content">
+        <button class="modal-close" id="privacyClose" aria-label="Закрыть">✕</button>
+        <div class="modal-scroll">
+            <h2 id="privacy">Политика конфиденциальности</h2>
+            <p class="modal-updated">Обновлено: сентябрь 2026</p>
+
+            <h3>1. Общие положения</h3>
+            <p>Настоящая Политика конфиденциальности описывает, какие данные собирает LIFELESS (далее — «Компания»), как их использует и защищает. Используя наши продукты, вы соглашаетесь с условиями настоящей Политики.</p>
+
+            <h3>2. Какие данные мы собираем</h3>
+            <p>Мы получаем от Telegram только информацию, необходимую для работы продуктов: ID пользователя, имя, username, аватар. Мы не запрашиваем и не храним пароли, номера телефонов, email или платёжные данные.</p>
+
+            <h3>3. Как мы используем данные</h3>
+            <p>Данные используются исключительно для работы продуктов: отображение профиля, подсчёт баланса, ведение статистики игр, начисление бонусов, обработка платежей через Telegram Stars.</p>
+
+            <h3>4. Передача данных третьим лицам</h3>
+            <p>Мы не передаём данные третьим лицам. Единственное исключение — обработка платежей через Telegram Stars, где платёжная информация обрабатывается в соответствии с правилами Telegram.</p>
+
+            <h3>5. Безопасность</h3>
+            <p>Данные хранятся на защищённых серверах. Доступ к базе данных ограничен. Все критичные операции подписаны HMAC-ключами, трафик зашифрован по HTTPS.</p>
+
+            <h3>6. Cookies и аналитика</h3>
+            <p>Наши продукты не используют сторонние трекеры и рекламные cookies. Внутри Telegram Mini Apps работают только встроенные механизмы платформы.</p>
+
+            <h3>7. Ваши права</h3>
+            <p>Вы можете запросить удаление аккаунта и всех связанных данных через службу поддержки. Запрос обрабатывается в течение 24 часов.</p>
+
+            <h3>8. Изменения в Политике</h3>
+            <p>Мы оставляем за собой право обновлять настоящую Политику. Актуальная версия всегда доступна на этой странице. О существенных изменениях мы уведомляем через официальный канал.</p>
+
+            <h3>9. Контакты</h3>
+            <p>По вопросам, связанным с обработкой данных, обращайтесь через раздел «Поддержка» или напрямую в Telegram-канал компании.</p>
+
+            <div class="modal-disclaimer">
+                Продукты LIFELESS предназначены для пользователей 18+. Игровые монеты и награды не имеют денежной стоимости, не подлежат обмену, выводу или возврату. Все игровые механики являются симуляцией случайности для развлекательных целей. Telegram Stars используются исключительно для приобретения внутриигрового контента. Играйте ответственно.
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="script.js"></script>
 </body>
