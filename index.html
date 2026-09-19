@@ -1,675 +1,186 @@
+cat > landing/index.html << 'HTMLEOF'
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#06060f">
-<title>LIFELESS Games</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-<link rel="stylesheet" href="okey.css">
+<meta name="viewport" content="width=1400">
+<title>LIFELESS — Игровая экосистема в Telegram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
-    <symbol id="ic-home" viewBox="0 0 24 24"><path d="M11.3 2.3a1 1 0 0 1 1.4 0l8 7.5a1 1 0 0 1 .3.7V20a2 2 0 0 1-2 2h-4.5v-6h-5v6H5a2 2 0 0 1-2-2v-9.5a1 1 0 0 1 .3-.7z" fill="currentColor"/></symbol>
-    <symbol id="ic-game" viewBox="0 0 24 24"><path d="M17 6H7a5 5 0 0 0-5 5v2a5 5 0 0 0 5 5c1.5 0 2.8-.6 3.7-1.6L12 15l1.3 1.4c.9 1 2.2 1.6 3.7 1.6a5 5 0 0 0 5-5v-2a5 5 0 0 0-5-5zM8 13H6v-2H5v2H3v1h2v2h1v-2h2zM16.5 12.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm3 2a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" fill="currentColor"/></symbol>
-    <symbol id="ic-case" viewBox="0 0 24 24"><path d="M3 9.5a2.5 2.5 0 0 1 2.5-2.5h13A2.5 2.5 0 0 1 21 9.5v9A2.5 2.5 0 0 1 18.5 21h-13A2.5 2.5 0 0 1 3 18.5zM5.6 7l1.4-3.3A2 2 0 0 1 8.8 2.5h6.4a2 2 0 0 1 1.8 1.2L18.4 7H5.6zM10 11.5a1 1 0 1 1 2 0v1h2v-1a1 1 0 1 1 2 0v1a3 3 0 1 1-6 0z" fill="currentColor"/></symbol>
-    <symbol id="ic-shop" viewBox="0 0 24 24"><path d="M12 1.8l3.6 6.9 7.4 1.1-5.4 5.5 1.3 7.9L12 20l-6.9 3.2 1.3-7.9L1 9.8l7.4-1.1z" fill="currentColor"/></symbol>
-    <symbol id="ic-profile" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.5" fill="currentColor"/><path d="M3.5 21a1.5 1.5 0 0 1-1.5-1.6c0-3.6 3.9-6.4 10-6.4s10 2.8 10 6.4A1.5 1.5 0 0 1 20.5 21z" fill="currentColor"/></symbol>
-    <symbol id="ic-bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="currentColor"/></symbol>
-    <symbol id="ic-gift" viewBox="0 0 24 24"><path d="M20 8h-3a3 3 0 0 0-5-2.2A3 3 0 0 0 7 8H4a1 1 0 0 0-1 1v3h9v-1h1v1h9V9a1 1 0 0 0-1-1zM11 13H3v7a1 1 0 0 0 1 1h7zm2 8h7a1 1 0 0 0 1-1v-7h-8z" fill="currentColor"/></symbol>
-    <symbol id="ic-trophy" viewBox="0 0 24 24"><path d="M6 3h12v3a6 6 0 0 1-6 6 6 6 0 0 1-6-6zM4 4h2v2a4 4 0 0 1-2-3.5zM18 4h2a4 4 0 0 1-2 3.5zM11 12h2v4h3v2H8v-2h3z" fill="currentColor"/></symbol>
-    <symbol id="ic-music" viewBox="0 0 24 24"><path d="M9 18V6l10-2v12M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm10-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
-    <symbol id="ic-support" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4.9.7c-.1 1.5-1.4 2-2.4 2.3V14M12 17v.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></symbol>
-    <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-    <symbol id="ic-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 16v-5M12 8v.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-    <symbol id="ic-shuffle" viewBox="0 0 24 24"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="ic-repeat" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="ic-repeat-one" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><text x="12" y="15" font-size="8" font-weight="bold" fill="currentColor" text-anchor="middle">1</text></symbol>
-    <symbol id="ic-prev" viewBox="0 0 24 24"><path d="M19 20L9 12l10-8v16zM5 19V5" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
-    <symbol id="ic-next" viewBox="0 0 24 24"><path d="M5 4l10 8-10 8V4zM19 5v14" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
-    <symbol id="ic-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor"/><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor"/></symbol>
-    <symbol id="ic-play-mini" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="currentColor"/></symbol>
-    <symbol id="ic-book" viewBox="0 0 24 24"><path d="M4 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM8 8h8M8 12h8M8 16h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-    <symbol id="ic-shield" viewBox="0 0 24 24"><path d="M12 2l8 3v7c0 5-3.4 9-8 10-4.6-1-8-5-8-10V5zM9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></symbol>
-</svg>
+<div id="cursor-glow"></div>
 
-<div id="global-loader">
-    <div class="loader-cat" id="loader-cat"></div>
-    <div class="loader-text">LIFELESS</div>
+<header>
+    <div class="logo">LIFELESS</div>
+    <nav>
+        <a href="#about">О проекте</a>
+        <a href="#features">Возможности</a>
+        <a href="#how">Как играть</a>
+        <a href="https://t.me/durvww" class="nav-cta">Канал →</a>
+    </nav>
+</header>
+
+<section class="hero">
+    <div class="hero-bg-text">LIFELESS</div>
+    <img class="hero-lion" src="assets/lion.png" alt="">
+    <div class="hero-content">
+        <div class="hero-tag">TG · GAMING · STARS</div>
+        <h1>Игровая<br>экосистема<br>в Telegram</h1>
+        <p>Кейсы, колёса, реальные подарки. Начни с бесплатного кейса — без вложений.</p>
+        <a href="https://t.me/Solver_Life_bot" class="cta magnetic">
+            Открыть приложение
+            <span class="cta-arrow">→</span>
+        </a>
+    </div>
+    <div class="hero-scroll">scroll ↓</div>
+</section>
+
+<div class="marquee">
+    <div class="marquee-track">
+        <span>КЕЙСЫ</span><span>·</span>
+        <span>ПОДАРКИ</span><span>·</span>
+        <span>ФОРТУНА</span><span>·</span>
+        <span>STARS</span><span>·</span>
+        <span>VIP</span><span>·</span>
+        <span>САПЁР</span><span>·</span>
+        <span>КОЛЁСА</span><span>·</span>
+        <span>СТРИКИ</span><span>·</span>
+        <span>КЕЙСЫ</span><span>·</span>
+        <span>ПОДАРКИ</span><span>·</span>
+        <span>ФОРТУНА</span><span>·</span>
+        <span>STARS</span><span>·</span>
+        <span>VIP</span><span>·</span>
+        <span>САПЁР</span><span>·</span>
+        <span>КОЛЁСА</span><span>·</span>
+        <span>СТРИКИ</span><span>·</span>
+    </div>
 </div>
 
-<div class="edge-swipe" id="edge-swipe"></div>
-
-<div class="side-overlay" id="side-overlay" onclick="closeSideMenu()"></div>
-<aside class="side-menu" id="side-menu">
-    <div class="side-header">
-        <div class="side-avatar-wrap">
-            <img id="side-avatar" class="side-avatar" alt="">
-            <div class="side-pet-slot" id="side-pet-slot" style="display:none"></div>
-        </div>
-        <div class="side-name" id="side-name">Загрузка...</div>
-        <div class="side-username" id="side-username">@—</div>
-        <div class="side-balance">
-            <div class="lottie-coin-slot lottie-coin-lg" id="side-coin-lottie"></div>
-            <span id="side-balance-val">0</span>
-        </div>
-        <button class="side-pet-btn" id="side-pet-btn" onclick="closeSideMenu();openPetsManager()" style="display:none">⚙️ Настроить питомца</button>
-    </div>
-    <nav class="side-nav">
-        <button class="side-item active" data-tab="home"><svg><use href="#ic-home"/></svg>Главная</button>
-        <button class="side-item" data-tab="cases"><svg><use href="#ic-case"/></svg>Кейсы</button>
-        <button class="side-item" data-tab="games"><svg><use href="#ic-game"/></svg>Игры</button>
-        <button class="side-item" data-tab="shop"><svg><use href="#ic-shop"/></svg>Магазин</button>
-        <button class="side-item" data-tab="bonuses"><svg><use href="#ic-gift"/></svg>Бонусы</button>
-        <button class="side-item" data-tab="music"><svg><use href="#ic-music"/></svg>Музыка</button>
-        <button class="side-item" data-tab="about"><svg><use href="#ic-info"/></svg>О нас</button>
-        <button class="side-item" data-tab="rules"><svg><use href="#ic-book"/></svg>Правила игры</button>
-        <button class="side-item" data-tab="privacy"><svg><use href="#ic-shield"/></svg>Конфиденциальность</button>
-        <button class="side-item" id="side-support-btn"><svg><use href="#ic-support"/></svg>Поддержка</button>
-    </nav>
-    <div class="side-footer"><div class="side-version">Lifeless Games · v15</div></div>
-</aside>
-
-<div id="app" class="hidden">
-    <header class="header glass-strong">
-        <div class="header-left">
-            <button class="avatar-menu-btn" id="avatar-menu-btn" onclick="openSideMenu()" aria-label="Меню">
-                <img id="header-logo-img" class="header-logo-img" src="/miniapp/assets/durov4.jpg" alt="">
-            </button>
-            <div class="header-title"><h1>LIFELESS</h1><h2>Games</h2></div>
-        </div>
-        <div class="header-pet-slot" id="header-pet-slot" style="display:none"></div>
-        <div class="header-right">
-            <div class="balance-pill" id="balance-pill">
-                <div class="lottie-coin-slot lottie-coin-lg" id="header-coin-lottie"></div>
-                <span id="coins">0</span>
-            </div>
-            <button class="add-btn" onclick="openTopUp()" aria-label="Пополнить">+</button>
-        </div>
-    </header>
-
-    <main class="content">
-        <section id="tab-home" class="tab active">
-            <div class="free-case-card" id="free-case-card" onclick="openFreeCase()">
-                <div class="free-case-img"><img src="/miniapp/assets/durov5.jpg" alt=""></div>
-                <div class="free-case-info">
-                    <div class="free-case-label">🎁 Бесплатный кейс</div>
-                    <div class="free-case-timer" id="free-case-timer">Готов к открытию!</div>
-                    <div class="free-case-reward">до 500 🪙 внутри</div>
-                </div>
-                <div class="free-case-arrow">›</div>
-            </div>
-
-            <!-- Daily streak -->
-            <div class="daily-streak glass" id="daily-streak"></div>
-
-            <div class="carousel glass" id="carousel">
-                <div class="carousel-track" id="carousel-track">
-                    <div class="carousel-slide" onclick="switchTab('cases')">
-                        <img src="/miniapp/assets/durov2.jpg" alt="">
-                        <div class="slide-overlay"><span>🎰 Кейсы</span><button type="button">Играть</button></div>
-                    </div>
-                    <div class="carousel-slide" onclick="switchTab('games')">
-                        <img src="/miniapp/assets/durov1.jpg" alt="">
-                        <div class="slide-overlay"><span>🎮 Фортуна</span><button type="button">Крутить</button></div>
-                    </div>
-                    <div class="carousel-slide" onclick="switchTab('shop')">
-                        <img src="/miniapp/assets/durov7.jpg" alt="">
-                        <div class="slide-overlay"><span>🛒 Магазин</span><button type="button">Открыть</button></div>
-                    </div>
-                </div>
-                <div class="carousel-dots" id="carousel-dots"></div>
-            </div>
-
-            <div class="quick-actions">
-                <button onclick="switchTab('cases')"><svg class="qa-svg"><use href="#ic-case"/></svg>Кейсы</button>
-                <button onclick="switchTab('games')"><svg class="qa-svg"><use href="#ic-game"/></svg>Игры</button>
-                <button onclick="switchTab('shop')"><svg class="qa-svg"><use href="#ic-shop"/></svg>Магазин</button>
-                <button onclick="switchTab('bonuses')"><svg class="qa-svg"><use href="#ic-gift"/></svg>Бонусы</button>
-            </div>
-
-            <div class="happy-card glass" id="happy-banner" style="display:none">
-                <div class="happy-flame">
-                    <svg viewBox="0 0 48 60" class="flame-svg">
-                        <defs>
-                            <radialGradient id="flameGrad1" cx="50%" cy="80%" r="65%">
-                                <stop offset="0%" stop-color="#ffffff"/>
-                                <stop offset="25%" stop-color="#ffe066"/>
-                                <stop offset="55%" stop-color="#ff9d00"/>
-                                <stop offset="100%" stop-color="#ff3b5b"/>
-                            </radialGradient>
-                        </defs>
-                        <path d="M24 4 C 20 14, 8 20, 8 34 a 16 16 0 0 0 32 0 c 0 -8 -6 -14 -10 -20 c -1 4 -3 7 -6 10 a 6 6 0 0 0 12 0" fill="url(#flameGrad1)"/>
-                        <path d="M24 18 C 22 24, 16 28, 16 36 a 8 8 0 0 0 16 0 c 0 -5 -3 -9 -5 -13 c -1 3 -2 5 -3 7 a 4 4 0 0 0 8 0" fill="#fff" opacity="0.6"/>
-                    </svg>
-                </div>
-                <div class="happy-content">
-                    <div class="happy-title">🔥 Счастливые часы</div>
-                    <div class="happy-sub">+20% к выигрышу · <span id="happy-timer">до 22:00</span></div>
-                </div>
-                <div class="happy-eq">
-                    <span></span><span></span><span></span><span></span><span></span><span></span>
-                </div>
-            </div>
-
-            <div class="mini-stats">
-                <div class="mini-stat"><svg class="mini-stat-svg"><use href="#ic-case"/></svg><div class="mini-stat-value" id="home-cases">0</div><div class="mini-stat-label">Кейсов</div></div>
-                <div class="mini-stat"><svg class="mini-stat-svg"><use href="#ic-bolt"/></svg><div class="mini-stat-value" id="home-wagered">0</div><div class="mini-stat-label">Баланс</div></div>
-                <div class="mini-stat"><svg class="mini-stat-svg"><use href="#ic-trophy"/></svg><div class="mini-stat-value" id="home-best">0</div><div class="mini-stat-label">Кейсов</div></div>
-            </div>
-
-            <div class="top-today glass" id="top-today">
-                <div class="top-today-badge">🏆 Топ дня</div>
-                <div class="top-today-content">
-                    <div class="top-today-name" id="top-today-name">Загрузка...</div>
-                    <div class="top-today-balance" id="top-today-balance">—</div>
-                </div>
-            </div>
-
-            <div class="info-banner glass">
-                <div class="info-banner-icon">💎</div>
-                <div class="info-banner-text">
-                    <b>Lifeless Games</b> — играй, выигрывай реальные подарки. Открывай кейсы, крути колёса, бросай кости.
-                </div>
-            </div>
-
-            <div class="section-title">⚡ Последние дропы</div>
-            <div id="drops-feed" class="drops-feed"></div>
-
-            <div class="section-title">🔥 Кто выигрывает сейчас</div>
-            <div id="drops-global" class="drops-feed"></div>
-        </section>
-
-        <!-- ============ КЕЙСЫ ============ -->
-        <section id="tab-cases" class="tab">
-            <div class="cat-tabs">
-                <button class="cat-tab active" data-cat="coins" onclick="switchCaseCat('coins')"><span class="cat-tab-emoji">📦</span>Монетные</button>
-                <button class="cat-tab" data-cat="stars" onclick="switchCaseCat('stars')"><span class="cat-tab-emoji">⭐</span>Звёздные</button>
-                <button class="cat-tab" data-cat="vip" onclick="switchCaseCat('vip')"><span class="cat-tab-emoji">👑</span>VIP</button>
-            </div>
-            <div id="cases-panel-coins" class="cases-panel active"><div class="cases-grid" id="cases-grid"></div></div>
-            <div id="cases-panel-stars" class="cases-panel"><div class="cases-grid" id="star-cases-grid"></div></div>
-            <div id="cases-panel-vip" class="cases-panel"><div class="cases-grid" id="vip-cases-grid"></div></div>
-        </section>
-
-        <section id="tab-games" class="tab">
-            <div id="games-menu">
-                <div class="games-hero glass">
-                    <div class="games-hero-icon">🎮</div>
-                    <div class="games-hero-text"><div class="games-hero-title">Игровая зона</div><div class="games-hero-sub">Крути, бросай, открывай клетки</div></div>
-                </div>
-                <div class="games-grid">
-                    <div class="game-card" onclick="openGame('wheel')"><img src="/miniapp/assets/durov6.jpg" alt=""><div class="game-card-overlay"><span class="game-card-name">🎡 Колесо</span><span class="game-card-price">200 🪙</span></div></div>
-                    <div class="game-card" onclick="openGame('wheel-free')"><img src="/miniapp/assets/durov1.jpg" alt=""><div class="game-card-overlay"><span class="game-card-name">🎁 Бесплатное</span><span class="game-card-price">Раз в 4ч</span></div></div>
-                    <div class="game-card" onclick="openGame('wheel-vip')"><img src="/miniapp/assets/durov7.jpg" alt=""><div class="game-card-overlay"><span class="game-card-name">💎 VIP-колесо</span><span class="game-card-price">50 ⭐</span></div></div>
-                    <div class="game-card" onclick="openGame('coin')"><img src="/miniapp/assets/durov4.jpg" alt=""><div class="game-card-overlay"><span class="game-card-name">🪙 Монетка</span><span class="game-card-price">50 🪙</span></div></div>
-                    <div class="game-card" onclick="openGame('dice')"><img src="/miniapp/assets/durov8.jpg" alt=""><div class="game-card-overlay"><span class="game-card-name">🎲 Кости</span><span class="game-card-price">50 🪙</span></div></div>
-                    <div class="game-card" onclick="openGame('saper')"><img src="/miniapp/assets/durov9.jpg" alt=""><div class="game-card-overlay"><span class="game-card-name">💣 Сапёр</span><span class="game-card-price">10–50 🪙</span></div></div>
-                </div>
-            </div>
-
-            <div id="game-wheel" class="game-view hidden">
-                <button class="back-link" onclick="closeGameView()">← Назад</button>
-                <div class="section-title">🎡 Колесо фортуны · 200 🪙</div>
-                <div class="wheel-container">
-                    <div class="wheel-pointer"></div>
-                    <div class="wheel" id="wheel"><div class="wheel-inner" id="wheel-inner"></div><div class="wheel-hub">🎯</div></div>
-                </div>
-                <button class="play-btn" id="spin-btn" onclick="spinWheel()">Крутить · 200 🪙</button>
-                <div id="wheel-result" class="game-result"></div>
-            </div>
-
-            <div id="game-wheel-free" class="game-view hidden">
-                <button class="back-link" onclick="closeGameView()">← Назад</button>
-                <div class="section-title">🎁 Бесплатное колесо</div>
-                <div class="free-wheel-info glass">
-                    <div class="free-wheel-icon">🎁</div>
-                    <div class="free-wheel-text"><b>Раз в 4 часа — бесплатно!</b><br>Призы: 10–500 🪙</div>
-                </div>
-                <div class="wheel-container">
-                    <div class="wheel-pointer"></div>
-                    <div class="wheel wheel-theme-free" id="wheel-free"><div class="wheel-inner" id="wheel-free-inner"></div><div class="wheel-hub">🎁</div></div>
-                </div>
-                <button class="play-btn" id="spin-free-btn" onclick="spinWheelFree()">Крутить бесплатно</button>
-                <div id="wheel-free-result" class="game-result"></div>
-            </div>
-
-            <div id="game-wheel-vip" class="game-view hidden">
-                <button class="back-link" onclick="closeGameView()">← Назад</button>
-                <div class="section-title">💎 VIP-колесо · 50 ⭐</div>
-                <div class="vip-wheel-info glass">
-                    <div class="vip-wheel-icon">💎</div>
-                    <div class="vip-wheel-text"><b>VIP-призы: 500–10 000 🪙</b><br>+ шанс на реальный подарок</div>
-                </div>
-                <div class="wheel-container">
-                    <div class="wheel-pointer"></div>
-                    <div class="wheel wheel-theme-vip" id="wheel-vip"><div class="wheel-inner" id="wheel-vip-inner"></div><div class="wheel-hub">💎</div></div>
-                </div>
-                <button class="play-btn play-btn-vip" id="spin-vip-btn" onclick="spinWheelVip()">⭐ Купить за 50 Stars</button>
-                <div id="wheel-vip-result" class="game-result"></div>
-            </div>
-
-            <div id="game-coin" class="game-view hidden">
-                <button class="back-link" onclick="closeGameView()">← Назад</button>
-                <div class="section-title">🪙 Монетка · 50 🪙</div>
-                <div class="coin-scene">
-                    <div class="coin-3d" id="coin3d">
-                        <div class="coin-face coin-front">
-                            <svg viewBox="0 0 100 100" class="coin-svg">
-                                <defs>
-                                    <linearGradient id="eagleGrad" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#5a3d1a"/>
-                                        <stop offset="100%" stop-color="#2a1a08"/>
-                                    </linearGradient>
-                                </defs>
-                                <path d="M50 30 C 38 18, 18 20, 8 32 C 20 36, 32 36, 42 34 C 30 42, 18 54, 12 68 C 26 66, 38 58, 46 50 L 50 58 L 54 50 C 62 58, 74 66, 88 68 C 82 54, 70 42, 58 34 C 68 36, 80 36, 92 32 C 82 20, 62 18, 50 30 Z" fill="url(#eagleGrad)"/>
-                                <circle cx="50" cy="32" r="9" fill="url(#eagleGrad)"/>
-                                <path d="M50 30 L 61 35 L 50 38 Z" fill="#c9922b"/>
-                                <circle cx="54" cy="30" r="1.8" fill="#c9922b"/>
-                            </svg>
-                        </div>
-                        <div class="coin-face coin-back">
-                            <svg viewBox="0 0 100 100" class="coin-svg">
-                                <defs>
-                                    <linearGradient id="crownGrad" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#5a3d1a"/>
-                                        <stop offset="100%" stop-color="#2a1a08"/>
-                                    </linearGradient>
-                                </defs>
-                                <path d="M18 72 L 18 38 L 34 52 L 50 22 L 66 52 L 82 38 L 82 72 Z" fill="url(#crownGrad)"/>
-                                <rect x="18" y="72" width="64" height="8" rx="2" fill="url(#crownGrad)"/>
-                                <circle cx="18" cy="34" r="4" fill="#c9922b"/>
-                                <circle cx="50" cy="18" r="4" fill="#c9922b"/>
-                                <circle cx="82" cy="34" r="4" fill="#c9922b"/>
-                                <circle cx="34" cy="80" r="2.5" fill="#c9922b"/>
-                                <circle cx="50" cy="80" r="2.5" fill="#c9922b"/>
-                                <circle cx="66" cy="80" r="2.5" fill="#c9922b"/>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-                <div class="coin-choices">
-                    <button class="coin-choice-btn" id="coin-eagle" onclick="playCoin('eagle')">🦅 Орёл ×2</button>
-                    <button class="coin-choice-btn" id="coin-king" onclick="playCoin('king')">👑 Решка ×2</button>
-                </div>
-                <div id="coin-result" class="game-result"></div>
-            </div>
-
-            <div id="game-dice" class="game-view hidden">
-                <button class="back-link" onclick="closeGameView()">← Назад</button>
-                <div class="section-title">🎲 Кости · сумма</div>
-                <div class="dice-info glass">
-                    <div>🎯 Победа: <b>7, 11</b> · +100 🪙</div>
-                    <div>💥 Джекпот: <b>12</b> · +250 🪙</div>
-                    <div>🎯 Близко: <b>2</b> · +50 🪙</div>
-                </div>
-                <div class="scene-3d">
-                    <div class="dice-wrap"><div class="dice-shadow"></div>
-                        <div class="dice-3d" id="dice1">
-                            <div class="dice-face front"></div><div class="dice-face back"></div>
-                            <div class="dice-face right"></div><div class="dice-face left"></div>
-                            <div class="dice-face top"></div><div class="dice-face bottom"></div>
-                        </div>
-                    </div>
-                    <div class="dice-wrap"><div class="dice-shadow"></div>
-                        <div class="dice-3d" id="dice2">
-                            <div class="dice-face front"></div><div class="dice-face back"></div>
-                            <div class="dice-face right"></div><div class="dice-face left"></div>
-                            <div class="dice-face top"></div><div class="dice-face bottom"></div>
-                        </div>
-                    </div>
-                </div>
-                <button class="play-btn" onclick="rollDice()">Бросить · 50 🪙</button>
-                <div id="dice-result" class="game-result"></div>
-            </div>
-
-            <div id="game-saper" class="game-view hidden">
-                <button class="back-link" onclick="closeGameView()">← Назад</button>
-                <div class="section-title">💣 Сапёр</div>
-                <div class="saper-setup" id="saper-setup">
-                    <p>Выбери сложность:</p>
-                    <div class="saper-levels">
-                        <button class="saper-level" data-size="3" data-mines="2" data-level="easy">
-                            <div class="saper-level-icon">🟢</div>
-                            <div><div class="saper-level-name">Лёгкий</div><div class="saper-level-info">3×3 · 2 мины</div></div>
-                        </button>
-                        <button class="saper-level" data-size="5" data-mines="5" data-level="medium">
-                            <div class="saper-level-icon">🟡</div>
-                            <div><div class="saper-level-name">Средний</div><div class="saper-level-info">5×5 · 5 мин</div></div>
-                        </button>
-                        <button class="saper-level" data-size="7" data-mines="10" data-level="hard">
-                            <div class="saper-level-icon">🔴</div>
-                            <div><div class="saper-level-name">Хард</div><div class="saper-level-info">7×7 · 10 мин</div></div>
-                        </button>
-                    </div>
-                </div>
-                <div id="saper-play" class="hidden">
-                    <div class="saper-info" id="saper-info"></div>
-                    <div class="saper-hint">🎯 Каждая открытая клетка повышает множитель</div>
-                    <div id="saper-grid" class="saper-grid"></div>
-                    <div id="saper-result" class="game-result"></div>
-                    <button class="play-btn" id="saper-cashout" onclick="saperCashOut()" style="display:none;margin-top:10px">💰 Забрать <span id="saper-cashout-value">0</span> 🪙</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="tab-shop" class="tab">
-            <div class="cat-tabs">
-                <button class="cat-tab active" data-cat="coins" onclick="switchShopCat('coins')">🪙 Монеты</button>
-                <button class="cat-tab" data-cat="perks" onclick="switchShopCat('perks')">🎨 Украшения</button>
-                <button class="cat-tab" data-cat="vip" onclick="switchShopCat('vip')">💎 VIP</button>
-                <button class="cat-tab" data-cat="pets" onclick="switchShopCat('pets')">🐱 Питомцы</button>
-            </div>
-            <div id="shop-panel-coins" class="shop-panel active"><div class="shop-grid" id="shop-grid"></div></div>
-            <div id="shop-panel-perks" class="shop-panel">
-                <div class="decor-tabs">
-                    <button class="decor-tab active" onclick="switchDecorTab('color', this)">🎨 Цвет имени</button>
-                    <button class="decor-tab" onclick="switchDecorTab('frame', this)">🖼️ Рамка</button>
-                </div>
-                <div id="shop-perks-content"></div>
-            </div>
-            <div id="shop-panel-vip" class="shop-panel"><div class="shop-grid" id="shop-vip"></div></div>
-            <div id="shop-panel-pets" class="shop-panel"><div class="shop-grid" id="shop-pets"></div></div>
-        </section>
-
-        <section id="tab-bonuses" class="tab">
-            <div class="section-title">🎁 Бонусы</div>
-            <div class="bonus-list">
-                <div class="bonus-item"><span class="bonus-icon">🎉</span><div><div class="bonus-name">Ежедневный бонус</div><div class="bonus-reward">15–150 🪙</div></div><button id="daily-btn" onclick="claimDaily()">Забрать</button></div>
-                <div class="bonus-item" onclick="openLink('https://t.me/durvww')"><span class="bonus-icon">📢</span><div><div class="bonus-name">Подпишись на канал</div><div class="bonus-reward">+150 🪙</div></div><button>Открыть</button></div>
-                <div class="bonus-item" onclick="openLink('https://t.me/wwlifeless')"><span class="bonus-icon">💬</span><div><div class="bonus-name">Вступи в чат</div><div class="bonus-reward">+50 🪙</div></div><button>Открыть</button></div>
-            </div>
-        </section>
-
-        <section id="tab-profile" class="tab">
-            <div class="profile-card glass-strong">
-                <div class="profile-avatar-wrap">
-                    <div class="pet-slot-abs pet-pos-tr pet-size-md" id="profile-pet-tr" style="display:none"></div>
-                    <div class="pet-slot-abs pet-pos-tl pet-size-md" id="profile-pet-tl" style="display:none"></div>
-                    <img id="profile-avatar" class="profile-avatar" alt="">
-                    <div class="pet-slot-abs pet-pos-br pet-size-md" id="profile-pet-br" style="display:none"></div>
-                    <div class="pet-slot-abs pet-pos-bl pet-size-md" id="profile-pet-bl" style="display:none"></div>
-                    <div class="profile-badge" id="profile-badge">#0</div>
-                </div>
-                <div class="profile-name" id="profile-name">Загрузка...</div>
-                <div class="profile-username" id="profile-username">@—</div>
-
-                <div class="profile-stats">
-                    <div class="stat"><div class="stat-value" id="profile-balance">0</div><div class="stat-label">Монет</div></div>
-                    <div class="stat"><div class="stat-value" id="profile-cases">0</div><div class="stat-label">Кейсов</div></div>
-                    <div class="stat"><div class="stat-value" id="profile-stars">0</div><div class="stat-label">Stars</div></div>
-                    <div class="stat"><div class="stat-value" id="profile-refs">0</div><div class="stat-label">Рефералов</div></div>
-                </div>
-
-                <!-- VIP-уровень -->
-                <div class="vip-row glass">
-                    <span class="vip-label">VIP-уровень</span>
-                    <span class="vip-value" id="profile-vip">👤 Игрок</span>
-                </div>
-
-                <!-- Daily quests -->
-                <div class="section-title">📋 Ежедневные квесты</div>
-                <div id="quests-list" class="quests-list"></div>
-
-                <div class="profile-buttons-2">
-                    <button class="profile-btn" onclick="openPetsManager()">🐱 <span>Питомцы</span></button>
-                    <button class="profile-btn" onclick="openDecorShop()">🎨 <span>Украшения</span></button>
-                </div>
-
-                <div class="ref-block">
-                    <p>🎁 Приглашай друзей · +25 🪙 за каждого</p>
-                    <div class="ref-link-box"><span id="ref-link">Загрузка...</span><button onclick="copyRef()">📋</button></div>
-                </div>
-
-                <div class="profile-buttons">
-                    <button class="profile-btn primary" onclick="openSupport()">🆘 Поддержка</button>
-                    <button class="profile-btn" onclick="openTopUp()">🪙 Пополнить</button>
-                </div>
-            </div>
-            <div class="section-title">🏆 Топ игроков</div>
-            <div id="leaderboard-list" class="leaderboard"></div>
-        </section>
-
-        <section id="tab-music" class="tab">
-            <div class="info-banner glass" style="margin-bottom:16px">
-                <div class="info-banner-icon">🚧</div>
-                <div class="info-banner-text">
-                    <b>Функция в разработке</b> — плеер временно недоступен.
-                    Скоро: фоновое воспроизведение, плейлисты, синхронизация.
-                </div>
-            </div>
-            <div class="music-player-card glass-strong">
-                <div class="music-cover"><img id="music-cover-img" src="https://placehold.co/400x400/1a0d3e/ffd700?text=%F0%9F%8E%B5" alt=""><div class="music-cover-overlay"></div></div>
-                <div class="music-track-title" id="music-track-title">В разработке</div>
-                <div class="music-track-sub" id="music-track-sub">Скоро здесь будет плеер</div>
-                <div class="music-time-row"><span id="music-current-time">0:00</span><span id="music-duration">0:00</span></div>
-                <div class="music-progress-click" id="music-progress-click">
-                    <div class="music-progress"><div class="music-progress-bar" id="music-progress-bar"></div></div>
-                </div>
-                <div class="music-controls">
-                    <button class="music-ctrl" onclick="musicShuffle()"><svg><use href="#ic-shuffle"/></svg></button>
-                    <button class="music-ctrl" onclick="musicPrev()"><svg><use href="#ic-prev"/></svg></button>
-                    <button class="music-ctrl music-ctrl-main" id="music-main-btn" onclick="toggleMusic()"><svg id="music-main-icon"><use href="#ic-play-mini"/></svg></button>
-                    <button class="music-ctrl" onclick="musicNext()"><svg><use href="#ic-next"/></svg></button>
-                    <button class="music-ctrl" id="music-repeat-btn" onclick="musicToggleRepeat()"><svg id="music-repeat-icon"><use href="#ic-repeat"/></svg></button>
-                </div>
-                <div class="music-actions">
-                    <button class="music-action-btn" onclick="openMusicPicker()">📚 Библиотека</button>
-                    <button class="music-action-btn" onclick="openAddMusicModal()">➕ Добавить</button>
-                </div>
-            </div>
-            <div class="section-title">🎵 Мои треки</div>
-            <div id="music-my-list" class="music-my-list"></div>
-        </section>
-
-        <section id="tab-about" class="tab">
-            <div class="about-hero glass"><div class="about-lottie" id="about-lottie"></div></div>
-            <div class="about-card glass">
-                <h2 class="about-title">О Lifeless Games</h2>
-                <p class="about-text">Lifeless Games — независимая игровая экосистема внутри Telegram. Мы не связаны с крупными платформами и работаем самостоятельно, чтобы дать вам лучший опыт.</p>
-                <div class="about-photos">
-                    <img src="/miniapp/assets/durov1.jpg" alt="">
-                    <img src="/miniapp/assets/durov4.jpg" alt="">
-                </div>
-                <p class="about-text">Мы работаем каждый день, чтобы игра была интересной. Обновления, события, кейсы — всё бесплатно, всё доступно каждому.</p>
-                <div class="about-highlights">
-                    <div class="about-highlight"><span>🎰</span><div><b>16 кейсов</b><br>от 10 🪙 до 500 ⭐</div></div>
-                    <div class="about-highlight"><span>🎮</span><div><b>6 игр</b><br>колёса, кости, сапёр, монетка</div></div>
-                    <div class="about-highlight"><span>💎</span><div><b>Реальные призы</b><br>NFT-подарки</div></div>
-                    <div class="about-highlight"><span>🤑</span><div><b>Ивенты</b><br>События</div></div>
-                    <div class="about-highlight"><span>🎵</span><div><b>Музыка</b><br>в разработке</div></div>
-                    <div class="about-highlight"><span>🎨</span><div><b>Украшения</b><br>рамки и цвет ника</div></div>
-                </div>
-                <p class="about-text"><b>Что внутри:</b><br>
-                • 6 монетных кейсов + 10 звёздных + 2 VIP<br>
-                • 3 колеса фортуны<br>
-                • Кости, сапёр, монетка<br>
-                • Ежедневный бонус и бесплатный кейс<br>
-                • Счастливые часы каждый вечер<br>
-                • Питомцы, украшения профиля</p>
-                <p class="about-text"><b>Мы также разрабатываем ботов на заказ</b> — от простых утилит до сложных экосистем с Mini App, платежами и интеграциями. Если у тебя есть идея — напиши в поддержку.</p>
-                <p class="about-text">Проект полностью создан <b>независимым разработчиком из СНГ</b>. Без инвесторов, без корпораций — только код, идеи и желание сделать качественный продукт.</p>
-                <div class="about-signature">— Команда Lifeless</div>
-            </div>
-        </section>
-
-        <section id="tab-rules" class="tab">
-            <div class="about-card glass">
-                <h2 class="about-title">📖 Правила игры</h2>
-                <div class="rules-list">
-                    <div class="rule-item"><div class="rule-num">1</div><div class="rule-text"><b>Виртуальная валюта</b><br>Монеты — это внутриигровая валюта. Реальные деньги используются только для покупки Telegram Stars.</div></div>
-                    <div class="rule-item"><div class="rule-num">2</div><div class="rule-text"><b>Честность</b><br>Все результаты генерируются случайным образом на сервере. Попытки взлома или модификации → блокировка аккаунта.</div></div>
-                    <div class="rule-item"><div class="rule-num">3</div><div class="rule-text"><b>Один аккаунт</b><br>Мульти-аккаунты для абуза реферальной программы или бонусов запрещены.</div></div>
-                    <div class="rule-item"><div class="rule-num">4</div><div class="rule-text"><b>Поддержка</b><br>Все спорные ситуации решаются через поддержку. Решение администрации окончательное.</div></div>
-                    <div class="rule-item"><div class="rule-num">5</div><div class="rule-text"><b>Изменения</b><br>Мы оставляем право менять правила и функционал. Обновления публикуются в канале.</div></div>
-                </div>
-                <div class="about-signature">— Команда Lifeless</div>
-            </div>
-        </section>
-
-        <section id="tab-privacy" class="tab">
-            <div class="about-card glass">
-                <h2 class="about-title">🔒 Политика конфиденциальности</h2>
-                <p class="about-text"><b>1. Какие данные мы собираем</b><br>Мы получаем от Telegram только то, что разрешено платформой: ID, имя, юзернейм, аватарку. Никаких паролей, номеров телефона или email мы не запрашиваем и не храним.</p>
-                <p class="about-text"><b>2. Зачем мы их используем</b><br>Только для работы приложения: показывать твой профиль, считать баланс, вести статистику игр, начислять бонусы за рефералов.</p>
-                <p class="about-text"><b>3. Кому передаём</b><br>Никому. Данные хранятся на нашем сервере. Единственное исключение — платежи через Telegram Stars, там Telegram получает информацию по своим правилам.</p>
-                <p class="about-text"><b>4. Твои права</b><br>Ты можешь запросить удаление аккаунта и всех данных — напиши в поддержку. Удалим в течение 24 часов.</p>
-                <p class="about-text"><b>5. Безопасность</b><br>Все данные хранятся в защищённой базе на нашем сервере. Доступ только у разработчика.</p>
-                <p class="about-text"><b>6. Cookies и аналитика</b><br>Мы не используем сторонние трекеры. Внутри Telegram Mini App работают только встроенные механизмы платформы.</p>
-                <p class="about-text"><b>7. Контакты</b><br>Все вопросы — через раздел «Поддержка».</p>
-                <div class="about-signature">Обновлено: сентябрь 2026</div>
-                <div style="font-size:9px;color:#4a4a5a;margin-top:20px;text-align:center;line-height:1.5">
-                    Сервис предназначен для пользователей 18+. Игровые монеты и награды не имеют денежной стоимости,
-                    не подлежат обмену, выводу или возврату. Все игровые механики — симуляция случайности
-                    для развлекательных целей. Telegram Stars используются исключительно для приобретения
-                    внутриигрового контента. Играйте ответственно.
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- ============ МОДАЛКИ ============ -->
-
-    <div id="topup-modal" class="modal hidden">
-        <div class="modal-content glass-strong topup-content">
-            <div class="topup-header">
-                <div class="topup-header-icon">💎</div>
-                <div><div class="topup-header-title">Пополнить баланс</div><div class="topup-header-sub">1 ⭐ = 10 🪙 · моментально</div></div>
-            </div>
-            <div class="topup-grid" id="topup-options"></div>
-            <button class="close-btn" onclick="closeModal('topup-modal')">Закрыть</button>
+<section class="about reveal" id="about">
+    <div class="section-label">01 · О ПРОЕКТЕ</div>
+    <div class="about-grid">
+        <h2>Мы не делаем<br>ставки.<br>Мы делаем игру.</h2>
+        <div class="about-text">
+            <p>Lifeless — независимая игровая экосистема внутри Telegram. Кейсы, колёса, кости, сапёр — всё в одном приложении.</p>
+            <p>Выигрывай реальные подарки Telegram, прокачивай профиль, соревнуйся в топе. Никаких вложений на старте — первый кейс бесплатный.</p>
         </div>
     </div>
+    <div class="stats">
+        <div class="stat"><div class="stat-num">16</div><div class="stat-label">кейсов</div></div>
+        <div class="stat"><div class="stat-num">6</div><div class="stat-label">игр</div></div>
+        <div class="stat"><div class="stat-num">∞</div><div class="stat-label">подарков</div></div>
+        <div class="stat"><div class="stat-num">24/7</div><div class="stat-label">онлайн</div></div>
+    </div>
+</section>
 
-    <div id="custom-modal" class="modal hidden">
-        <div class="modal-content glass-strong">
-            <h3>✏️ Своя сумма</h3>
-            <p class="modal-hint">от 100 до 100 000 монет</p>
-            <input id="custom-coins-input" type="number" min="100" max="100000" placeholder="Введите количество" class="modal-input">
-            <button class="close-btn primary" onclick="submitCustomTopUp()">Пополнить</button>
-            <button class="close-btn" onclick="closeModal('custom-modal')">Отмена</button>
+<section class="features reveal" id="features">
+    <div class="section-label">02 · ВОЗМОЖНОСТИ</div>
+    <h2>Что внутри</h2>
+    <div class="features-grid">
+        <div class="feature tilt">
+            <div class="feature-num">01</div>
+            <div class="feature-icon">🎰</div>
+            <h3>16 кейсов</h3>
+            <p>От 10 монет до 500 звёзд. Реальные подарки Telegram внутри.</p>
+        </div>
+        <div class="feature tilt">
+            <div class="feature-num">02</div>
+            <div class="feature-icon">🎡</div>
+            <h3>Колёса фортуны</h3>
+            <p>Три режима. Бесплатное колесо раз в 12 часов.</p>
+        </div>
+        <div class="feature tilt">
+            <div class="feature-num">03</div>
+            <div class="feature-icon">💣</div>
+            <h3>Сапёр</h3>
+            <p>Гибрид: играй за монеты или за звёзды с шансом на подарок.</p>
+        </div>
+        <div class="feature tilt">
+            <div class="feature-num">04</div>
+            <div class="feature-icon">🎁</div>
+            <h3>Подарки Telegram</h3>
+            <p>Настоящие подарки отправляются прямо в твой Telegram-аккаунт.</p>
+        </div>
+        <div class="feature tilt">
+            <div class="feature-num">05</div>
+            <div class="feature-icon">🔥</div>
+            <h3>Стрики и квесты</h3>
+            <p>Заходи каждый день, выполняй задания, получай бонусы.</p>
+        </div>
+        <div class="feature tilt">
+            <div class="feature-num">06</div>
+            <div class="feature-icon">👑</div>
+            <h3>VIP-программа</h3>
+            <p>Повышай уровень, получай скидки и эксклюзивные награды.</p>
         </div>
     </div>
+</section>
 
-    <div id="support-modal" class="modal hidden">
-        <div class="modal-content glass-strong">
-            <h3>🆘 Поддержка</h3>
-            <div class="support-topics">
-                <button class="support-topic active" data-topic="Вопрос" onclick="selectTopic(this)">❓ Вопрос</button>
-                <button class="support-topic" data-topic="Жалоба" onclick="selectTopic(this)">⚠️ Жалоба</button>
-                <button class="support-topic" data-topic="Баг" onclick="selectTopic(this)">🐛 Баг</button>
-                <button class="support-topic" data-topic="Идея" onclick="selectTopic(this)">💡 Идея</button>
-            </div>
-            <textarea id="support-text" class="modal-input" placeholder="Опишите подробно..." maxlength="2000"></textarea>
-            <button class="close-btn primary" onclick="submitSupport()">Отправить</button>
-            <button class="close-btn" onclick="closeSupportModal()">Отмена</button>
+<section class="how reveal" id="how">
+    <div class="section-label">03 · КАК ИГРАТЬ</div>
+    <h2>Три шага<br>до победы</h2>
+    <div class="steps">
+        <div class="step">
+            <div class="step-num">1</div>
+            <h3>Открой бота</h3>
+            <p>Нажми «Открыть приложение» — мини-приложение запустится прямо в Telegram.</p>
+        </div>
+        <div class="step">
+            <div class="step-num">2</div>
+            <h3>Забери бонус</h3>
+            <p>Первый бесплатный кейс + стартовые монеты. Играй без вложений.</p>
+        </div>
+        <div class="step">
+            <div class="step-num">3</div>
+            <h3>Выигрывай</h3>
+            <p>Открывай кейсы, крути колёса, выбивай подарки и выводи в Telegram.</p>
         </div>
     </div>
+</section>
 
-    <div id="music-modal" class="modal hidden">
-        <div class="modal-content glass-strong">
-            <h3>📚 Библиотека</h3>
-            <p class="modal-hint">🚧 В разработке</p>
-            <button class="close-btn" onclick="closeModal('music-modal')">Закрыть</button>
+<section class="cta-final reveal">
+    <div class="cta-final-inner">
+        <h2>Готов испытать удачу?</h2>
+        <p>Присоединяйся к игрокам Lifeless прямо сейчас</p>
+        <a href="https://t.me/Solver_Life_bot" class="cta cta-large magnetic">
+            Открыть приложение
+            <span class="cta-arrow">→</span>
+        </a>
+    </div>
+</section>
+
+<footer>
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <div class="footer-logo">LIFELESS</div>
+            <p>Игровая экосистема в Telegram</p>
+        </div>
+        <div>
+            <div class="footer-label">ПРОЕКТ</div>
+            <a href="#about">О нас</a>
+            <a href="#features">Возможности</a>
+            <a href="https://t.me/durvww">Канал</a>
+        </div>
+        <div>
+            <div class="footer-label">ИГРАТЬ</div>
+            <a href="https://t.me/Solver_Life_bot">Открыть бота</a>
+            <a href="https://t.me/wwlifeless">Чат</a>
+        </div>
+        <div>
+            <div class="footer-label">ПОДДЕРЖКА</div>
+            <a href="https://t.me/wwsolver">Связаться</a>
         </div>
     </div>
-
-    <div id="add-music-modal" class="modal hidden">
-        <div class="modal-content glass-strong">
-            <h3>➕ Добавить трек</h3>
-            <p class="modal-hint">🚧 В разработке</p>
-            <button class="close-btn" onclick="closeModal('add-music-modal')">Закрыть</button>
-        </div>
+    <div class="footer-bottom">
+        <div>© 2026 Lifeless. Все права защищены.</div>
+        <div class="footer-disclaimer">18+ · Играй ответственно</div>
     </div>
+</footer>
 
-    <div id="pet-modal" class="modal hidden">
-        <div class="modal-content glass-strong">
-            <h3 id="pet-modal-title">🐱 Кот</h3>
-            <div class="pet-preview" id="pet-preview"></div>
-            <p class="modal-hint" id="pet-modal-desc">Милый анимированный кот</p>
-            <button class="close-btn primary" id="pet-buy-btn" onclick="confirmBuyPet()">Купить за 25 ⭐</button>
-            <button class="close-btn" onclick="closeModal('pet-modal')">Отмена</button>
-        </div>
-    </div>
-
-    <div id="pets-manager-modal" class="modal hidden">
-        <div class="modal-content glass-strong">
-            <h3>🐱 Мои питомцы</h3>
-            <div id="pets-manager-content"></div>
-            <button class="close-btn" onclick="closeModal('pets-manager-modal')">Закрыть</button>
-        </div>
-    </div>
-
-    <div id="insufficient-modal" class="modal hidden">
-        <div class="modal-content glass-strong">
-            <h3>💸 Недостаточно монет</h3>
-            <p class="modal-hint" id="insufficient-text">Не хватает монет для покупки</p>
-            <div class="topup-grid" id="insufficient-grid"></div>
-            <button class="close-btn" onclick="closeModal('insufficient-modal')">Закрыть</button>
-        </div>
-    </div>
-
-    <!-- DOUBLE OR NOTHING -->
-    <div id="don-modal" class="modal hidden">
-        <div class="modal-content glass-strong don-content">
-            <div class="don-flame">🔥</div>
-            <h3>Удвоить выигрыш?</h3>
-            <p class="modal-hint">
-                На руках: <b id="don-amount">0</b> 🪙<br>
-                Можешь удвоить до <b id="don-double">0</b> 🪙
-            </p>
-            <p class="modal-hint" style="color:#ff3b5b;font-size:12px">50/50. Не повезёт — потеряешь всё.</p>
-            <button class="close-btn primary" onclick="donChoose(true)">🔥 Удвоить</button>
-            <button class="close-btn" onclick="donChoose(false)">💰 Забрать</button>
-        </div>
-    </div>
-
-    <!-- SAPER MODE SELECT -->
-    <div id="saper-mode-modal" class="modal hidden">
-        <div class="modal-content glass-strong">
-            <h3 id="saper-mode-title">💣 Сапёр</h3>
-            <p class="modal-hint" id="saper-mode-info"></p>
-            <button class="close-btn" id="saper-mode-coins" style="background:linear-gradient(145deg,#00aaff,#0080ff);color:#fff;margin-top:8px"></button>
-            <button class="close-btn" id="saper-mode-stars" style="background:linear-gradient(145deg,#ffd700,#ffb700);color:#06060f;margin-top:8px"></button>
-            <button class="close-btn" onclick="closeModal('saper-mode-modal')">Отмена</button>
-        </div>
-    </div>
-
-    <!-- WELCOME BACK -->
-    <div id="welcome-modal" class="modal hidden">
-        <div class="modal-content glass-strong">
-            <h3>💎 С возвращением!</h3>
-            <p class="modal-hint">Мы скучали. Держи бонус:</p>
-            <button class="close-btn primary" onclick="claimWelcomeBack()">🎁 Забрать 200 🪙</button>
-            <button class="close-btn" onclick="closeModal('welcome-modal')">Позже</button>
-        </div>
-    </div>
-
-    <div id="case-modal" class="modal hidden">
-        <button class="case-modal-close" onclick="forceCloseCase()" aria-label="Закрыть">✕</button>
-        <div class="case-modal-inner">
-            <div class="case-modal-title" id="case-modal-title">Открытие кейса...</div>
-            <div class="case-reel-wrap">
-                <div class="case-marker"></div>
-                <div class="case-reel" id="case-reel"></div>
-            </div>
-            <div id="case-modal-result" class="case-modal-result"></div>
-        </div>
-    </div>
-
-    <div id="toast-container" class="toast-container"></div>
-
-    <nav class="bottom-nav glass-strong">
-        <button class="nav-btn active" data-tab="home"><svg class="nav-icon"><use href="#ic-home"/></svg><span class="nav-label">Главная</span></button>
-        <button class="nav-btn" data-tab="games"><svg class="nav-icon"><use href="#ic-game"/></svg><span class="nav-label">Игры</span></button>
-        <button class="nav-btn nav-btn-cases" data-tab="cases"><svg class="nav-icon"><use href="#ic-case"/></svg><span class="nav-label">Кейсы</span></button>
-        <button class="nav-btn" data-tab="shop"><svg class="nav-icon"><use href="#ic-shop"/></svg><span class="nav-label">Магазин</span></button>
-        <button class="nav-btn" data-tab="profile"><svg class="nav-icon"><use href="#ic-profile"/></svg><span class="nav-label">Профиль</span></button>
-    </nav>
-</div>
-
-<script src="app.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
