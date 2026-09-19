@@ -3,9 +3,7 @@
 
     const isDesktop = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-    // ============================================================
     // CURSOR
-    // ============================================================
     const dot = document.getElementById('cursor-dot');
     const ring = document.getElementById('cursor-ring');
     const glow = document.getElementById('cursor-glow');
@@ -42,15 +40,13 @@
         }
         animCursor();
 
-        document.querySelectorAll('a, button, .tilt, .gallery-item, .feature, .btn').forEach(el => {
+        document.querySelectorAll('a, button, .tilt, .btn, .gallery-row').forEach(el => {
             el.addEventListener('mouseenter', () => ring.classList.add('hover'));
             el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
         });
     }
 
-    // ============================================================
     // SCROLL PROGRESS
-    // ============================================================
     const bar = document.getElementById('scrollBar');
     if (bar) {
         function updateScroll() {
@@ -62,9 +58,7 @@
         updateScroll();
     }
 
-    // ============================================================
     // HEADER SHRINK
-    // ============================================================
     const header = document.getElementById('header');
     if (header) {
         window.addEventListener('scroll', () => {
@@ -72,9 +66,7 @@
         }, { passive: true });
     }
 
-    // ============================================================
     // BURGER MENU
-    // ============================================================
     const burger = document.getElementById('burger');
     const mobileMenu = document.getElementById('mobileMenu');
     if (burger && mobileMenu) {
@@ -92,9 +84,7 @@
         });
     }
 
-    // ============================================================
     // TILT CARDS
-    // ============================================================
     if (isDesktop) {
         document.querySelectorAll('.tilt').forEach(el => {
             el.addEventListener('mousemove', e => {
@@ -121,9 +111,7 @@
         });
     }
 
-    // ============================================================
-    // REVEAL ON SCROLL
-    // ============================================================
+    // REVEAL
     if ('IntersectionObserver' in window) {
         const io = new IntersectionObserver(entries => {
             entries.forEach(e => {
@@ -133,12 +121,10 @@
                 }
             });
         }, { threshold: 0.1, rootMargin: '0px 0px -100px 0px' });
-        document.querySelectorAll('.reveal, .section, .hero-inner > *').forEach(el => io.observe(el));
+        document.querySelectorAll('.section, .cta-final, .gallery-row, .feature, .step, .dev-card').forEach(el => io.observe(el));
     }
 
-    // ============================================================
     // COUNTERS
-    // ============================================================
     const counters = document.querySelectorAll('[data-count]');
     if (counters.length && 'IntersectionObserver' in window) {
         const cio = new IntersectionObserver(entries => {
@@ -164,9 +150,7 @@
         counters.forEach(el => cio.observe(el));
     }
 
-    // ============================================================
     // SMOOTH ANCHOR
-    // ============================================================
     document.querySelectorAll('a[href^="#"]').forEach(a => {
         a.addEventListener('click', e => {
             const id = a.getAttribute('href');

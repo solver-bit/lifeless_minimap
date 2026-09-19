@@ -28,6 +28,7 @@
         <a href="#about">О проекте</a>
         <a href="#gallery">Интерфейс</a>
         <a href="#features">Возможности</a>
+        <a href="#dev">Разработчик</a>
         <a href="#how">Как играть</a>
         <a href="https://t.me/durvww" class="nav-cta" target="_blank">Канал <span>→</span></a>
     </nav>
@@ -40,6 +41,7 @@
     <a href="#about">О проекте</a>
     <a href="#gallery">Интерфейс</a>
     <a href="#features">Возможности</a>
+    <a href="#dev">Разработчик</a>
     <a href="#how">Как играть</a>
     <a href="https://t.me/durvww" target="_blank">Канал →</a>
     <a href="https://t.me/Solver_Life_bot" class="mobile-cta" target="_blank">Открыть приложение</a>
@@ -52,43 +54,57 @@
     <div class="hero-bg-text">LIFELESS</div>
 
     <div class="hero-inner">
-        <div class="hero-tag">
-            <span class="dot"></span>
-            LIVE · TELEGRAM · STARS
-        </div>
-        <h1>
-            Игровая<br>
-            <em>экосистема</em><br>
-            в Telegram
-        </h1>
-        <p class="hero-desc">
-            Кейсы, колёса, реальные подарки Telegram. Начни с бесплатного кейса — без вложений.
-        </p>
-        <div class="hero-actions">
-            <a href="https://t.me/Solver_Life_bot" class="btn btn-primary magnetic" target="_blank">
-                <span>Открыть приложение</span>
-                <span class="btn-arrow">→</span>
-            </a>
-            <a href="#features" class="btn btn-ghost">Узнать больше</a>
+        <div class="hero-left">
+            <div class="hero-tag">
+                <span class="dot"></span>
+                LIVE · TELEGRAM · STARS
+            </div>
+            <h1>
+                Игровая<br>
+                <em>экосистема</em><br>
+                в Telegram
+            </h1>
+            <p class="hero-desc">
+                Кейсы, колёса, реальные подарки. Начни с бесплатного кейса — без вложений.
+            </p>
+            <div class="hero-actions">
+                <a href="https://t.me/Solver_Life_bot" class="btn btn-primary magnetic" target="_blank">
+                    <span>Открыть приложение</span>
+                    <span class="btn-arrow">→</span>
+                </a>
+                <a href="#features" class="btn btn-ghost">Узнать больше</a>
+            </div>
         </div>
 
-        <div class="hero-stats">
-            <div class="hero-stat">
-                <div class="hero-stat-num" data-count="16">0</div>
-                <div class="hero-stat-label">КЕЙСОВ</div>
+        <div class="hero-right">
+            <div class="gyroscope">
+                <div class="gyro-ring gyro-ring-1"></div>
+                <div class="gyro-ring gyro-ring-2"></div>
+                <div class="gyro-ring gyro-ring-3"></div>
+                <div class="gyro-core"></div>
+                <div class="gyro-orbit gyro-orbit-1"><span></span></div>
+                <div class="gyro-orbit gyro-orbit-2"><span></span></div>
+                <div class="gyro-orbit gyro-orbit-3"><span></span></div>
             </div>
-            <div class="hero-stat">
-                <div class="hero-stat-num" data-count="6">0</div>
-                <div class="hero-stat-label">ИГР</div>
-            </div>
-            <div class="hero-stat">
-                <div class="hero-stat-num">24/7</div>
-                <div class="hero-stat-label">ОНЛАЙН</div>
-            </div>
-            <div class="hero-stat">
-                <div class="hero-stat-num">∞</div>
-                <div class="hero-stat-label">ПОДАРКОВ</div>
-            </div>
+        </div>
+    </div>
+
+    <div class="hero-stats-row">
+        <div class="hero-stat">
+            <div class="hero-stat-num" data-count="16">0</div>
+            <div class="hero-stat-label">КЕЙСОВ</div>
+        </div>
+        <div class="hero-stat">
+            <div class="hero-stat-num" data-count="6">0</div>
+            <div class="hero-stat-label">ИГР</div>
+        </div>
+        <div class="hero-stat">
+            <div class="hero-stat-num" data-count="11">0</div>
+            <div class="hero-stat-label">ПОДАРКОВ</div>
+        </div>
+        <div class="hero-stat">
+            <div class="hero-stat-num">24/7</div>
+            <div class="hero-stat-label">ОНЛАЙН</div>
         </div>
     </div>
 
@@ -139,51 +155,99 @@
     </div>
 </section>
 
-<!-- ============ GALLERY ============ -->
-<section class="section gallery" id="gallery">
+<!-- ============ GALLERY (Alternating) ============ -->
+<section class="section gallery-section" id="gallery">
     <div class="section-label">02 · ИНТЕРФЕЙС</div>
     <h2 class="section-title">Загляни <em>внутрь</em></h2>
-    <div class="gallery-grid">
-        <div class="gallery-item tilt">
-            <img src="durov1.jpg" alt="Кейсы">
-            <div class="gallery-overlay">
+
+    <div class="gallery-alt">
+        <div class="gallery-row">
+            <div class="gallery-visual">
+                <img src="durov1.jpg" alt="Кейсы">
+            </div>
+            <div class="gallery-info">
                 <div class="gallery-num">01</div>
-                <div class="gallery-name">Кейсы</div>
+                <h3>Кейсы</h3>
+                <p>16 кейсов с разными уровнями ставок — от 10 монет до 500 звёзд. Каждый кейс содержит реальные Telegram-подарки: от простых медвежат до коллекционных колец и алмазов.</p>
+                <div class="gallery-meta">
+                    <span>от 10 🪙</span>
+                    <span>до 500 ⭐</span>
+                </div>
             </div>
         </div>
-        <div class="gallery-item tilt">
-            <img src="durov2.jpg" alt="Колесо фортуны">
-            <div class="gallery-overlay">
+
+        <div class="gallery-row reverse">
+            <div class="gallery-visual">
+                <img src="durov2.jpg" alt="Колёса">
+            </div>
+            <div class="gallery-info">
                 <div class="gallery-num">02</div>
-                <div class="gallery-name">Колесо</div>
+                <h3>Колёса фортуны</h3>
+                <p>Три режима: обычное колесо за 200 монет, бесплатное раз в 12 часов и VIP-колесо за 50 звёзд с максимальными призами до 10 000 монет и шансом на крупный подарок.</p>
+                <div class="gallery-meta">
+                    <span>3 режима</span>
+                    <span>до 10 000 🪙</span>
+                </div>
             </div>
         </div>
-        <div class="gallery-item tilt">
-            <img src="durov3.jpg" alt="Профиль">
-            <div class="gallery-overlay">
+
+        <div class="gallery-row">
+            <div class="gallery-visual">
+                <img src="durov3.jpg" alt="Профиль">
+            </div>
+            <div class="gallery-info">
                 <div class="gallery-num">03</div>
-                <div class="gallery-name">Профиль</div>
+                <h3>Профиль и ранги</h3>
+                <p>Соревнуйся в топе игроков, прокачивай VIP-уровень, устанавливай редкие цвета ника и рамки для аватарки. Всё отображается в общем лидерборде — от бронзы до платины.</p>
+                <div class="gallery-meta">
+                    <span>5 VIP-тиров</span>
+                    <span>20 цветов и рамок</span>
+                </div>
             </div>
         </div>
-        <div class="gallery-item tilt">
-            <img src="durov5.jpg" alt="Магазин">
-            <div class="gallery-overlay">
+
+        <div class="gallery-row reverse">
+            <div class="gallery-visual">
+                <img src="durov5.jpg" alt="Магазин">
+            </div>
+            <div class="gallery-info">
                 <div class="gallery-num">04</div>
-                <div class="gallery-name">Магазин</div>
+                <h3>Магазин</h3>
+                <p>7 пакетов монет с бонусами до 30%, питомцы, украшения, VIP-подписки и многое другое. Все покупки через Telegram Stars — быстро, безопасно, без карт.</p>
+                <div class="gallery-meta">
+                    <span>7 пакетов</span>
+                    <span>+30% бонус</span>
+                </div>
             </div>
         </div>
-        <div class="gallery-item tilt">
-            <img src="durov6.jpg" alt="Сапёр">
-            <div class="gallery-overlay">
+
+        <div class="gallery-row">
+            <div class="gallery-visual">
+                <img src="durov6.jpg" alt="Сапёр">
+            </div>
+            <div class="gallery-info">
                 <div class="gallery-num">05</div>
-                <div class="gallery-name">Сапёр</div>
+                <h3>Сапёр</h3>
+                <p>Классический сапёр в двух режимах: за монеты или за звёзды. В премиум-режиме множитель растёт быстрее, а в конце партии есть шанс выбить реальный подарок Telegram.</p>
+                <div class="gallery-meta">
+                    <span>3 сложности</span>
+                    <span>RTP 96%</span>
+                </div>
             </div>
         </div>
-        <div class="gallery-item tilt">
-            <img src="durov7.jpg" alt="Подарки">
-            <div class="gallery-overlay">
+
+        <div class="gallery-row reverse">
+            <div class="gallery-visual">
+                <img src="durov7.jpg" alt="Подарки">
+            </div>
+            <div class="gallery-info">
                 <div class="gallery-num">06</div>
-                <div class="gallery-name">Подарки</div>
+                <h3>Реальные подарки</h3>
+                <p>11 разных подарков в 4 ценовых тирах: от 15⭐ (сердце, медведь) до 100⭐ (кубок, кольцо, алмаз). Подарки приходят прямо в твой аккаунт Telegram — мгновенно.</p>
+                <div class="gallery-meta">
+                    <span>11 подарков</span>
+                    <span>4 тира</span>
+                </div>
             </div>
         </div>
     </div>
@@ -230,12 +294,53 @@
             <h3>VIP-программа</h3>
             <p>Повышай уровень, получай скидки до 15% и эксклюзивные награды.</p>
         </div>
+        <div class="feature tilt">
+            <div class="feature-num">07</div>
+            <div class="feature-icon">⚡</div>
+            <h3>Счастливые часы</h3>
+            <p>Каждый вечер с 20:00 до 22:00 МСК все выигрыши увеличены на 20%.</p>
+        </div>
+        <div class="feature tilt">
+            <div class="feature-num">08</div>
+            <div class="feature-icon">🎲</div>
+            <h3>Кости и монетка</h3>
+            <p>Классические игры удачи. Ставка 50 монет — выигрыш до 250 монет.</p>
+        </div>
+        <div class="feature tilt">
+            <div class="feature-num">09</div>
+            <div class="feature-icon">🪙</div>
+            <h3>Бесплатный кейс</h3>
+            <p>Раз в 12 часов — бесплатно. От 10 до 500 монет внутри, без вложений.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ============ DEVELOPER ============ -->
+<section class="section dev" id="dev">
+    <div class="section-label">04 · РАЗРАБОТЧИК</div>
+    <div class="dev-card">
+        <div class="dev-visual">
+            <div class="dev-monogram">L</div>
+        </div>
+        <div class="dev-info">
+            <h2>Один разработчик.<br><em>15 лет.</em></h2>
+            <p>Lifeless — независимый проект, полностью созданный одним человеком. Весь код, дизайн, экономика и механики — от начала до конца.</p>
+            <p>Без инвесторов, без команды, без корпораций. Только чистый интерес, тысячи часов работы и желание сделать качественный продукт.</p>
+            <div class="dev-tags">
+                <span>Python</span>
+                <span>FastAPI</span>
+                <span>aiogram</span>
+                <span>JavaScript</span>
+                <span>SQLite</span>
+                <span>Telegram Mini Apps</span>
+            </div>
+        </div>
     </div>
 </section>
 
 <!-- ============ HOW ============ -->
 <section class="section how" id="how">
-    <div class="section-label">04 · КАК ИГРАТЬ</div>
+    <div class="section-label">05 · КАК ИГРАТЬ</div>
     <h2 class="section-title">Три шага <em>до победы</em></h2>
     <div class="steps">
         <div class="step">
@@ -286,6 +391,7 @@
             <a href="#about">О нас</a>
             <a href="#gallery">Интерфейс</a>
             <a href="#features">Возможности</a>
+            <a href="#dev">Разработчик</a>
             <a href="https://t.me/durvww" target="_blank">Канал</a>
         </div>
         <div class="footer-col">
