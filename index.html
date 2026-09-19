@@ -14,6 +14,7 @@
 
 <div class="noise"></div>
 <div class="scroll-progress"><div class="scroll-progress-bar" id="scrollBar"></div></div>
+<div class="mouse-trail" id="mouseTrail"></div>
 
 <header id="header">
     <div class="logo">
@@ -24,8 +25,8 @@
         <a href="#company">Компания</a>
         <a href="#products">Продукты</a>
         <a href="#games">Игры</a>
-        <a href="#roadmap">Roadmap</a>
-        <a href="#about">О нас</a>
+        <a href="#tech">Технологии</a>
+        <a href="#faq">FAQ</a>
         <a href="https://t.me/durvww" class="nav-cta" target="_blank">Канал <span>→</span></a>
     </nav>
     <button class="burger" id="burger" aria-label="Меню">
@@ -35,16 +36,21 @@
 
 <div class="mobile-menu" id="mobileMenu">
     <a href="#company">Компания</a>
+    <a href="#history">История</a>
     <a href="#products">Продукты</a>
     <a href="#games">Игры</a>
+    <a href="#tech">Технологии</a>
     <a href="#roadmap">Roadmap</a>
     <a href="#about">О нас</a>
+    <a href="#reviews">Отзывы</a>
+    <a href="#blog">Новости</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contact">Контакты</a>
     <a href="#privacy">Конфиденциальность</a>
-    <a href="https://t.me/durvww" target="_blank">Канал →</a>
     <a href="https://t.me/Solver_Life_bot" class="mobile-cta" target="_blank">Открыть приложение</a>
 </div>
 
-<!-- ============ HERO ============ -->
+<!-- HERO -->
 <section class="hero">
     <div class="hero-glow"></div>
     <div class="hero-glow-2"></div>
@@ -54,7 +60,7 @@
         <div class="hero-left">
             <div class="hero-tag">
                 <span class="dot"></span>
-                INDEPENDENT · SINCE 2025
+                INDEPENDENT · SINCE 2024
             </div>
             <h1>
                 Строим<br>
@@ -111,7 +117,7 @@
     </div>
 </section>
 
-<!-- ============ MARQUEE ============ -->
+<!-- MARQUEE -->
 <div class="marquee">
     <div class="marquee-track">
         <span>GAMES</span><span class="sep">◆</span>
@@ -129,13 +135,13 @@
     </div>
 </div>
 
-<!-- ============ COMPANY ============ -->
+<!-- COMPANY -->
 <section class="section" id="company">
     <div class="section-label">01 · КОМПАНИЯ</div>
     <div class="about-grid">
-        <h2>Независимая.<br>Технологичная.<br><em>Своя.</em></h2>
+        <h2 class="reveal-text">Независимая.<br>Технологичная.<br><em>Своя.</em></h2>
         <div class="about-text">
-            <p class="lead">LIFELESS — независимая технологическая компания, созданная одним разработчиком. Без инвесторов, без корпораций, без компромиссов.</p>
+            <p class="lead">LIFELESS — независимая технологическая компания, созданная небольшой командой энтузиастов. Без инвесторов, без корпораций, без компромиссов.</p>
             <p>Мы строим продукты, которые решают конкретные задачи: развлекают, экономят время, дают доступ к данным и открывают новые возможности. Начали с игровой экосистемы в Telegram — и не собираемся останавливаться.</p>
             <p>Наша цель — выйти за пределы мессенджера и создать полноценную экосистему сервисов: от игр и магазинов до аналитических инструментов и крипто-продуктов.</p>
             <div class="about-tags">
@@ -147,73 +153,111 @@
     </div>
 </section>
 
-<!-- ============ PRODUCTS ============ -->
+<!-- HISTORY -->
+<section class="section" id="history">
+    <div class="section-label">02 · ПУТЬ</div>
+    <h2 class="section-title">Как всё <em>началось</em></h2>
+
+    <div class="history">
+        <div class="history-item">
+            <div class="history-year">2024</div>
+            <div class="history-content">
+                <h3>Первая идея</h3>
+                <p>Проект начинался как учебный эксперимент: Telegram-бот с простыми механиками. Один разработчик, один ноутбук, тысячи строк кода.</p>
+            </div>
+        </div>
+        <div class="history-item">
+            <div class="history-year">2025</div>
+            <div class="history-content">
+                <h3>Создание LIFELESS</h3>
+                <p>Из эксперимента выросла полноценная игровая экосистема. Появились кейсы с реальными подарками, Mini App, платежи через Telegram Stars.</p>
+            </div>
+        </div>
+        <div class="history-item">
+            <div class="history-year">2026</div>
+            <div class="history-content">
+                <h3>Расширение</h3>
+                <p>Запуск новых направлений: магазин Telegram-услуг, аналитические инструменты, крипто-сервисы. Выход за пределы одного продукта.</p>
+            </div>
+        </div>
+        <div class="history-item history-future">
+            <div class="history-year">2027+</div>
+            <div class="history-content">
+                <h3>Экосистема</h3>
+                <p>Полноценная технологическая компания с продуктами внутри и за пределами Telegram. Независимая, современная, своя.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRODUCTS -->
 <section class="section" id="products">
-    <div class="section-label">02 · ПРОДУКТЫ</div>
+    <div class="section-label">03 · ПРОДУКТЫ</div>
     <h2 class="section-title">Что мы <em>делаем</em></h2>
 
     <div class="products-grid">
-        <div class="product-card product-active">
+        <div class="product-card product-active clickable" data-product="games">
             <div class="product-status status-live">
                 <span class="status-dot"></span> LIVE
             </div>
             <div class="product-icon">🎰</div>
             <h3>LIFELESS Games</h3>
             <p>Игровая экосистема в Telegram. Кейсы, колёса, реальные подарки. 16 кейсов, 6 игр, VIP-программа и живой маркетплейс подарков.</p>
-            <a href="#games" class="product-link">Подробнее →</a>
+            <div class="product-cta">Открыть детали →</div>
         </div>
 
-        <div class="product-card">
+        <div class="product-card clickable" data-product="shop">
             <div class="product-status status-dev">
                 <span class="status-dot-dev"></span> В РАЗРАБОТКЕ
             </div>
             <div class="product-icon">⭐</div>
             <h3>LIFELESS Shop</h3>
             <p>Магазин Telegram-услуг: звёзды, голда, премиум-подписки, номера, бусты. Быстро, безопасно, по лучшим ценам рынка.</p>
-            <div class="product-eta">ETA: Q1 2026</div>
+            <div class="product-cta">Открыть детали →</div>
         </div>
 
-        <div class="product-card">
+        <div class="product-card clickable" data-product="osint">
             <div class="product-status status-dev">
                 <span class="status-dot-dev"></span> В РАЗРАБОТКЕ
             </div>
             <div class="product-icon">🔍</div>
             <h3>OSINT Combain</h3>
             <p>Набор инструментов для анализа открытых данных. Поиск, агрегация, визуализация. Для журналистов, аналитиков и специалистов по безопасности.</p>
-            <div class="product-eta">ETA: Q2 2026</div>
+            <div class="product-cta">Открыть детали →</div>
         </div>
 
-        <div class="product-card">
+        <div class="product-card clickable" data-product="crypto">
             <div class="product-status status-dev">
                 <span class="status-dot-dev"></span> В РАЗРАБОТКЕ
             </div>
             <div class="product-icon">💠</div>
             <h3>LIFELESS Crypto</h3>
             <p>Крипто-направление: кошельки, обменники, DeFi-сервисы. Фокус на простоту использования для новичков и надёжность для профи.</p>
-            <div class="product-eta">ETA: Q3 2026</div>
+            <div class="product-cta">Открыть детали →</div>
         </div>
 
-        <div class="product-card">
+        <div class="product-card clickable" data-product="beyond">
             <div class="product-status status-plan">
                 <span class="status-dot-plan"></span> В ПЛАНАХ
             </div>
             <div class="product-icon">🌐</div>
             <h3>Beyond Telegram</h3>
             <p>Выход за пределы мессенджера: веб-версии, standalone-приложения, интеграции. Полноценная экосистема под брендом LIFELESS.</p>
-            <div class="product-eta">ETA: 2026-2027</div>
+            <div class="product-cta">Открыть детали →</div>
         </div>
     </div>
 </section>
 
-<!-- ============ GAMES (Flagship) ============ -->
+<!-- GAMES -->
 <section class="section" id="games">
-    <div class="section-label">03 · ФЛАГМАН · LIFELESS GAMES</div>
+    <div class="section-label">04 · ФЛАГМАН · LIFELESS GAMES</div>
     <h2 class="section-title">Наш первый <em>продукт</em></h2>
 
     <div class="gallery-alt">
         <div class="gallery-row">
-            <div class="gallery-visual">
+            <div class="gallery-visual clickable-img" data-img="durov1.jpg">
                 <img src="durov1.jpg" alt="Кейсы">
+                <div class="zoom-hint">⤢</div>
             </div>
             <div class="gallery-info">
                 <div class="gallery-num">01</div>
@@ -227,8 +271,9 @@
         </div>
 
         <div class="gallery-row reverse">
-            <div class="gallery-visual">
+            <div class="gallery-visual clickable-img" data-img="durov2.jpg">
                 <img src="durov2.jpg" alt="Колёса">
+                <div class="zoom-hint">⤢</div>
             </div>
             <div class="gallery-info">
                 <div class="gallery-num">02</div>
@@ -242,8 +287,9 @@
         </div>
 
         <div class="gallery-row">
-            <div class="gallery-visual">
+            <div class="gallery-visual clickable-img" data-img="durov3.jpg">
                 <img src="durov3.jpg" alt="Профиль">
+                <div class="zoom-hint">⤢</div>
             </div>
             <div class="gallery-info">
                 <div class="gallery-num">03</div>
@@ -257,8 +303,9 @@
         </div>
 
         <div class="gallery-row reverse">
-            <div class="gallery-visual">
+            <div class="gallery-visual clickable-img" data-img="durov5.jpg">
                 <img src="durov5.jpg" alt="Магазин">
+                <div class="zoom-hint">⤢</div>
             </div>
             <div class="gallery-info">
                 <div class="gallery-num">04</div>
@@ -272,8 +319,9 @@
         </div>
 
         <div class="gallery-row">
-            <div class="gallery-visual">
+            <div class="gallery-visual clickable-img" data-img="durov6.jpg">
                 <img src="durov6.jpg" alt="Сапёр">
+                <div class="zoom-hint">⤢</div>
             </div>
             <div class="gallery-info">
                 <div class="gallery-num">05</div>
@@ -287,8 +335,9 @@
         </div>
 
         <div class="gallery-row reverse">
-            <div class="gallery-visual">
+            <div class="gallery-visual clickable-img" data-img="durov7.jpg">
                 <img src="durov7.jpg" alt="Подарки">
+                <div class="zoom-hint">⤢</div>
             </div>
             <div class="gallery-info">
                 <div class="gallery-num">06</div>
@@ -303,9 +352,58 @@
     </div>
 </section>
 
-<!-- ============ ROADMAP ============ -->
+<!-- TECH -->
+<section class="section" id="tech">
+    <div class="section-label">05 · ТЕХНОЛОГИИ</div>
+    <h2 class="section-title">На чём мы <em>строим</em></h2>
+
+    <div class="tech-grid">
+        <div class="tech-card">
+            <div class="tech-icon">🐍</div>
+            <div class="tech-name">Python 3.14</div>
+            <div class="tech-desc">Основной язык бэкенда</div>
+        </div>
+        <div class="tech-card">
+            <div class="tech-icon">⚡</div>
+            <div class="tech-name">FastAPI</div>
+            <div class="tech-desc">API для Mini App</div>
+        </div>
+        <div class="tech-card">
+            <div class="tech-icon">🤖</div>
+            <div class="tech-name">aiogram 3</div>
+            <div class="tech-desc">Telegram Bot Framework</div>
+        </div>
+        <div class="tech-card">
+            <div class="tech-icon">🗄️</div>
+            <div class="tech-name">SQLite WAL</div>
+            <div class="tech-desc">Быстрая БД для старта</div>
+        </div>
+        <div class="tech-card">
+            <div class="tech-icon">🎨</div>
+            <div class="tech-name">Vanilla JS</div>
+            <div class="tech-desc">Без фреймворков</div>
+        </div>
+        <div class="tech-card">
+            <div class="tech-icon">🔒</div>
+            <div class="tech-name">HMAC Auth</div>
+            <div class="tech-desc">Безопасность</div>
+        </div>
+        <div class="tech-card">
+            <div class="tech-icon">📊</div>
+            <div class="tech-name">Sentry</div>
+            <div class="tech-desc">Мониторинг ошибок</div>
+        </div>
+        <div class="tech-card">
+            <div class="tech-icon">☁️</div>
+            <div class="tech-name">Cloudflare</div>
+            <div class="tech-desc">Защита и трафик</div>
+        </div>
+    </div>
+</section>
+
+<!-- ROADMAP -->
 <section class="section" id="roadmap">
-    <div class="section-label">04 · ROADMAP</div>
+    <div class="section-label">06 · ROADMAP</div>
     <h2 class="section-title">Куда мы <em>идём</em></h2>
 
     <div class="roadmap">
@@ -315,28 +413,24 @@
             <h3>LIFELESS Games — запуск</h3>
             <p>Игровая экосистема внутри Telegram. Кейсы, колёса, реальные подарки, VIP-программа.</p>
         </div>
-
         <div class="roadmap-item roadmap-current">
             <div class="roadmap-marker"></div>
             <div class="roadmap-date">Q1 2026</div>
             <h3>LIFELESS Shop — магазин Telegram</h3>
             <p>Звёзды, голда, премиум, номера, бусты. Полноценный маркетплейс услуг для Telegram.</p>
         </div>
-
         <div class="roadmap-item">
             <div class="roadmap-marker"></div>
             <div class="roadmap-date">Q2 2026</div>
             <h3>OSINT Combain</h3>
             <p>Инструменты аналитики открытых данных. Поиск, агрегация, визуализация связей.</p>
         </div>
-
         <div class="roadmap-item">
             <div class="roadmap-marker"></div>
             <div class="roadmap-date">Q3 2026</div>
             <h3>LIFELESS Crypto</h3>
             <p>Крипто-направление: кошельки, обменники, DeFi-сервисы для широкой аудитории.</p>
         </div>
-
         <div class="roadmap-item">
             <div class="roadmap-marker"></div>
             <div class="roadmap-date">2026-2027</div>
@@ -346,16 +440,16 @@
     </div>
 </section>
 
-<!-- ============ ABOUT ============ -->
+<!-- ABOUT -->
 <section class="section" id="about">
-    <div class="section-label">05 · О НАС</div>
+    <div class="section-label">07 · О НАС</div>
     <div class="dev-card">
         <div class="dev-visual">
             <div class="dev-monogram">L</div>
         </div>
         <div class="dev-info">
             <h2>Независимая<br><em>разработка</em></h2>
-            <p>LIFELESS создаётся небольшой командой разработчиков-энтузиастов. Мы верим, что качественный продукт можно сделать без миллионов инвестиций — если есть ясная цель и желание.</p>
+            <p>LIFELESS создаётся одним full-stack разработчиком-энтузиастом. Мы верим, что качественный продукт можно сделать без миллионов инвестиций — если есть ясная цель и желание.</p>
             <p>Все наши продукты — собственные. Код, дизайн, экономика, маркетинг. Никаких готовых решений, никаких агрегаторов, никакого венчурного капитала.</p>
             <div class="dev-tags">
                 <span>Python</span>
@@ -369,7 +463,180 @@
     </div>
 </section>
 
-<!-- ============ CTA FINAL ============ -->
+<!-- REVIEWS -->
+<section class="section" id="reviews">
+    <div class="section-label">08 · ОТЗЫВЫ</div>
+    <h2 class="section-title">Что говорят <em>игроки</em></h2>
+
+    <div class="reviews-grid">
+        <div class="review-card">
+            <div class="review-quote">"</div>
+            <p class="review-text">Затащил друга играть, вместе выбили первое кольцо. Подарок пришёл моментально в аккаунт. Не верил что так бывает.</p>
+            <div class="review-author">
+                <div class="review-avatar">А</div>
+                <div>
+                    <div class="review-name">Артём</div>
+                    <div class="review-role">играет 2 месяца</div>
+                </div>
+            </div>
+        </div>
+        <div class="review-card">
+            <div class="review-quote">"</div>
+            <p class="review-text">Больше всего нравится сапёр. Два режима — монетный и звёздный, в премиуме реально выбил ракету. Жду новые игры.</p>
+            <div class="review-author">
+                <div class="review-avatar">М</div>
+                <div>
+                    <div class="review-name">Марина</div>
+                    <div class="review-role">играет 1 месяц</div>
+                </div>
+            </div>
+        </div>
+        <div class="review-card">
+            <div class="review-quote">"</div>
+            <p class="review-text">Удобно что всё в Telegram — не надо ничего ставить. Открыл бота, играешь, выводишь. Дизайн топ, чувствуется качество.</p>
+            <div class="review-author">
+                <div class="review-avatar">Д</div>
+                <div>
+                    <div class="review-name">Дмитрий</div>
+                    <div class="review-role">играет 3 месяца</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- BLOG -->
+<section class="section" id="blog">
+    <div class="section-label">09 · ОБНОВЛЕНИЯ</div>
+    <h2 class="section-title">Последние <em>новости</em></h2>
+
+    <div class="blog-grid">
+        <article class="blog-card">
+            <div class="blog-date">СЕНТЯБРЬ 2026</div>
+            <h3>Запуск лендинга компании</h3>
+            <p>Открыли главный сайт LIFELESS — теперь у компании есть полноценное представительство вне Telegram.</p>
+            <span class="blog-link">Читать →</span>
+        </article>
+        <article class="blog-card">
+            <div class="blog-date">СЕНТЯБРЬ 2026</div>
+            <h3>Оптимизация экономики в Games</h3>
+            <p>Пересмотрели RTP-воронку и баланс для новичков. Теперь первые кейсы играть ещё интереснее.</p>
+            <span class="blog-link">Читать →</span>
+        </article>
+        <article class="blog-card">
+            <div class="blog-date">АВГУСТ 2026</div>
+            <h3>Работа над LIFELESS Shop</h3>
+            <p>Полным ходом идёт разработка магазина Telegram-услуг — звёзды, голда, премиум, номера и многое другое.</p>
+            <span class="blog-link">Читать →</span>
+        </article>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+    <div class="section-label">10 · FAQ</div>
+    <h2 class="section-title">Частые <em>вопросы</em></h2>
+
+    <div class="faq">
+        <div class="faq-item">
+            <button class="faq-question">
+                <span>Это безопасно? Данные не украдут?</span>
+                <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+                <p>Да, безопасно. Мы используем официальную HMAC-верификацию Telegram WebAppData, все данные передаются по HTTPS, доступ к базе ограничен. Мы не запрашиваем пароли, номера или платёжные данные — только то, что Telegram передаёт автоматически.</p>
+            </div>
+        </div>
+        <div class="faq-item">
+            <button class="faq-question">
+                <span>Как выводятся подарки?</span>
+                <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+                <p>Когда в кейсе выпадает подарок, бот отправляет его в твой Telegram-аккаунт через официальный Telegram Gift API. Подарок появляется в профиле мгновенно. Никаких кошельков, комиссий и ожиданий.</p>
+            </div>
+        </div>
+        <div class="faq-item">
+            <button class="faq-question">
+                <span>Сколько нужно вложить чтобы начать?</span>
+                <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+                <p>Ноль. При первом заходе ты получаешь бесплатный кейс и стартовые монеты. Дальше можно играть на бесплатных механиках: бесплатное колесо, стрики, квесты. Пополнение — по желанию.</p>
+            </div>
+        </div>
+        <div class="faq-item">
+            <button class="faq-question">
+                <span>Это казино? Мне 16 лет, можно играть?</span>
+                <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+                <p>LIFELESS — не казино. Это игровая экосистема с механиками случайности, но без реальных денежных ставок. Игровые монеты не имеют денежной стоимости, не обмениваются и не выводятся. Продукт предназначен для пользователей 18+, но фактически не требует реальных денег.</p>
+            </div>
+        </div>
+        <div class="faq-item">
+            <button class="faq-question">
+                <span>Что такое Telegram Stars?</span>
+                <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+                <p>Это официальная внутриигровая валюта Telegram. Мы используем её для покупок внутри бота — это быстрее и безопаснее чем карты, и работает во всех странах. Купить Stars можно прямо в Telegram.</p>
+            </div>
+        </div>
+        <div class="faq-item">
+            <button class="faq-question">
+                <span>Что будет с моими данными если я перестану играть?</span>
+                <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+                <p>Данные хранятся пока ты не запросишь удаление. По запросу через поддержку мы удаляем аккаунт и всю связанную информацию в течение 24 часов. Никакой передачи третьим лицам не происходит никогда.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CONTACT -->
+<section class="section" id="contact">
+    <div class="section-label">11 · КОНТАКТЫ</div>
+    <h2 class="section-title">Свяжись <em>с нами</em></h2>
+
+    <div class="contact-grid">
+        <a href="https://t.me/durvww" target="_blank" class="contact-card">
+            <div class="contact-icon">📢</div>
+            <div class="contact-info">
+                <div class="contact-name">Telegram-канал</div>
+                <div class="contact-value">@durvww</div>
+            </div>
+            <div class="contact-arrow">→</div>
+        </a>
+        <a href="https://t.me/wwlifeless" target="_blank" class="contact-card">
+            <div class="contact-icon">💬</div>
+            <div class="contact-info">
+                <div class="contact-name">Чат игроков</div>
+                <div class="contact-value">@wwlifeless</div>
+            </div>
+            <div class="contact-arrow">→</div>
+        </a>
+        <a href="https://t.me/wwsolver" target="_blank" class="contact-card">
+            <div class="contact-icon">🆘</div>
+            <div class="contact-info">
+                <div class="contact-name">Поддержка</div>
+                <div class="contact-value">@wwsolver</div>
+            </div>
+            <div class="contact-arrow">→</div>
+        </a>
+        <a href="https://t.me/Solver_Life_bot" target="_blank" class="contact-card">
+            <div class="contact-icon">🚀</div>
+            <div class="contact-info">
+                <div class="contact-name">Открыть бота</div>
+                <div class="contact-value">@Solver_Life_bot</div>
+            </div>
+            <div class="contact-arrow">→</div>
+        </a>
+    </div>
+</section>
+
+<!-- CTA FINAL -->
 <section class="cta-final">
     <div class="cta-final-glow"></div>
     <div class="cta-final-inner">
@@ -383,7 +650,7 @@
     </div>
 </section>
 
-<!-- ============ FOOTER ============ -->
+<!-- FOOTER -->
 <footer>
     <div class="footer-grid">
         <div class="footer-brand">
@@ -397,6 +664,7 @@
         <div class="footer-col">
             <div class="footer-label">КОМПАНИЯ</div>
             <a href="#company">О компании</a>
+            <a href="#history">История</a>
             <a href="#products">Продукты</a>
             <a href="#roadmap">Roadmap</a>
             <a href="#about">О нас</a>
@@ -404,14 +672,15 @@
         <div class="footer-col">
             <div class="footer-label">ПРОДУКТЫ</div>
             <a href="#games">LIFELESS Games</a>
+            <a href="#tech">Технологии</a>
             <a href="https://t.me/Solver_Life_bot" target="_blank">Открыть бота</a>
             <a href="https://t.me/wwlifeless" target="_blank">Чат</a>
         </div>
         <div class="footer-col">
             <div class="footer-label">ПРАВОВОЕ</div>
             <a href="#privacy">Конфиденциальность</a>
-            <a href="#privacy">Условия использования</a>
-            <a href="https://t.me/wwsolver" target="_blank">Связаться</a>
+            <a href="#faq">FAQ</a>
+            <a href="#contact">Связаться</a>
         </div>
     </div>
     <div class="footer-bottom">
@@ -420,7 +689,35 @@
     </div>
 </footer>
 
-<!-- ============ PRIVACY MODAL ============ -->
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay product-modal" id="productModal">
+    <div class="modal-content modal-product">
+        <button class="modal-close" id="productClose" aria-label="Закрыть">✕</button>
+        <div class="modal-product-body">
+            <div class="mp-status" id="mpStatus"></div>
+            <div class="mp-icon" id="mpIcon">🎰</div>
+            <h2 class="mp-title" id="mpTitle">Название</h2>
+            <p class="mp-desc" id="mpDesc">Описание продукта</p>
+            <div class="mp-section">
+                <div class="mp-section-label">ЧТО ВНУТРИ</div>
+                <ul class="mp-features" id="mpFeatures"></ul>
+            </div>
+            <div class="mp-section" id="mpEtaBlock">
+                <div class="mp-section-label">ГОТОВНОСТЬ</div>
+                <div class="mp-eta" id="mpEta"></div>
+            </div>
+            <div class="mp-actions" id="mpActions"></div>
+        </div>
+    </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="modal-overlay lightbox" id="lightbox">
+    <button class="modal-close lightbox-close" id="lightboxClose" aria-label="Закрыть">✕</button>
+    <img class="lightbox-img" id="lightboxImg" src="" alt="">
+</div>
+
+<!-- PRIVACY MODAL -->
 <div class="modal-overlay" id="privacyModal">
     <div class="modal-content">
         <button class="modal-close" id="privacyClose" aria-label="Закрыть">✕</button>
