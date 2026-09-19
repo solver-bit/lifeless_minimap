@@ -41,8 +41,7 @@
         document.addEventListener('mousedown', () => head.classList.add('clicking'));
         document.addEventListener('mouseup', () => head.classList.remove('clicking'));
 
-        // Hover effect on interactive
-        document.querySelectorAll('a, button, .product-card, .gallery-visual, .contact-card, .blog-card, .tech-card, .faq-question').forEach(el => {
+        document.querySelectorAll('a, button, .product-card, .gallery-visual, .contact-card, .tech-card, .faq-question, .principle-card').forEach(el => {
             el.addEventListener('mouseenter', () => head.classList.add('hover'));
             el.addEventListener('mouseleave', () => head.classList.remove('hover'));
         });
@@ -84,6 +83,25 @@
             }
             animTrail();
         }
+    }
+
+    // ============================================================
+    // GLOBAL CLICK RIPPLE
+    // ============================================================
+    if (isDesktop) {
+        document.addEventListener('click', e => {
+            if (e.target.closest('a, button, input, textarea, select, .modal-overlay, .product-card, .faq-question, .contact-card, .tech-card, .principle-card, .gyro-stage, .blog-card')) {
+                return;
+            }
+
+            const ripple = document.createElement('div');
+            ripple.className = 'click-ripple';
+            ripple.style.left = e.clientX + 'px';
+            ripple.style.top = e.clientY + 'px';
+            document.body.appendChild(ripple);
+
+            setTimeout(() => ripple.remove(), 1300);
+        });
     }
 
     // ============================================================
@@ -148,23 +166,6 @@
     }
 
     // ============================================================
-    // TILT CARDS
-    // ============================================================
-    if (isDesktop) {
-        document.querySelectorAll('.tilt').forEach(el => {
-            el.addEventListener('mousemove', e => {
-                const r = el.getBoundingClientRect();
-                const x = (e.clientX - r.left) / r.width - 0.5;
-                const y = (e.clientY - r.top) / r.height - 0.5;
-                el.style.transform = `perspective(1000px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg) translateY(-4px)`;
-            });
-            el.addEventListener('mouseleave', () => {
-                el.style.transform = '';
-            });
-        });
-    }
-
-    // ============================================================
     // HERO BG TEXT PARALLAX
     // ============================================================
     const heroBgText = document.querySelector('.hero-bg-text');
@@ -177,20 +178,56 @@
     }
 
     // ============================================================
-    // GYROSCOPE FOLLOW MOUSE
+    // GYROSCOPE — FOLLOW MOUSE + SCROLL ROTATION + RIPPLE
     // ============================================================
-    const gyro = document.querySelector('.gyroscope');
-    if (gyro && isDesktop) {
-        const parent = gyro.parentElement;
-        parent.addEventListener('mousemove', e => {
-            const r = parent.getBoundingClientRect();
-            const x = (e.clientX - r.left) / r.width - 0.5;
-            const y = (e.clientY - r.top) / r.height - 0.5;
-            gyro.style.transform = `rotateY(${x * 18}deg) rotateX(${-y * 18}deg)`;
-        });
-        parent.addEventListener('mouseleave', () => {
-            gyro.style.transform = '';
-        });
+    const gyro = document.getElementById('gyroscope');
+    const gyroStage = document.getElementById('gyroStage');
+    const gyroRipples = document.getElementById('gyroRipples');
+
+    if (gyro && gyroStage) {
+        let rotX = 0, rotY = 0, rotZ = 0;
+
+        function applyGyroTransform() {
+            gyro.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg)`;
+        }
+
+        if (isDesktop) {
+            gyroStage.addEventListener('mousemove', e => {
+                const r = gyroStage.getBoundingClientRect();
+                rotY = ((e.clientX - r.left) / r.width - 0.5) * 22;
+                rotX = -((e.clientY - r.top) / r.height - 0.5) * 22;
+                applyGyroTransform();
+            });
+            gyroStage.addEventListener('mouseleave', () => {
+                rotX = 0;
+                rotY = 0;
+                applyGyroTransform();
+            });
+        }
+
+        window.addEventListener('scroll', () => {
+            const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = Math.min(1, window.scrollY / Math.max(1, maxScroll * 0.4));
+            rotZ = progress * 180;
+            applyGyroTransform();
+        }, { passive: true });
+
+        if (gyroRipples) {
+            gyroStage.addEventListener('click', e => {
+                if (e.target.closest('a, button')) return;
+                const r = gyroStage.getBoundingClientRect();
+                const x = e.clientX - r.left;
+                const y = e.clientY - r.top;
+
+                const ripple = document.createElement('div');
+                ripple.className = 'gyro-ripple-item';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                gyroRipples.appendChild(ripple);
+
+                setTimeout(() => ripple.remove(), 1700);
+            });
+        }
     }
 
     // ============================================================
@@ -205,7 +242,7 @@
                 }
             });
         }, { threshold: 0.1, rootMargin: '0px 0px -100px 0px' });
-        document.querySelectorAll('.section, .cta-final, .gallery-row, .product-card, .roadmap-item, .dev-card, .review-card, .blog-card, .tech-card, .contact-card, .faq-item, .history-item, .reveal-text').forEach(el => io.observe(el));
+        document.querySelectorAll('.section, .cta-final, .gallery-row, .product-card, .roadmap-item, .dev-card, .tech-card, .contact-card, .faq-item, .history-item, .reveal-text, .principle-card').forEach(el => io.observe(el));
     }
 
     // ============================================================
@@ -223,10 +260,10 @@
                 const tick = () => {
                     cur += step;
                     if (cur >= target) {
-                        el.textContent = target;
+                        el.textContent = target.toLocaleString('ru-RU');
                         return;
                     }
-                    el.textContent = cur;
+                    el.textContent = cur.toLocaleString('ru-RU');
                     requestAnimationFrame(tick);
                 };
                 tick();
@@ -479,6 +516,35 @@
             document.body.style.overflow = '';
         }
     });
+
+    // ============================================================
+    // STICKY CTA
+    // ============================================================
+    const stickyCta = document.getElementById('stickyCta');
+    if (stickyCta) {
+        function updateSticky() {
+            const scrolled = window.scrollY;
+            const heroHeight = document.querySelector('.hero')?.offsetHeight || window.innerHeight;
+            const docHeight = document.documentElement.scrollHeight;
+            const nearBottom = scrolled + window.innerHeight > docHeight - 400;
+            const hasModal = document.querySelector('.modal-overlay.open') !== null;
+
+            if (scrolled > heroHeight * 0.8 && !nearBottom && !hasModal) {
+                stickyCta.classList.add('visible');
+            } else {
+                stickyCta.classList.remove('visible');
+            }
+        }
+        window.addEventListener('scroll', updateSticky, { passive: true });
+        updateSticky();
+
+        const modalObserver = new MutationObserver(() => {
+            updateSticky();
+        });
+        document.querySelectorAll('.modal-overlay').forEach(m => {
+            modalObserver.observe(m, { attributes: true, attributeFilter: ['class'] });
+        });
+    }
 
     // ============================================================
     // SMOOTH ANCHOR
