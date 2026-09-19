@@ -182,19 +182,37 @@ header.scrolled {
 .logo {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     font-family: 'Cormorant Garamond', serif;
     font-size: 24px;
     font-weight: 600;
     letter-spacing: 6px;
 }
+
 .logo-mark {
-    color: var(--gold);
-    font-size: 20px;
     display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow:
+        0 0 12px var(--gold),
+        0 0 24px rgba(228,185,99,0.5),
+        inset 0 0 4px rgba(255,255,255,0.7);
+    animation: logoDot 3s ease-in-out infinite;
     transition: transform 0.6s var(--ease);
+    flex-shrink: 0;
 }
-.logo:hover .logo-mark { transform: rotate(180deg); }
+.logo:hover .logo-mark { transform: scale(1.5); }
+
+@keyframes logoDot {
+    0%, 100% {
+        box-shadow: 0 0 12px var(--gold), 0 0 24px rgba(228,185,99,0.5);
+    }
+    50% {
+        box-shadow: 0 0 22px var(--gold), 0 0 44px rgba(228,185,99,0.9);
+    }
+}
 
 nav { display: flex; align-items: center; gap: 28px; }
 
@@ -301,6 +319,32 @@ nav a:hover::after { transform: scaleX(1); transform-origin: left; }
     padding: 180px 60px 180px;
     overflow: hidden;
     border-bottom: 1px solid var(--border);
+}
+
+/* Звёзды на фоне hero */
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(228,185,99,0.6), transparent),
+        radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 40% 80%, rgba(228,185,99,0.5), transparent),
+        radial-gradient(1px 1px at 80% 20%, rgba(255,255,255,0.3), transparent),
+        radial-gradient(2px 2px at 90% 50%, rgba(228,185,99,0.4), transparent),
+        radial-gradient(1px 1px at 15% 60%, rgba(255,255,255,0.5), transparent),
+        radial-gradient(1px 1px at 70% 40%, rgba(228,185,99,0.6), transparent),
+        radial-gradient(1px 1px at 35% 15%, rgba(255,255,255,0.35), transparent),
+        radial-gradient(1px 1px at 55% 55%, rgba(228,185,99,0.5), transparent),
+        radial-gradient(2px 2px at 10% 85%, rgba(228,185,99,0.3), transparent);
+    background-size: 100% 100%;
+    pointer-events: none;
+    z-index: 1;
+    animation: starsTwinkle 6s ease-in-out infinite;
+}
+@keyframes starsTwinkle {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
 }
 
 .hero-glow {
@@ -446,7 +490,7 @@ nav a:hover::after { transform: scaleX(1); transform-origin: left; }
 
 .btn-large { padding: 26px 52px; font-size: 14px; }
 
-/* GYROSCOPE — IMPROVED */
+/* GYROSCOPE */
 .hero-right {
     position: relative;
     display: flex;
@@ -482,6 +526,39 @@ nav a:hover::after { transform: scaleX(1); transform-origin: left; }
     cursor: pointer;
 }
 
+/* УРОБОРОС */
+.ouroboros {
+    position: absolute;
+    inset: -10%;
+    width: 120%;
+    height: 120%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.35;
+    animation: ourRotate 60s linear infinite;
+}
+@keyframes ourRotate {
+    to { transform: rotate(360deg); }
+}
+
+.our-body {
+    animation: ourPulse 4s ease-in-out infinite;
+}
+@keyframes ourPulse {
+    0%, 100% { stroke-opacity: 1; }
+    50% { stroke-opacity: 0.65; }
+}
+
+.our-head {
+    animation: ourHead 4s ease-in-out infinite;
+}
+
+@keyframes ourHead {
+    0%, 100% { transform: translate(200px, 50px) rotate(135deg); }
+    50% { transform: translate(200px, 50px) rotate(139deg); }
+}
+
+/* СВГ ЛИНИИ ГИРОСКОПА */
 .gyro-svg {
     position: absolute;
     inset: 0;
@@ -498,18 +575,14 @@ nav a:hover::after { transform: scaleX(1); transform-origin: left; }
     animation: gyroLinesOpacity 4s ease-in-out infinite;
 }
 .gyro-lines line:nth-child(1) { animation-delay: 0s; }
-.gyro-lines line:nth-child(2) { animation-delay: 0.5s; }
-.gyro-lines line:nth-child(3) { animation-delay: 1s; }
-.gyro-lines line:nth-child(4) { animation-delay: 1.5s; }
-.gyro-lines line:nth-child(5) { animation-delay: 2s; }
-.gyro-lines line:nth-child(6) { animation-delay: 2.5s; }
-.gyro-lines line:nth-child(7) { animation-delay: 3s; }
-.gyro-lines line:nth-child(8) { animation-delay: 3.5s; }
+.gyro-lines line:nth-child(2) { animation-delay: 1s; }
+.gyro-lines line:nth-child(3) { animation-delay: 2s; }
+.gyro-lines line:nth-child(4) { animation-delay: 3s; }
 
 @keyframes gyroLinesDash { to { stroke-dashoffset: -200; } }
 @keyframes gyroLinesOpacity {
-    0%, 100% { stroke-opacity: 0.15; }
-    50% { stroke-opacity: 0.9; }
+    0%, 100% { stroke-opacity: 0.12; }
+    50% { stroke-opacity: 0.85; }
 }
 
 .gyroscope {
@@ -635,12 +708,21 @@ nav a:hover::after { transform: scaleX(1); transform-origin: left; }
     animation: rotate3 20s linear infinite;
 }
 .gyro-orbit-3 span { top: 0; left: 50%; }
+
+/* 4-я орбита — видимая, пунктирный круг */
 .gyro-orbit-4 {
-    width: 480px; height: 480px;
-    margin: -240px 0 0 -240px;
+    width: 450px; height: 450px;
+    margin: -225px 0 0 -225px;
     animation: rotate1 26s linear infinite reverse;
+    border: 1px dashed rgba(228,185,99,0.2);
+    border-radius: 50%;
 }
-.gyro-orbit-4 span { top: 50%; left: 0; margin: -3px 0 0 0; }
+.gyro-orbit-4 span {
+    top: 50%; left: 0;
+    margin: -3px 0 0 0;
+    background: var(--gold-lo);
+    box-shadow: 0 0 10px rgba(228,185,99,0.6);
+}
 
 .gyro-ripples {
     position: absolute;
@@ -1530,12 +1612,19 @@ footer {
     margin-bottom: 80px;
 }
 .footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     font-family: 'Cormorant Garamond', serif;
     font-size: 26px;
     font-weight: 600;
     letter-spacing: 4px;
     color: var(--gold);
     margin-bottom: 16px;
+}
+.footer-logo .logo-mark {
+    width: 8px;
+    height: 8px;
 }
 .footer-brand p { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
 .footer-status {
@@ -1847,7 +1936,7 @@ footer a:hover { color: var(--gold); padding-left: 6px; }
     .gyro-orbit-1 { width: 170px; height: 170px; margin: -85px 0 0 -85px; }
     .gyro-orbit-2 { width: 250px; height: 250px; margin: -125px 0 0 -125px; }
     .gyro-orbit-3 { width: 340px; height: 340px; margin: -170px 0 0 -170px; }
-    .gyro-orbit-4 { width: 410px; height: 410px; margin: -205px 0 0 -205px; }
+    .gyro-orbit-4 { width: 390px; height: 390px; margin: -195px 0 0 -195px; }
     .gyro-core-halo { width: 160px; height: 160px; margin: -80px 0 0 -80px; }
 
     .products-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1883,7 +1972,7 @@ footer a:hover { color: var(--gold); padding-left: 6px; }
     .gyro-orbit-1 { width: 130px; height: 130px; margin: -65px 0 0 -65px; }
     .gyro-orbit-2 { width: 190px; height: 190px; margin: -95px 0 0 -95px; }
     .gyro-orbit-3 { width: 260px; height: 260px; margin: -130px 0 0 -130px; }
-    .gyro-orbit-4 { width: 310px; height: 310px; margin: -155px 0 0 -155px; }
+    .gyro-orbit-4 { width: 300px; height: 300px; margin: -150px 0 0 -150px; }
     .gyro-core { width: 44px; height: 44px; margin: -22px 0 0 -22px; }
     .gyro-core-halo { width: 120px; height: 120px; margin: -60px 0 0 -60px; }
 

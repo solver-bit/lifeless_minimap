@@ -41,7 +41,7 @@
         document.addEventListener('mousedown', () => head.classList.add('clicking'));
         document.addEventListener('mouseup', () => head.classList.remove('clicking'));
 
-        document.querySelectorAll('a, button, .product-card, .gallery-visual, .contact-card, .tech-card, .faq-question, .principle-card').forEach(el => {
+        document.querySelectorAll('a, button, .product-card, .gallery-visual, .contact-card, .tech-card, .faq-question, .principle-card, .gyro-stage').forEach(el => {
             el.addEventListener('mouseenter', () => head.classList.add('hover'));
             el.addEventListener('mouseleave', () => head.classList.remove('hover'));
         });
@@ -90,7 +90,7 @@
     // ============================================================
     if (isDesktop) {
         document.addEventListener('click', e => {
-            if (e.target.closest('a, button, input, textarea, select, .modal-overlay, .product-card, .faq-question, .contact-card, .tech-card, .principle-card, .gyro-stage, .blog-card')) {
+            if (e.target.closest('a, button, input, textarea, select, .modal-overlay, .product-card, .faq-question, .contact-card, .tech-card, .principle-card, .gyro-stage')) {
                 return;
             }
 
@@ -308,7 +308,7 @@
             features: [
                 'Telegram Stars по выгодному курсу',
                 'Premium-подписки любой длительности',
-                'Голда и бусты для каналов',
+                'Бусты для каналов и сообществ',
                 'Анонимные номера +888 (Fragment)',
                 'NFT-подарки и коллекционные items',
                 'Автоматическая выдача в течение секунд',
