@@ -230,19 +230,42 @@
         }
     }
 
-    // ============================================================
-    // REVEAL ON SCROLL
+        // ============================================================
+    // REVEAL ON SCROLL (с каскадом)
     // ============================================================
     if ('IntersectionObserver' in window) {
         const io = new IntersectionObserver(entries => {
             entries.forEach(e => {
                 if (e.isIntersecting) {
-                    e.target.classList.add('in');
-                    io.unobserve(e.target);
+                    // Для карточек — с задержкой по индексу (каскад)
+                    const el = e.target;
+                    const parent = el.parentElement;
+                    if (parent) {
+                        const siblings = Array.from(parent.children).filter(c =>
+                            c.classList.contains('product-card') ||
+                            c.classList.contains('principle-card') ||
+                            c.classList.contains('feature-card') ||
+                            c.classList.contains('tech-card') ||
+                            c.classList.contains('trust-card') ||
+                            c.classList.contains('step')
+                        );
+                        const idx = siblings.indexOf(el);
+                        if (idx >= 0 && siblings.length > 1) {
+                            el.style.transitionDelay = Math.min(idx * 0.08, 0.5) + 's';
+                        }
+                    }
+                    el.classList.add('in');
+                    io.unobserve(el);
                 }
             });
         }, { threshold: 0.1, rootMargin: '0px 0px -100px 0px' });
-        document.querySelectorAll('.section, .cta-final, .gallery-row, .product-card, .roadmap-item, .dev-card, .tech-card, .contact-card, .faq-item, .history-item, .reveal-text, .principle-card').forEach(el => io.observe(el));
+
+        document.querySelectorAll(
+            '.section, .cta-final, .gallery-row, .product-card, .roadmap-item, ' +
+            '.dev-card, .tech-card, .contact-card, .faq-item, .history-item, ' +
+            '.reveal-text, .principle-card, .feature-card, .trust-card, .step, ' +
+            '.nexus-wrap'
+        ).forEach(el => io.observe(el));
     }
 
     // ============================================================

@@ -43,13 +43,13 @@
 <section class="tech-hero">
     <div class="hero-glow"></div>
     <div class="hero-glow-2"></div>
-    <div class="manifest-kicker" style="border:1px solid var(--border-gold);padding:8px 18px;border-radius:100px;background:rgba(228,185,99,.05)">§ TECHNOLOGY · 2026</div>
+    <div class="manifest-kicker tech-hero-badge">§ TECHNOLOGY · 2026</div>
     <h1>Движок<br><em>LIFELESS</em></h1>
     <p>Всё, что работает внутри LIFELESS — от ботов до Mini Apps — построено на собственном стеке. Без фреймворков там, где они не нужны. Без облаков там, где хватает одного сервера.</p>
 </section>
 
-<!-- TERMINAL HERO -->
-<section style="padding:0 60px 140px;max-width:1400px;margin:0 auto">
+<!-- TERMINAL -->
+<section class="tech-terminal-section">
     <div class="terminal">
         <div class="terminal-bar">
             <span class="terminal-dot tdot-r"></span>
@@ -61,7 +61,7 @@
     </div>
 </section>
 
-<!-- NEURAL WEB SPLIT -->
+<!-- NEURAL WEB -->
 <section class="tech-split">
     <div class="tech-split-text">
         <div class="manifest-kicker">§ 01 · АРХИТЕКТУРА</div>
@@ -85,8 +85,8 @@
 </section>
 
 <!-- WAVEFORM -->
-<section style="max-width:1400px;margin:0 auto;padding:0 60px 140px">
-    <div class="manifest-kicker" style="margin-bottom:32px">§ 02 · НАГРУЗКА В РЕАЛЬНОМ ВРЕМЕНИ</div>
+<section class="tech-wave-section">
+    <div class="manifest-kicker wave-kicker">§ 02 · НАГРУЗКА В РЕАЛЬНОМ ВРЕМЕНИ</div>
     <div class="wave-stage">
         <div class="wave-grid"></div>
         <canvas class="wave-canvas" id="waveCanvas"></canvas>
@@ -94,7 +94,7 @@
     </div>
 </section>
 
-<!-- RADAR SPLIT -->
+<!-- RADAR -->
 <section class="tech-split reverse">
     <div class="tech-split-text">
         <div class="manifest-kicker">§ 03 · МОНИТОРИНГ</div>
@@ -141,7 +141,7 @@
     </div>
 </section>
 
-<!-- ATOM SPLIT -->
+<!-- ATOM -->
 <section class="tech-split">
     <div class="tech-split-text">
         <div class="manifest-kicker">§ 04 · ЯДРО</div>
@@ -154,88 +154,116 @@
             <span>Audit log</span>
         </div>
     </div>
-    
+
+    <div class="atom-stage">
         <svg class="atom-svg" viewBox="0 0 400 400">
-            <g class="atom-orbit o1">
-                <ellipse cx="200" cy="200" rx="170" ry="60" fill="none" class="atom-orbit" stroke="rgba(228,185,99,.35)"/>
-                <circle cx="370" cy="200" r="4" class="atom-electron"/>
+            <defs>
+                <radialGradient id="nucleusCore">
+                    <stop offset="0%"  stop-color="#ffffff"/>
+                    <stop offset="25%" stop-color="#FFF4D6"/>
+                    <stop offset="55%" stop-color="#F7D896"/>
+                    <stop offset="85%" stop-color="#E4B963"/>
+                    <stop offset="100%" stop-color="#B88838"/>
+                </radialGradient>
+                <radialGradient id="nucleusHalo">
+                    <stop offset="0%"  stop-color="#F7D896" stop-opacity="0.85"/>
+                    <stop offset="35%" stop-color="#E4B963" stop-opacity="0.35"/>
+                    <stop offset="70%" stop-color="#E4B963" stop-opacity="0.08"/>
+                    <stop offset="100%" stop-color="#E4B963" stop-opacity="0"/>
+                </radialGradient>
+                <radialGradient id="electronBody">
+                    <stop offset="0%"  stop-color="#ffffff"/>
+                    <stop offset="40%" stop-color="#F7D896"/>
+                    <stop offset="100%" stop-color="#E4B963"/>
+                </radialGradient>
+                <radialGradient id="electronHalo">
+                    <stop offset="0%"  stop-color="#F7D896" stop-opacity="0.9"/>
+                    <stop offset="60%" stop-color="#E4B963" stop-opacity="0.15"/>
+                    <stop offset="100%" stop-color="#E4B963" stop-opacity="0"/>
+                </radialGradient>
+                <linearGradient id="orbitFade" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%"   stop-color="#E4B963" stop-opacity="0.05"/>
+                    <stop offset="50%"  stop-color="#F7D896" stop-opacity="0.55"/>
+                    <stop offset="100%" stop-color="#E4B963" stop-opacity="0.05"/>
+                </linearGradient>
+                <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">
+                    <feGaussianBlur stdDeviation="4" result="b"/>
+                    <feMerge>
+                        <feMergeNode in="b"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+                <filter id="coreGlow" x="-200%" y="-200%" width="500%" height="500%">
+                    <feGaussianBlur stdDeviation="8" result="b1"/>
+                    <feGaussianBlur stdDeviation="18" result="b2"/>
+                    <feMerge>
+                        <feMergeNode in="b2"/>
+                        <feMergeNode in="b1"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+
+            <!-- Halo -->
+            <circle cx="200" cy="200" r="130" fill="url(#nucleusHalo)">
+                <animate attributeName="r" values="120;150;120" dur="6s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.7;1;0.7" dur="6s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- ОРБИТА 1 · 0° -->
+            <g>
+                <ellipse cx="200" cy="200" rx="160" ry="58" fill="none" stroke="url(#orbitFade)" stroke-width="0.9"/>
+                <g>
+                    <circle cx="360" cy="200" r="18" fill="url(#electronHalo)"/>
+                    <circle cx="360" cy="200" r="5.5" fill="url(#electronBody)" filter="url(#softGlow)"/>
+                    <circle cx="360" cy="200" r="2" fill="#ffffff"/>
+                    <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="9s" repeatCount="indefinite"/>
+                </g>
             </g>
-            <div class="atom-stage">
-    <svg class="atom-svg" viewBox="0 0 400 400">
-        <defs>
-            <radialGradient id="nucleusGrad">
-                <stop offset="0%" stop-color="#ffffff"/>
-                <stop offset="35%" stop-color="#F7D896"/>
-                <stop offset="70%" stop-color="#E4B963"/>
-                <stop offset="100%" stop-color="#B88838" stop-opacity="0.7"/>
-            </radialGradient>
-            <radialGradient id="nucleusHalo">
-                <stop offset="0%" stop-color="#F7D896" stop-opacity="0.55"/>
-                <stop offset="60%" stop-color="#E4B963" stop-opacity="0.12"/>
-                <stop offset="100%" stop-color="#E4B963" stop-opacity="0"/>
-            </radialGradient>
-            <radialGradient id="electronGrad">
-                <stop offset="0%" stop-color="#ffffff"/>
-                <stop offset="50%" stop-color="#F7D896"/>
-                <stop offset="100%" stop-color="#E4B963"/>
-            </radialGradient>
-            <filter id="electronGlow" x="-100%" y="-100%" width="300%" height="300%">
-                <feGaussianBlur stdDeviation="3" result="b"/>
-                <feMerge>
-                    <feMergeNode in="b"/>
-                    <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-            </filter>
-        </defs>
 
-        <!-- Halo -->
-        <circle cx="200" cy="200" r="150" fill="url(#nucleusHalo)"/>
+            <!-- ОРБИТА 2 · 60° -->
+            <g transform="rotate(60 200 200)">
+                <ellipse cx="200" cy="200" rx="160" ry="58" fill="none" stroke="url(#orbitFade)" stroke-width="0.9"/>
+                <g>
+                    <circle cx="360" cy="200" r="18" fill="url(#electronHalo)"/>
+                    <circle cx="360" cy="200" r="5.5" fill="url(#electronBody)" filter="url(#softGlow)"/>
+                    <circle cx="360" cy="200" r="2" fill="#ffffff"/>
+                    <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="11s" repeatCount="indefinite"/>
+                </g>
+            </g>
 
-        <!-- Орбита 1 — 0° -->
-        <ellipse cx="200" cy="200" rx="160" ry="55"
-                 fill="none" stroke="rgba(228,185,99,0.35)" stroke-width="0.8"/>
-        <g>
-            <circle r="6" fill="url(#electronGrad)" filter="url(#electronGlow)" cx="360" cy="200"/>
-            <animateTransform attributeName="transform" type="rotate"
-                              from="0 200 200" to="360 200 200"
-                              dur="7s" repeatCount="indefinite"/>
-        </g>
+            <!-- ОРБИТА 3 · 120° -->
+            <g transform="rotate(120 200 200)">
+                <ellipse cx="200" cy="200" rx="160" ry="58" fill="none" stroke="url(#orbitFade)" stroke-width="0.9"/>
+                <g>
+                    <circle cx="360" cy="200" r="18" fill="url(#electronHalo)"/>
+                    <circle cx="360" cy="200" r="5.5" fill="url(#electronBody)" filter="url(#softGlow)"/>
+                    <circle cx="360" cy="200" r="2" fill="#ffffff"/>
+                    <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="13s" repeatCount="indefinite"/>
+                </g>
+            </g>
 
-        <!-- Орбита 2 — 60° -->
-        <ellipse cx="200" cy="200" rx="160" ry="55"
-                 fill="none" stroke="rgba(228,185,99,0.35)" stroke-width="0.8"
-                 transform="rotate(60 200 200)"/>
-        <g>
-            <circle r="6" fill="url(#electronGrad)" filter="url(#electronGlow)" cx="360" cy="200"/>
-            <animateTransform attributeName="transform" type="rotate"
-                              from="60 200 200" to="420 200 200"
-                              dur="9s" repeatCount="indefinite"/>
-        </g>
-
-        <!-- Орбита 3 — 120° -->
-        <ellipse cx="200" cy="200" rx="160" ry="55"
-                 fill="none" stroke="rgba(228,185,99,0.35)" stroke-width="0.8"
-                 transform="rotate(120 200 200)"/>
-        <g>
-            <circle r="6" fill="url(#electronGrad)" filter="url(#electronGlow)" cx="360" cy="200"/>
-            <animateTransform attributeName="transform" type="rotate"
-                              from="120 200 200" to="480 200 200"
-                              dur="11s" repeatCount="indefinite"/>
-        </g>
-
-        <!-- Ядро -->
-        <circle cx="200" cy="200" r="40" fill="url(#nucleusHalo)"/>
-        <circle cx="200" cy="200" r="18" fill="url(#nucleusGrad)">
-            <animate attributeName="r" values="18;21;18" dur="3s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="200" cy="200" r="5" fill="#ffffff" opacity="0.95"/>
-
-        <!-- Дополнительное ядро-ядро для глубины -->
-        <circle cx="200" cy="200" r="3" fill="#ffffff">
-            <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
-        </circle>
-    </svg>
-</div>
+            <!-- ЯДРО -->
+            <circle cx="200" cy="200" r="55" fill="url(#nucleusHalo)" opacity="0.7">
+                <animate attributeName="r" values="50;62;50" dur="4s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="200" cy="200" r="28" fill="url(#nucleusHalo)" opacity="0.85"/>
+            <circle cx="200" cy="200" r="15" fill="url(#nucleusCore)" filter="url(#coreGlow)">
+                <animate attributeName="r" values="15;16.5;15" dur="3.5s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="200" cy="200" r="3.5" fill="#ffffff">
+                <animate attributeName="opacity" values="0.75;1;0.75" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="200" cy="200" r="15" fill="none" stroke="#F7D896" stroke-width="0.6" opacity="0.6">
+                <animate attributeName="r" values="15;48" dur="2.8s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.7;0" dur="2.8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="200" cy="200" r="15" fill="none" stroke="#F7D896" stroke-width="0.6" opacity="0.6">
+                <animate attributeName="r" values="15;48" dur="2.8s" begin="1.4s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.7;0" dur="2.8s" begin="1.4s" repeatCount="indefinite"/>
+            </circle>
+        </svg>
+    </div>
 </section>
 
 <!-- STACK GRID -->

@@ -2456,23 +2456,38 @@ footer a:hover { color: var(--gold); padding-left: 6px; }
 
 /* ---------- 05 · ATOM (орбитальная модель) ---------- */
 .atom-stage{
-    position:relative;width:100%;max-width:440px;aspect-ratio:1;
-    display:flex;align-items:center;justify-content:center;
-    perspective:900px;
+    position:relative;
+    width:100%;
+    max-width:520px;
+    aspect-ratio:1;
+    margin:0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
-.atom-svg{width:100%;height:100%;overflow:visible}
-.atom-orbit{transform-origin:200px 200px;fill:none;stroke:rgba(228,185,99,.3);stroke-width:.8}
-.atom-orbit.o1{animation:atomSpin 9s linear infinite}
-.atom-orbit.o2{animation:atomSpin 13s linear infinite reverse}
-.atom-orbit.o3{animation:atomSpin 17s linear infinite}
-@keyframes atomSpin{to{transform:rotate(360deg)}}
-.atom-electron{fill:#F7D896;filter:drop-shadow(0 0 8px #E4B963)}
-.atom-nucleus{
-    fill:#F7D896;filter:drop-shadow(0 0 20px #E4B963);
-    animation:atomPulse 3s ease-in-out infinite;
+.atom-svg{
+    width:100%;
+    height:100%;
+    overflow:visible;
+    display:block;
 }
-@keyframes atomPulse{0%,100%{opacity:.9}50%{opacity:1;transform:scale(1.08)}}
-.atom-nucleus{transform-origin:200px 200px}
+.atom-stage::before{
+    content:'';
+    position:absolute;
+    inset:8%;
+    border-radius:50%;
+    background:radial-gradient(circle,
+        rgba(247,216,150,.28) 0%,
+        rgba(228,185,99,.10) 35%,
+        transparent 70%);
+    filter:blur(40px);
+    pointer-events:none;
+    animation:atomHalo 7s ease-in-out infinite;
+}
+@keyframes atomHalo{
+    0%,100%{transform:scale(1);opacity:.75}
+    50%{transform:scale(1.15);opacity:1}
+}
 
 /* ---------- 06 · WAVEFORM (звуковая волна) ---------- */
 .wave-stage{
@@ -2917,4 +2932,368 @@ footer a:hover { color: var(--gold); padding-left: 6px; }
     .nexus-node .nexus-label { font-size: 8px; letter-spacing: 1px; padding: 3px 7px; }
     .nexus-node.hub .nexus-label { font-size: 13px; letter-spacing: 3px; }
     .nexus-node { gap: 8px; }
+}
+
+/* ============================================================
+   PREMIUM ANIMATIONS · v2
+   Плавнее, глубже, премиальнее
+   ============================================================ */
+
+/* ---------- Плавнее reveal с каскадом ---------- */
+.section .section-label,
+.section .section-title,
+.section .section-lead {
+    opacity: 0;
+    transform: translateY(30px);
+    transition:
+        opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.section.in .section-label { opacity: 1; transform: translateY(0); transition-delay: 0s; }
+.section.in .section-title { opacity: 1; transform: translateY(0); transition-delay: 0.12s; }
+.section.in .section-lead  { opacity: 1; transform: translateY(0); transition-delay: 0.24s; }
+
+/* ---------- Премиальные карточки с 3D-tilt ---------- */
+.product-card,
+.principle-card,
+.feature-card,
+.tech-card,
+.trust-card,
+.step,
+.contact-card {
+    transform-style: preserve-3d;
+    transition:
+        transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.5s ease,
+        background 0.5s ease,
+        box-shadow 0.5s ease;
+}
+.product-card:hover,
+.principle-card:hover,
+.feature-card:hover,
+.trust-card:hover,
+.step:hover,
+.contact-card:hover {
+    box-shadow:
+        0 20px 60px rgba(0,0,0,0.55),
+        0 0 40px rgba(228,185,99,0.06);
+}
+.tech-card:hover {
+    box-shadow:
+        0 12px 32px rgba(0,0,0,0.4),
+        0 0 24px rgba(228,185,99,0.08);
+}
+
+/* ---------- Плавнее кнопки с glow ---------- */
+.btn-primary {
+    box-shadow:
+        0 4px 20px rgba(0,0,0,0.35),
+        0 0 0 rgba(228,185,99,0);
+    transition:
+        background 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+        color 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-primary:hover {
+    box-shadow:
+        0 12px 40px rgba(228,185,99,0.35),
+        0 0 60px rgba(228,185,99,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.3);
+    transform: translateY(-2px);
+}
+
+.btn-ghost {
+    transition:
+        color 0.4s ease,
+        border-color 0.4s ease,
+        background 0.4s ease,
+        transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-ghost:hover {
+    background: rgba(228,185,99,0.04);
+    transform: translateY(-2px);
+}
+
+/* ---------- Навигация: подчёркивание через glow ---------- */
+nav a::after {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    box-shadow: 0 0 8px rgba(228,185,99,0.7);
+}
+nav a:hover {
+    color: var(--gold) !important;
+    text-shadow: 0 0 12px rgba(228,185,99,0.5);
+}
+
+/* ---------- Логотип: усиление пульсации ---------- */
+.logo-mark {
+    animation: logoDotPremium 4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@keyframes logoDotPremium {
+    0%, 100% {
+        box-shadow:
+            0 0 12px var(--gold),
+            0 0 24px rgba(228,185,99,0.5),
+            0 0 48px rgba(228,185,99,0.15),
+            inset 0 0 4px rgba(255,255,255,0.7);
+    }
+    50% {
+        box-shadow:
+            0 0 22px var(--gold-hi),
+            0 0 44px rgba(228,185,99,0.9),
+            0 0 88px rgba(228,185,99,0.4),
+            inset 0 0 6px rgba(255,255,255,0.9);
+    }
+}
+
+/* ---------- Заголовки: мерцающий блеск на em ---------- */
+.hero h1 em,
+.section-title em,
+.cta-final h2 em,
+.about-grid h2 em,
+.manifest-hero h1 em {
+    background: linear-gradient(
+        110deg,
+        var(--gold) 0%,
+        var(--gold) 40%,
+        var(--gold-hi) 50%,
+        var(--gold) 60%,
+        var(--gold) 100%
+    );
+    background-size: 250% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: emShine 8s ease-in-out infinite;
+}
+@keyframes emShine {
+    0%, 100% { background-position: 100% 0; }
+    50%      { background-position: 0 0; }
+}
+
+/* ---------- FAQ: премиальное раскрытие ---------- */
+.faq-item {
+    transition:
+        border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+        background 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.faq-item.open {
+    box-shadow:
+        0 8px 32px rgba(0,0,0,0.4),
+        0 0 24px rgba(228,185,99,0.06);
+}
+.faq-answer {
+    transition:
+        max-height 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+        padding 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.5s ease;
+    opacity: 0;
+}
+.faq-item.open .faq-answer {
+    opacity: 1;
+}
+
+/* ---------- История: подсветка узла с кольцом ---------- */
+.history-item:hover::before {
+    background: var(--gold);
+    box-shadow:
+        0 0 20px var(--gold),
+        0 0 0 4px rgba(228,185,99,0.18),
+        0 0 0 8px rgba(228,185,99,0.06);
+    transform: scale(1.35);
+}
+
+/* ---------- Roadmap: подсветка текущего пункта ---------- */
+.roadmap-current .roadmap-marker {
+    box-shadow:
+        0 0 16px rgba(228,185,99,0.85),
+        0 0 0 5px rgba(228,185,99,0.18),
+        0 0 0 10px rgba(228,185,99,0.06);
+}
+
+/* ---------- Gyroscope: добавка кольцевого свечения ---------- */
+.gyro-ring {
+    transition: border-color 0.6s ease, box-shadow 0.6s ease;
+}
+.gyro-stage:hover .gyro-ring-1 {
+    border-color: rgba(247,216,150,0.85);
+    box-shadow:
+        0 0 40px rgba(228,185,99,0.3),
+        inset 0 0 40px rgba(228,185,99,0.15);
+}
+.gyro-stage:hover .gyro-ring-2 {
+    border-color: rgba(247,216,150,0.6);
+    box-shadow:
+        0 0 50px rgba(228,185,99,0.2),
+        inset 0 0 50px rgba(228,185,99,0.1);
+}
+
+/* ---------- Marquee: плавнее и медленнее ---------- */
+.marquee-track {
+    animation: marquee 65s linear infinite;
+}
+
+/* ---------- Ссылки в футере: плавнее ---------- */
+footer a {
+    transition: color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                text-shadow 0.4s ease;
+}
+footer a:hover {
+    color: var(--gold);
+    padding-left: 8px;
+    text-shadow: 0 0 10px rgba(228,185,99,0.4);
+}
+
+/* ---------- Contact card: стрелка с мягким следом ---------- */
+.contact-card:hover .contact-arrow {
+    transform: translateX(10px);
+    filter: drop-shadow(0 0 8px rgba(228,185,99,0.7));
+}
+
+/* ---------- Sticky CTA: мягче выезжает ---------- */
+.sticky-cta {
+    transition:
+        transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------- Scroll bar: тоньше и золотистее ---------- */
+.scroll-progress-bar {
+    box-shadow:
+        0 0 12px rgba(228,185,99,0.7),
+        0 0 24px rgba(228,185,99,0.35);
+}
+
+/* ---------- Snake cursor: премиальное свечение ---------- */
+.snake-head {
+    box-shadow:
+        0 0 20px var(--gold-hi),
+        0 0 40px rgba(228,185,99,0.7),
+        0 0 80px rgba(228,185,99,0.35);
+}
+.snake-head.hover {
+    box-shadow:
+        0 0 30px var(--gold-hi),
+        0 0 60px rgba(228,185,99,0.85),
+        0 0 120px rgba(228,185,99,0.45);
+}
+
+/* ---------- Proof-bar: подсветка цифр ---------- */
+.proof-num {
+    background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, var(--gold-lo));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: filter 0.5s ease;
+}
+.proof-cell:hover .proof-num {
+    filter: drop-shadow(0 0 12px rgba(228,185,99,0.7));
+}
+
+/* ---------- Продуктовые карточки: активная подсветка названия ---------- */
+.product-card h3 {
+    transition: color 0.4s ease, text-shadow 0.4s ease;
+}
+.product-card:hover h3 {
+    color: var(--gold-hi);
+    text-shadow: 0 0 16px rgba(228,185,99,0.4);
+}
+
+/* ---------- Первая буква в manifest-тексте: свечение ---------- */
+.manifest-body p:first-of-type::first-letter {
+    text-shadow: 0 0 30px rgba(228,185,99,0.35);
+}
+
+/* ---------- Улучшенный reveal для карточек ---------- */
+.product-card,
+.principle-card,
+.feature-card,
+.tech-card,
+.trust-card,
+.step {
+    opacity: 0;
+    transform: translateY(50px);
+    transition:
+        opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 1.1s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.5s ease,
+        background 0.5s ease,
+        box-shadow 0.5s ease;
+}
+.product-card.in,
+.principle-card.in,
+.feature-card.in,
+.tech-card.in,
+.trust-card.in,
+.step.in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ---------- Плавнее все ссылки-контакты ---------- */
+a, button {
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================================
+   TECH PAGE — недостающие layout-классы
+   ============================================================ */
+
+.tech-hero-badge {
+    display: inline-block;
+    border: 1px solid var(--border-gold);
+    padding: 8px 18px;
+    border-radius: 100px;
+    background: rgba(228,185,99,.05);
+    margin-bottom: 40px;
+}
+
+.tech-terminal-section {
+    padding: 0 60px 140px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.tech-wave-section {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 60px 140px;
+}
+
+.wave-kicker {
+    margin-bottom: 32px;
+}
+
+@media (max-width: 900px) {
+    .tech-terminal-section { padding: 0 24px 90px; }
+    .tech-wave-section     { padding: 0 24px 90px; }
+}
+
+/* ============================================================
+   Мелкие улучшения
+   ============================================================ */
+
+/* Секции без JS-fallback — если observer не сработал, показать контент */
+@media (prefers-reduced-motion: reduce) {
+    .section .section-label,
+    .section .section-title,
+    .section .section-lead,
+    .product-card,
+    .principle-card,
+    .feature-card,
+    .tech-card,
+    .trust-card,
+    .step {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
+
+/* Небольшая правка — hero-бейджу на tech не нужен общий `.tech-hero .manifest-kicker` */
+.tech-hero .tech-hero-badge {
+    margin-bottom: 40px;
 }
