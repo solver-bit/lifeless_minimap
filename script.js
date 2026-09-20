@@ -910,4 +910,66 @@
             sections.forEach(s => rio.observe(s));
         }
     }
+    // ============================================================
+    // NEXUS — интерактивный граф навигации
+    // ============================================================
+    const nexus = document.getElementById('nexus');
+    if (nexus) {
+        const CONNECTIONS = {
+            center:     ['bot', 'manifest', 'technology', 'roadmap', 'games', 'products'],
+            bot:        ['center', 'manifest', 'products', 'technology'],
+            manifest:   ['center', 'bot', 'technology', 'products'],
+            technology: ['center', 'manifest', 'bot', 'games', 'roadmap'],
+            roadmap:    ['center', 'technology', 'games', 'products'],
+            games:      ['center', 'roadmap', 'products', 'technology'],
+            products:   ['center', 'games', 'bot', 'manifest', 'roadmap']
+        };
+
+        const allNodes = nexus.querySelectorAll('.nexus-node');
+        const allEdges = nexus.querySelectorAll('.nexus-edges line');
+
+        allNodes.forEach(node => {
+            const id = node.dataset.node;
+            if (!id) return;
+            const connected = CONNECTIONS[id] || [];
+
+            node.addEventListener('mouseenter', () => {
+                nexus.classList.add('dimmed');
+                node.classList.add('active');
+
+                allEdges.forEach(edge => {
+                    if (edge.dataset.from === id || edge.dataset.to === id) {
+                        edge.classList.add('active');
+                    }
+                });
+
+                allNodes.forEach(n => {
+                    if (connected.includes(n.dataset.node)) {
+                        n.classList.add('connected');
+                    }
+                });
+            });
+
+            node.addEventListener('mouseleave', () => {
+                nexus.classList.remove('dimmed');
+                node.classList.remove('active');
+
+                allEdges.forEach(edge => edge.classList.remove('active'));
+                allNodes.forEach(n => n.classList.remove('connected'));
+            });
+        });
+
+        // Плавный скролл для узлов, ведущих на якоря
+        nexus.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                const href = a.getAttribute('href');
+                if (!href || href === '#') return;
+                const target = document.querySelector(href);
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    }
 })();

@@ -152,6 +152,77 @@
     </div>
 </section>
 
+<!-- NEXUS NAVIGATION -->
+<section class="nexus-wrap" id="nexusSection">
+    <div class="section-label">00 · НАВИГАЦИЯ</div>
+    <h2 class="section-title">Разветвление <em>LIFELESS</em></h2>
+    <p class="section-lead">Вся экосистема — на одной карте. Наведи на узел, чтобы подсветить связи, кликни — чтобы перейти.</p>
+
+    <div class="nexus" id="nexus">
+        <svg class="nexus-svg" viewBox="0 0 1000 600" preserveAspectRatio="none">
+            <g class="nexus-edges">
+                <!-- Лучи от центра -->
+                <line data-from="center" data-to="bot"         x1="500" y1="300" x2="510" y2="90"  class="hub-edge"/>
+                <line data-from="center" data-to="manifest"    x1="500" y1="300" x2="860" y2="222" class="hub-edge"/>
+                <line data-from="center" data-to="technology"  x1="500" y1="300" x2="820" y2="462" class="hub-edge"/>
+                <line data-from="center" data-to="roadmap"     x1="500" y1="300" x2="480" y2="522" class="hub-edge"/>
+                <line data-from="center" data-to="games"       x1="500" y1="300" x2="150" y2="450" class="hub-edge"/>
+                <line data-from="center" data-to="products"    x1="500" y1="300" x2="180" y2="180" class="hub-edge"/>
+
+                <!-- По кругу -->
+                <line data-from="bot"         data-to="manifest"    x1="510" y1="90"  x2="860" y2="222"/>
+                <line data-from="manifest"    data-to="technology"  x1="860" y1="222" x2="820" y2="462"/>
+                <line data-from="technology"  data-to="roadmap"     x1="820" y1="462" x2="480" y2="522"/>
+                <line data-from="roadmap"     data-to="games"       x1="480" y1="522" x2="150" y2="450"/>
+                <line data-from="games"       data-to="products"    x1="150" y1="450" x2="180" y2="180"/>
+                <line data-from="products"    data-to="bot"         x1="180" y1="180" x2="510" y2="90"/>
+
+                <!-- Перекрёстные -->
+                <line data-from="bot"         data-to="technology"  x1="510" y1="90"  x2="820" y2="462"/>
+                <line data-from="products"    data-to="manifest"    x1="180" y1="180" x2="860" y2="222"/>
+                <line data-from="games"       data-to="technology"  x1="150" y1="450" x2="820" y2="462"/>
+                <line data-from="roadmap"     data-to="products"    x1="480" y1="522" x2="180" y2="180"/>
+            </g>
+        </svg>
+
+        <!-- Узлы -->
+        <a href="#company" class="nexus-node hub" data-node="center" style="left:50%;top:50%">
+            <span class="nexus-dot"></span>
+            <span class="nexus-label">LIFELESS</span>
+        </a>
+
+        <a href="bot.html" class="nexus-node" data-node="bot" style="left:51%;top:15%">
+            <span class="nexus-dot"></span>
+            <span class="nexus-label">Бот · Games</span>
+        </a>
+
+        <a href="manifest.html" class="nexus-node" data-node="manifest" style="left:86%;top:37%">
+            <span class="nexus-dot"></span>
+            <span class="nexus-label">Манифест</span>
+        </a>
+
+        <a href="technology.html" class="nexus-node" data-node="technology" style="left:82%;top:77%">
+            <span class="nexus-dot"></span>
+            <span class="nexus-label">Технологии</span>
+        </a>
+
+        <a href="#roadmap" class="nexus-node" data-node="roadmap" style="left:48%;top:87%">
+            <span class="nexus-dot"></span>
+            <span class="nexus-label">Roadmap</span>
+        </a>
+
+        <a href="#games" class="nexus-node" data-node="games" style="left:15%;top:75%">
+            <span class="nexus-dot"></span>
+            <span class="nexus-label">Игры</span>
+        </a>
+
+        <a href="#products" class="nexus-node" data-node="products" style="left:18%;top:30%">
+            <span class="nexus-dot"></span>
+            <span class="nexus-label">Продукты</span>
+        </a>
+    </div>
+</section>
+
 <!-- MARQUEE -->
 <div class="marquee">
     <div class="marquee-track">

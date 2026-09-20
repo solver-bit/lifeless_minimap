@@ -2694,3 +2694,227 @@ footer a:hover { color: var(--gold); padding-left: 6px; }
     .tech-stack-grid{grid-template-columns:1fr}
     .tech-stack-cell{border-right:none}
 }
+
+
+/* ============================================================
+   NEXUS — Obsidian-style graph navigation
+   ============================================================ */
+.nexus-wrap {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 140px 60px;
+    position: relative;
+}
+
+.nexus {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1000 / 600;
+    max-width: 1200px;
+    margin: 0 auto;
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at 50% 50%, rgba(228,185,99,0.06), transparent 55%),
+        radial-gradient(circle at 20% 20%, rgba(179,152,255,0.04), transparent 50%),
+        var(--bg-2);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.nexus::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(228,185,99,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(228,185,99,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 80%);
+}
+
+.nexus::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,0.5) 100%);
+    pointer-events: none;
+}
+
+.nexus-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.nexus-edges line {
+    stroke: rgba(228,185,99,0.12);
+    stroke-width: 1;
+    transition: stroke 0.4s var(--ease), stroke-width 0.4s var(--ease), opacity 0.4s;
+    vector-effect: non-scaling-stroke;
+}
+
+.nexus-edges line.hub-edge {
+    stroke: rgba(228,185,99,0.22);
+}
+
+.nexus-edges line.active {
+    stroke: var(--gold-hi);
+    stroke-width: 1.6;
+    filter: drop-shadow(0 0 6px rgba(247,216,150,0.9));
+}
+
+.nexus-node {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    color: var(--text);
+    text-decoration: none;
+    transition: opacity 0.45s var(--ease);
+    cursor: pointer;
+    z-index: 3;
+    padding: 12px;
+}
+
+.nexus-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff, var(--gold-hi) 40%, var(--gold));
+    box-shadow:
+        0 0 12px var(--gold),
+        0 0 24px rgba(228,185,99,0.5),
+        inset 0 -1px 3px rgba(0,0,0,0.35);
+    transition: all 0.4s var(--ease);
+    flex-shrink: 0;
+}
+
+.nexus-node:hover .nexus-dot,
+.nexus-node.active .nexus-dot {
+    width: 24px;
+    height: 24px;
+    box-shadow:
+        0 0 22px var(--gold),
+        0 0 44px rgba(228,185,99,0.85),
+        0 0 70px rgba(228,185,99,0.4),
+        inset 0 -1px 3px rgba(0,0,0,0.35);
+}
+
+.nexus-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-2);
+    text-align: center;
+    white-space: nowrap;
+    padding: 5px 12px;
+    border-radius: 100px;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid transparent;
+    transition: all 0.3s var(--ease);
+}
+
+.nexus-node:hover .nexus-label,
+.nexus-node.active .nexus-label {
+    color: var(--gold);
+    border-color: var(--border-gold);
+    background: rgba(10, 10, 12, 0.92);
+    transform: translateY(2px);
+}
+
+/* Центральный узел LIFELESS */
+.nexus-node.hub .nexus-dot {
+    width: 26px;
+    height: 26px;
+    background: radial-gradient(circle at 35% 30%, #fff, var(--gold-hi) 30%, var(--gold) 70%, var(--gold-lo));
+    box-shadow:
+        0 0 26px var(--gold),
+        0 0 52px rgba(228,185,99,0.65),
+        0 0 90px rgba(228,185,99,0.35),
+        inset 0 -1px 4px rgba(0,0,0,0.4);
+    animation: hubPulse 3s ease-in-out infinite;
+}
+
+.nexus-node.hub .nexus-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 6px;
+    color: var(--gold);
+    text-transform: uppercase;
+    background: transparent;
+    border: none;
+    padding: 0;
+    backdrop-filter: none;
+    margin-top: 4px;
+}
+
+.nexus-node.hub:hover .nexus-label,
+.nexus-node.hub.active .nexus-label {
+    color: var(--gold-hi);
+    background: transparent;
+    border-color: transparent;
+    transform: none;
+}
+
+@keyframes hubPulse {
+    0%, 100% {
+        box-shadow:
+            0 0 26px var(--gold),
+            0 0 52px rgba(228,185,99,0.65),
+            0 0 90px rgba(228,185,99,0.35),
+            inset 0 -1px 4px rgba(0,0,0,0.4);
+    }
+    50% {
+        box-shadow:
+            0 0 36px var(--gold),
+            0 0 72px rgba(228,185,99,0.95),
+            0 0 120px rgba(228,185,99,0.5),
+            inset 0 -1px 4px rgba(0,0,0,0.4);
+    }
+}
+
+/* Затемнение при наведении */
+.nexus.dimmed .nexus-node {
+    opacity: 0.18;
+}
+
+.nexus.dimmed .nexus-node.active,
+.nexus.dimmed .nexus-node.connected {
+    opacity: 1;
+}
+
+.nexus.dimmed .nexus-edges line {
+    opacity: 0.15;
+}
+
+.nexus.dimmed .nexus-edges line.active {
+    opacity: 1;
+}
+
+/* Респонсив */
+@media (max-width: 900px) {
+    .nexus-wrap { padding: 90px 24px; }
+    .nexus { aspect-ratio: 1 / 1; }
+    .nexus-node .nexus-label { font-size: 9px; letter-spacing: 1.5px; padding: 4px 9px; }
+    .nexus-node.hub .nexus-label { font-size: 15px; letter-spacing: 4px; }
+    .nexus-dot { width: 11px; height: 11px; }
+    .nexus-node.hub .nexus-dot { width: 20px; height: 20px; }
+}
+
+@media (max-width: 500px) {
+    .nexus-node .nexus-label { font-size: 8px; letter-spacing: 1px; padding: 3px 7px; }
+    .nexus-node.hub .nexus-label { font-size: 13px; letter-spacing: 3px; }
+    .nexus-node { gap: 8px; }
+}
