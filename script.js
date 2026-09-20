@@ -995,4 +995,296 @@
             });
         });
     }
+        // ============================================================
+    // THEME SYSTEM
+    // ============================================================
+    const themeToggle = document.getElementById('themeToggle');
+
+    // Восстановить тему до первой отрисовки (anti-flash)
+    (function initTheme() {
+        const saved = localStorage.getItem('lifeless-theme');
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        const theme = saved || (prefersLight ? 'light' : 'dark');
+        document.documentElement.dataset.theme = theme;
+    })();
+
+    if (themeToggle) {
+        themeToggle.addEventListener('click', (e) => {
+            const current = document.documentElement.dataset.theme || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            const bg = next === 'light' ? '#f5f4ef' : '#000000';
+
+            const r = themeToggle.getBoundingClientRect();
+            const x = r.left + r.width / 2;
+            const y = r.top + r.height / 2;
+
+            const overlay = document.createElement('div');
+            overlay.className = 'theme-wipe';
+            overlay.style.background = bg;
+            overlay.style.setProperty('--wx', x + 'px');
+            overlay.style.setProperty('--wy', y + 'px');
+            document.body.appendChild(overlay);
+
+            requestAnimationFrame(() => {
+                overlay.classList.add('expand');
+            });
+
+            setTimeout(() => {
+                document.documentElement.dataset.theme = next;
+                localStorage.setItem('lifeless-theme', next);
+
+                setTimeout(() => {
+                    overlay.classList.add('fade');
+                    setTimeout(() => overlay.remove(), 450);
+                }, 80);
+            }, 640);
+        });
+    }
+
+    // ============================================================
+    // AMBIENT SOUND (Web Audio API)
+    // ============================================================
+    const ambientToggle = document.getElementById('ambientToggle');
+    let audioCtx = null;
+    let ambientGain = null;
+    let ambientOn = false;
+
+    function initAmbient() {
+        if (audioCtx) return;
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+
+        audioCtx = new Ctx();
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 700;
+        filter.Q.value = 0.8;
+        filter.connect(audioCtx.destination);
+
+        ambientGain = audioCtx.createGain();
+        ambientGain.gain.value = 0;
+        ambientGain.connect(filter);
+
+        const freqs = [55, 82.4, 110, 164.8, 220];
+        freqs.forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+            osc.frequency.value = f;
+
+            const oscGain = audioCtx.createGain();
+            oscGain.gain.value = 0.10 / (i + 1);
+
+            const lfo = audioCtx.createOscillator();
+            lfo.frequency.value = 0.06 + i * 0.03;
+            const lfoGain = audioCtx.createGain();
+            lfoGain.gain.value = 0.04 / (i + 1);
+
+            lfo.connect(lfoGain);
+            lfoGain.connect(oscGain.gain);
+
+            osc.connect(oscGain);
+            oscGain.connect(ambientGain);
+
+            osc.start();
+            lfo.start();
+        });
+    }
+
+    if (ambientToggle) {
+        // Восстановить состояние
+        if (localStorage.getItem('lifeless-ambient') === 'on') {
+            ambientToggle.classList.add('on');
+            // Не запускаем до первого клика (autoplay policy)
+        }
+
+        ambientToggle.addEventListener('click', () => {
+            if (!audioCtx) initAmbient();
+            if (!audioCtx) return;
+
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            ambientOn = !ambientOn;
+            ambientToggle.classList.toggle('on', ambientOn);
+
+            const now = audioCtx.currentTime;
+            ambientGain.gain.cancelScheduledValues(now);
+            ambientGain.gain.linearRampToValueAtTime(
+                ambientOn ? 0.35 : 0,
+                now + 1.4
+            );
+
+            localStorage.setItem('lifeless-ambient', ambientOn ? 'on' : 'off');
+        });
+    }
+
+    // ============================================================
+    // SECTION NAV (floating dots)
+    // ============================================================
+    const sectionNav = document.getElementById('sectionNav');
+    if (!sectionNav) {
+        // Создаём, если нет
+        const nav = document.createElement('div');
+        nav.className = 'section-nav';
+        nav.id = 'sectionNav';
+        document.body.appendChild(nav);
+    }
+
+    const navEl = document.getElementById('sectionNav');
+    if (navEl) {
+        const secs = Array.from(document.querySelectorAll('section[id]'));
+        const LABELS = {
+            company: 'Компания', principles: 'Принципы', history: 'История',
+            products: 'Продукты', games: 'Игры', tech: 'Технологии',
+            roadmap: 'Roadmap', about: 'О нас', faq: 'FAQ',
+            contact: 'Контакты', inside: 'Что внутри', start: 'Как начать',
+            trust: 'Безопасность', nexusSection: 'Навигация'
+        };
+
+        secs.forEach(sec => {
+            const btn = document.createElement('button');
+            btn.className = 'section-nav-dot';
+            btn.dataset.target = sec.id;
+            btn.dataset.label = LABELS[sec.id] || sec.id;
+            btn.setAttribute('aria-label', LABELS[sec.id] || sec.id);
+            btn.addEventListener('click', () => {
+                sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+            navEl.appendChild(btn);
+        });
+
+        const dots = navEl.querySelectorAll('.section-nav-dot');
+
+        function updateNavVisibility() {
+            if (window.scrollY > window.innerHeight * 0.6) {
+                navEl.classList.add('visible');
+            } else {
+                navEl.classList.remove('visible');
+            }
+        }
+        window.addEventListener('scroll', updateNavVisibility, { passive: true });
+        updateNavVisibility();
+
+        if ('IntersectionObserver' in window) {
+            const secIO = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        const id = e.target.id;
+                        dots.forEach(d => {
+                            d.classList.toggle('active', d.dataset.target === id);
+                        });
+                    }
+                });
+            }, { threshold: 0.4, rootMargin: '-20% 0px -40% 0px' });
+            secs.forEach(s => secIO.observe(s));
+        }
+    }
+
+    // ============================================================
+    // 3D TILT CARDS
+    // ============================================================
+    if (isDesktop) {
+        const TILT_SEL = [
+            '.product-card', '.principle-card', '.feature-card',
+            '.tech-card', '.trust-card', '.step', '.contact-card',
+            '.lab-tilt-card'
+        ].join(',');
+
+        const MAX_TILT = 5;
+
+        document.querySelectorAll(TILT_SEL).forEach(card => {
+            // Проверка: не является ли элемент маленьким
+            card.addEventListener('mouseenter', () => {
+                card.style.transition = 'transform 0.15s ease-out, box-shadow 0.5s ease, border-color 0.5s ease';
+            });
+            card.addEventListener('mousemove', (e) => {
+                const r = card.getBoundingClientRect();
+                const x = (e.clientX - r.left) / r.width - 0.5;
+                const y = (e.clientY - r.top) / r.height - 0.5;
+
+                card.style.setProperty('--mx', ((x + 0.5) * 100) + '%');
+                card.style.setProperty('--my', ((y + 0.5) * 100) + '%');
+
+                const rx = (-y * MAX_TILT).toFixed(2);
+                const ry = (x * MAX_TILT).toFixed(2);
+
+                // Прямое transform вместо CSS var — чтобы не конфликтовать с .in
+                card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-4px)`;
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transition = 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease, border-color 0.5s ease';
+                card.style.transform = '';
+                card.style.removeProperty('--mx');
+                card.style.removeProperty('--my');
+            });
+        });
+    }
+
+    // ============================================================
+    // IMAGE LOADER
+    // ============================================================
+    document.querySelectorAll('.gallery-visual, .durov-visual').forEach(container => {
+        const img = container.querySelector('img');
+        if (!img) return;
+
+        // Добавляем loader-bar если его нет
+        if (!container.querySelector('.img-loader')) {
+            const loader = document.createElement('div');
+            loader.className = 'img-loader';
+            container.appendChild(loader);
+        }
+
+        const finish = () => container.classList.add('loaded');
+
+        if (img.complete && img.naturalHeight !== 0) {
+            finish();
+        } else {
+            img.addEventListener('load', finish, { once: true });
+            img.addEventListener('error', finish, { once: true });
+        }
+    });
+
+    // Fallback: любой img с [data-fade]
+    document.querySelectorAll('img[data-fade]').forEach(img => {
+        const finish = () => img.classList.add('loaded');
+        if (img.complete) finish();
+        else img.addEventListener('load', finish, { once: true });
+    });
+
+    // ============================================================
+    // GYROSCOPE — DeviceOrientation
+    // ============================================================
+    // Уже существует блок GYROSCOPE. Добавляем поддержку deviceorientation.
+    if (gyro && gyroStage && typeof DeviceOrientationEvent !== 'undefined') {
+        let hasOrientation = false;
+
+        function handleOrientation(e) {
+            if (e.gamma == null || e.beta == null) return;
+            hasOrientation = true;
+
+            const gamma = Math.max(-30, Math.min(30, e.gamma));
+            const beta = Math.max(-30, Math.min(30, e.beta - 40));
+
+            rotY = (gamma / 30) * 18;
+            rotX = -(beta / 30) * 18;
+            applyGyroTransform();
+        }
+
+        // Запрос разрешения на iOS
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            // Требуется user gesture — вешаем на первый тач
+            document.addEventListener('touchstart', function askGyro() {
+                DeviceOrientationEvent.requestPermission()
+                    .then(res => {
+                        if (res === 'granted') {
+                            window.addEventListener('deviceorientation', handleOrientation);
+                        }
+                    })
+                    .catch(() => {});
+                document.removeEventListener('touchstart', askGyro);
+            }, { once: true });
+        } else {
+            window.addEventListener('deviceorientation', handleOrientation);
+        }
+    }
 })();

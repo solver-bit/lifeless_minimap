@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лаборатория — LIFELESS</title>
+<meta name="description" content="Интерактивная лаборатория LIFELESS: живой код, визуализации, эксперименты.">
+<meta property="og:title" content="Лаборатория — LIFELESS">
+<meta property="og:image" content="https://solver-bit.github.io/lifeless_minimap/durov4.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="scroll-progress"><div class="scroll-progress-bar" id="scrollBar"></div></div>
+<div class="mouse-trail" id="mouseTrail"></div>
+
+<header id="header">
+    <a href="index.html" class="logo">
+        <span class="logo-mark"></span>
+        <span>LIFELESS</span>
+    </a>
+    <nav>
+        <a href="index.html">Главная</a>
+        <a href="manifest.html">Манифест</a>
+        <a href="technology.html">Технологии</a>
+        <a href="bot.html">Бот</a>
+        <a href="lab.html">Лаборатория</a>
+    </nav>
+    <div class="header-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Сменить тему">
+            <span class="theme-toggle-ring"></span>
+            <span class="theme-icon">
+                <svg viewBox="0 0 24 24" class="theme-svg theme-svg-sun" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4" fill="currentColor"/>
+                    <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+                        <line x1="12" y1="2" x2="12" y2="4"/>
+                        <line x1="12" y1="20" x2="12" y2="22"/>
+                        <line x1="2" y1="12" x2="4" y2="12"/>
+                        <line x1="20" y1="12" x2="22" y2="12"/>
+                        <line x1="4.5" y1="4.5" x2="6" y2="6"/>
+                        <line x1="18" y1="18" x2="19.5" y2="19.5"/>
+                        <line x1="4.5" y1="19.5" x2="6" y2="18"/>
+                        <line x1="18" y1="6" x2="19.5" y2="4.5"/>
+                    </g>
+                </svg>
+                <svg viewBox="0 0 24 24" class="theme-svg theme-svg-moon" aria-hidden="true">
+                    <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="currentColor"/>
+                </svg>
+            </span>
+        </button>
+        <button class="ambient-toggle" id="ambientToggle" aria-label="Фоновый звук">
+            <span class="ambient-bars"><span></span><span></span><span></span></span>
+        </button>
+        <button class="burger" id="burger" aria-label="Меню">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Главная</a>
+    <a href="manifest.html">Манифест</a>
+    <a href="technology.html">Технологии</a>
+    <a href="bot.html">Бот</a>
+    <a href="lab.html">Лаборатория</a>
+    <a href="https://t.me/Solver_Life_bot" class="mobile-cta" target="_blank">Открыть бота</a>
+</div>
+
+<!-- HERO -->
+<section class="lab-hero">
+    <div class="hero-glow"></div>
+    <div class="hero-glow-2"></div>
+    <div class="manifest-kicker">§ LAB · LIVE SYSTEMS</div>
+    <h1>Живая<br><em>лаборатория</em></h1>
+    <p>Каждый объект ниже — не картинка. Это работающий код, который ты можешь потрогать. Всё, что здесь — используется внутри продуктов LIFELESS.</p>
+</section>
+
+<!-- LAB GRID -->
+<section class="lab-grid" id="labGrid">
+
+    <!-- § 01 TERMINAL -->
+    <div class="lab-item lab-item-full">
+        <div class="lab-item-label">§ 01 · TERMINAL</div>
+        <h3 class="lab-item-title">Boot-сессия ядра</h3>
+        <p class="lab-item-desc">Реальный поток инициализации — так система загружает свои модули при старте.</p>
+        <div class="terminal">
+            <div class="terminal-bar">
+                <span class="terminal-dot tdot-r"></span>
+                <span class="terminal-dot tdot-y"></span>
+                <span class="terminal-dot tdot-g"></span>
+                <span class="terminal-title">lifeless@lab — bash — 80×24</span>
+            </div>
+            <div class="terminal-body" id="terminalBody"></div>
+        </div>
+    </div>
+
+    <!-- § 02 NEURAL -->
+    <div class="lab-item">
+        <div class="lab-item-label">§ 02 · NEURAL</div>
+        <h3 class="lab-item-title">Нейросеть связей</h3>
+        <p class="lab-item-desc">Живой граф. Проведи мышью — узлы реагируют.</p>
+        <div class="neural-stage" style="height:340px">
+            <canvas class="neural-canvas" id="neuralCanvas"></canvas>
+            <div class="neural-hint">СЕТЬ · LIVE</div>
+            <div class="neural-corner tl"></div>
+            <div class="neural-corner tr"></div>
+            <div class="neural-corner bl"></div>
+            <div class="neural-corner br"></div>
+        </div>
+    </div>
+
+    <!-- § 03 ATOM -->
+    <div class="lab-item">
+        <div class="lab-item-label">§ 03 · ATOM</div>
+        <h3 class="lab-item-title">Ядро экономики</h3>
+        <p class="lab-item-desc">Баланс, орбиты, транзакции — атомарно.</p>
+        <div class="atom-stage" style="max-width:320px">
+            <svg class="atom-svg" viewBox="0 0 400 400">
+                <defs>
+                    <radialGradient id="lNucleusCore">
+                        <stop offset="0%"  stop-color="#ffffff"/>
+                        <stop offset="25%" stop-color="#FFF4D6"/>
+                        <stop offset="55%" stop-color="#F7D896"/>
+                        <stop offset="85%" stop-color="#E4B963"/>
+                        <stop offset="100%" stop-color="#B88838"/>
+                    </radialGradient>
+                    <radialGradient id="lNucleusHalo">
+                        <stop offset="0%"  stop-color="#F7D896" stop-opacity="0.85"/>
+                        <stop offset="35%" stop-color="#E4B963" stop-opacity="0.35"/>
+                        <stop offset="70%" stop-color="#E4B963" stop-opacity="0.08"/>
+                        <stop offset="100%" stop-color="#E4B963" stop-opacity="0"/>
+                    </radialGradient>
+                    <radialGradient id="lElectronBody">
+                        <stop offset="0%"  stop-color="#ffffff"/>
+                        <stop offset="40%" stop-color="#F7D896"/>
+                        <stop offset="100%" stop-color="#E4B963"/>
+                    </radialGradient>
+                    <radialGradient id="lElectronHalo">
+                        <stop offset="0%"  stop-color="#F7D896" stop-opacity="0.9"/>
+                        <stop offset="60%" stop-color="#E4B963" stop-opacity="0.15"/>
+                        <stop offset="100%" stop-color="#E4B963" stop-opacity="0"/>
+                    </radialGradient>
+                    <linearGradient id="lOrbitFade" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%"   stop-color="#E4B963" stop-opacity="0.05"/>
+                        <stop offset="50%"  stop-color="#F7D896" stop-opacity="0.55"/>
+                        <stop offset="100%" stop-color="#E4B963" stop-opacity="0.05"/>
+                    </linearGradient>
+                    <filter id="lSoftGlow" x="-100%" y="-100%" width="300%" height="300%">
+                        <feGaussianBlur stdDeviation="4" result="b"/>
+                        <feMerge>
+                            <feMergeNode in="b"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                    <filter id="lCoreGlow" x="-200%" y="-200%" width="500%" height="500%">
+                        <feGaussianBlur stdDeviation="8" result="b1"/>
+                        <feGaussianBlur stdDeviation="18" result="b2"/>
+                        <feMerge>
+                            <feMergeNode in="b2"/>
+                            <feMergeNode in="b1"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+
+                    <!-- Эллипс-путь, по которому ползёт электрон -->
+                    <path id="lOrbitPath"
+                          d="M 40,200 a 160,58 0 1,0 320,0 a 160,58 0 1,0 -320,0"
+                          fill="none"
+                          stroke="url(#lOrbitFade)"
+                          stroke-width="0.9"/>
+                </defs>
+
+                <!-- Halo -->
+                <circle cx="200" cy="200" r="130" fill="url(#lNucleusHalo)">
+                    <animate attributeName="r" values="120;150;120" dur="6s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.7;1;0.7" dur="6s" repeatCount="indefinite"/>
+                </circle>
+
+                <!-- ОРБИТА 1 · 0° -->
+                <use href="#lOrbitPath"/>
+                <g>
+                    <circle r="18" fill="url(#lElectronHalo)">
+                        <animateMotion dur="9s" repeatCount="indefinite"
+                            path="M 40,200 a 160,58 0 1,0 320,0 a 160,58 0 1,0 -320,0"/>
+                    </circle>
+                    <circle r="5.5" fill="url(#lElectronBody)" filter="url(#lSoftGlow)">
+                        <animateMotion dur="9s" repeatCount="indefinite"
+                            path="M 40,200 a 160,58 0 1,0 320,0 a 160,58 0 1,0 -320,0"/>
+                    </circle>
+                    <circle r="2" fill="#ffffff">
+                        <animateMotion dur="9s" repeatCount="indefinite"
+                            path="M 40,200 a 160,58 0 1,0 320,0 a 160,58 0 1,0 -320,0"/>
+                    </circle>
+                </g>
+
+                <!-- ОРБИТА 2 · 60° -->
+                <g transform="rotate(60 200 200)">
+                    <use href="#lOrbitPath"/>
+                    <g>
+                        <circle r="18" fill="url(#lElectronHalo)">
+                            <animateMotion dur="11s" repeatCount="indefinite"
+                                path="M 40,200 a 160,58 0 1,0 320,0 a 160,58 0 1,0 -320,0"/>
+                        </circle>
+                        <circle r="5.5" fill="url(#lElectronBody)" filter="url(#lSoftGlow)">
+                            <animateMotion dur="11s" repeatCount="indefinite"
+                                path="M 40,200 a 160,58 0 1,0 320,0 a 160,58 0 1,0 -320,0"/>
+                        </circle>
+                        <circle r="2" fill="#ffffff">
+                            <animateMotion dur="11s" repeatCount="indefinite"
+                                path="M 40,200 a 160,58 0 1,0 320,0 a 160,58 0 1,0 -320,0"/>
+                        </circle>
+                    </g>
+                </g>
+
+                <!-- ОРБИТА 3 · 120° -->
+                <g transform="rotate(120 200 200)">
+                    <use href="#lOrbitPath"/>
+                    <g>
+                        <circle r="18" fill="url(#lElectronHalo)">
+                            <animateMotion dur="13s" repeatCount="indefinite"
+                                path="M 40,200 a 160,58 0 1,0 320,0 a 160,58 0 1,0 -320,0"/>
+                        </circle>
+                        <circle r="5.5" fill="url(#lElectronBody)" filter="url(#lSoftGlow)">
+                            <animateMotion dur="13s" repeatCount="indefinite"
+                                path="M 40,200 a 160,58 0 1,0 320,0 a 160,58 0 1,0 -320,0"/>
+                        </circle>
+                        <circle r="2" fill="#ffffff">
+                            <animateMotion dur="13s" repeatCount="indefinite"
+                                path="M 40,200 a 160,58 0 1,0 320,0 a 160,58 0 1,0 -320,0"/>
+                        </circle>
+                    </g>
+                </g>
+
+                <!-- ЯДРО -->
+                <circle cx="200" cy="200" r="55" fill="url(#lNucleusHalo)" opacity="0.7">
+                    <animate attributeName="r" values="50;62;50" dur="4s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="200" cy="200" r="28" fill="url(#lNucleusHalo)" opacity="0.85"/>
+                <circle cx="200" cy="200" r="15" fill="url(#lNucleusCore)" filter="url(#lCoreGlow)">
+                    <animate attributeName="r" values="15;16.5;15" dur="3.5s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="200" cy="200" r="3.5" fill="#ffffff">
+                    <animate attributeName="opacity" values="0.75;1;0.75" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="200" cy="200" r="15" fill="none" stroke="#F7D896" stroke-width="0.6" opacity="0.6">
+                    <animate attributeName="r" values="15;48" dur="2.8s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.7;0" dur="2.8s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="200" cy="200" r="15" fill="none" stroke="#F7D896" stroke-width="0.6" opacity="0.6">
+                    <animate attributeName="r" values="15;48" dur="2.8s" begin="1.4s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.7;0" dur="2.8s" begin="1.4s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+        </div>
+    </div>
+
+    <!-- § 04 RADAR -->
+    <div class="lab-item">
+        <div class="lab-item-label">§ 04 · RADAR</div>
+        <h3 class="lab-item-title">Сканирование системы</h3>
+        <p class="lab-item-desc">Мониторинг запросов и алертов в реальном времени.</p>
+        <div class="radar-stage" style="max-width:280px">
+            <svg class="radar-svg" viewBox="0 0 400 400">
+                <defs>
+                    <linearGradient id="lRadarGrad" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stop-color="#F7D896" stop-opacity="0.6"/>
+                        <stop offset="100%" stop-color="#E4B963" stop-opacity="0"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="200" cy="200" r="180" class="radar-ring"/>
+                <circle cx="200" cy="200" r="130" class="radar-ring r1"/>
+                <circle cx="200" cy="200" r="80" class="radar-ring"/>
+                <circle cx="200" cy="200" r="30" class="radar-ring r1"/>
+                <g class="radar-cross">
+                    <line x1="20" y1="200" x2="380" y2="200"/>
+                    <line x1="200" y1="20" x2="200" y2="380"/>
+                    <line x1="72" y1="72" x2="328" y2="328"/>
+                    <line x1="328" y1="72" x2="72" y2="328"/>
+                </g>
+                <g class="radar-sweep">
+                    <path d="M200,200 L200,20 A180,180 0 0,1 380,200 Z" fill="url(#lRadarGrad)" opacity="0.6"/>
+                    <line x1="200" y1="200" x2="200" y2="20" stroke="#F7D896" stroke-width="1.2"/>
+                </g>
+                <circle cx="200" cy="200" r="3" class="radar-center"/>
+                <circle cx="290" cy="150" r="3" class="radar-blip"/>
+                <circle cx="290" cy="150" r="3" class="radar-blip pulse"/>
+                <circle cx="140" cy="290" r="3" class="radar-blip"/>
+                <circle cx="140" cy="290" r="3" class="radar-blip pulse" style="animation-delay:1.2s"/>
+            </svg>
+            <div class="radar-label">SCAN · LIVE</div>
+        </div>
+    </div>
+
+    <!-- § 05 WAVEFORM -->
+    <div class="lab-item">
+        <div class="lab-item-label">§ 05 · WAVEFORM</div>
+        <h3 class="lab-item-title">RPS в реальном времени</h3>
+        <p class="lab-item-desc">Каждый пик — входящий запрос к системе.</p>
+        <div class="wave-stage" style="height:140px">
+            <div class="wave-grid"></div>
+            <canvas class="wave-canvas" id="waveCanvas"></canvas>
+            <div class="wave-label">RPS · LIVE</div>
+        </div>
+    </div>
+
+    <!-- § 06 3D TILT -->
+    <div class="lab-item lab-item-full">
+        <div class="lab-item-label">§ 06 · 3D TILT</div>
+        <h3 class="lab-item-title">Реагирующие карточки</h3>
+        <p class="lab-item-desc">Наведи на карточку — она наклоняется за курсором и подсвечивается в точке контакта.</p>
+        <div class="lab-tilt-demo">
+            <div class="lab-tilt-card">
+                <div class="lab-tilt-icon">🎰</div>
+                <div class="lab-tilt-name">Games</div>
+                <div class="lab-tilt-desc">Игровая экосистема</div>
+            </div>
+            <div class="lab-tilt-card">
+                <div class="lab-tilt-icon">⭐</div>
+                <div class="lab-tilt-name">Shop</div>
+                <div class="lab-tilt-desc">Telegram-услуги</div>
+            </div>
+            <div class="lab-tilt-card">
+                <div class="lab-tilt-icon">🔍</div>
+                <div class="lab-tilt-name">OSINT</div>
+                <div class="lab-tilt-desc">Аналитика данных</div>
+            </div>
+            <div class="lab-tilt-card">
+                <div class="lab-tilt-icon">💠</div>
+                <div class="lab-tilt-name">Crypto</div>
+                <div class="lab-tilt-desc">Кошельки · DeFi</div>
+            </div>
+            <div class="lab-tilt-card">
+                <div class="lab-tilt-icon">🌐</div>
+                <div class="lab-tilt-name">Beyond</div>
+                <div class="lab-tilt-desc">Веб-версии</div>
+            </div>
+            <div class="lab-tilt-card">
+                <div class="lab-tilt-icon">⚛️</div>
+                <div class="lab-tilt-name">Core</div>
+                <div class="lab-tilt-desc">Ядро системы</div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final">
+    <div class="cta-final-glow"></div>
+    <div class="cta-final-inner">
+        <div class="cta-final-tag">ЭКСПЕРИМЕНТЫ · В ПРОДУКТЕ</div>
+        <h2>Всё это — <em>внутри</em></h2>
+        <p>Лаборатория — это витрина. Настоящее приключение — в боте.</p>
+        <a href="https://t.me/Solver_Life_bot" class="btn btn-primary btn-large magnetic" target="_blank">
+            <span>Открыть бота</span><span class="btn-arrow">→</span>
+        </a>
+    </div>
+</section>
+
+<footer>
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <div class="footer-logo"><span class="logo-mark"></span> LIFELESS</div>
+            <p>Независимая технологическая компания</p>
+            <div class="footer-status"><span class="status-dot"></span><span>Все системы работают</span></div>
+        </div>
+        <div class="footer-col">
+            <div class="footer-label">НАВИГАЦИЯ</div>
+            <a href="index.html">Главная</a>
+            <a href="manifest.html">Манифест</a>
+            <a href="technology.html">Технологии</a>
+            <a href="bot.html">Бот</a>
+            <a href="lab.html">Лаборатория</a>
+        </div>
+        <div class="footer-col">
+            <div class="footer-label">СВЯЗЬ</div>
+            <a href="https://t.me/durvww" target="_blank">Канал</a>
+            <a href="https://t.me/wwlifeless" target="_blank">Чат</a>
+            <a href="https://t.me/wwsolver" target="_blank">Поддержка</a>
+        </div>
+        <div class="footer-col">
+            <div class="footer-label">ПРАВОВОЕ</div>
+            <a href="index.html#privacy">Конфиденциальность</a>
+            <a href="index.html#faq">FAQ</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <div>© 2026 LIFELESS. Все права защищены.</div>
+        <div class="footer-disclaimer">18+ · Играй ответственно</div>
+    </div>
+</footer>
+
+<div class="sticky-cta" id="stickyCta">
+    <div class="sticky-cta-inner">
+        <div class="sticky-cta-text">
+            <div class="sticky-cta-title">Первый продукт LIFELESS</div>
+            <div class="sticky-cta-sub">Игровая экосистема в Telegram</div>
+        </div>
+        <a href="https://t.me/Solver_Life_bot" class="sticky-cta-btn" target="_blank">
+            <span>Открыть</span><span class="sticky-cta-arrow">→</span>
+        </a>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
