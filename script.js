@@ -580,5 +580,334 @@
         }, { threshold: 0.3 });
         sections.forEach(s => navIO.observe(s));
     }
+    // ============================================================
+    // TERMINAL TYPING
+    // ============================================================
+    const termEl = document.getElementById('terminalBody');
+    if (termEl) {
+        const LINES = [
+            { t: 'prompt', s: '$ lifeless --boot --verbose' },
+            { t: 'comment', s: '# инициализация ядра...' },
+            { t: 'ok', s: '✓ SQLite WAL loaded · 14.2 MB' },
+            { t: 'ok', s: '✓ aiogram 3 dispatcher ready' },
+            { t: 'ok', s: '✓ FastAPI mounted at /api/v1' },
+            { t: 'ok', s: '✓ HMAC verifier · 32-byte secret' },
+            { t: 'warn', s: '⚠  Cloudflare tunnel: warmup 1.2s' },
+            { t: 'ok', s: '✓ Gift API · connected' },
+            { t: 'ok', s: '✓ Stars payment · connected' },
+            { t: 'prompt', s: '$ lifeless --status' },
+            { t: 'comment', s: '' },
+            { t: 'ok', s: '  services  : 12/12 online' },
+            { t: 'ok', s: '  uptime    : 184 days' },
+            { t: 'ok', s: '  players   : 5,000+' },
+            { t: 'ok', s: '  errors/h  : 0.02' },
+            { t: 'prompt', s: '$ _' }
+        ];
 
+        let li = 0, ci = 0;
+        const cursorSpan = '<span class="terminal-cursor"></span>';
+
+        function typeNext() {
+            if (li >= LINES.length) return;
+            const line = LINES[li];
+            const text = line.s;
+
+            if (ci === 0) {
+                const wrap = document.createElement('div');
+                wrap.dataset.t = line.t;
+                wrap.className = line.t;
+                termEl.appendChild(wrap);
+            }
+
+            const current = termEl.lastChild;
+            if (ci <= text.length) {
+                current.innerHTML = text.slice(0, ci) + cursorSpan;
+                ci++;
+                const delay = text[ci - 1] === ' ' ? 12 : (18 + Math.random() * 26);
+                setTimeout(typeNext, delay);
+            } else {
+                current.innerHTML = text;
+                li++;
+                ci = 0;
+                setTimeout(typeNext, text === '' ? 80 : 220);
+            }
+        }
+        // Запуск при появлении в зоне видимости
+        if ('IntersectionObserver' in window) {
+            const tio = new IntersectionObserver((es) => {
+                es.forEach(e => {
+                    if (e.isIntersecting) {
+                        tio.disconnect();
+                        setTimeout(typeNext, 300);
+                    }
+                });
+            }, { threshold: 0.3 });
+            tio.observe(termEl);
+        } else {
+            setTimeout(typeNext, 300);
+        }
+    }
+
+    // ============================================================
+    // NEURAL WEB (canvas constellation)
+    // ============================================================
+    const neuralCanvas = document.getElementById('neuralCanvas');
+    if (neuralCanvas) {
+        const ctx = neuralCanvas.getContext('2d');
+        let nw = 0, nh = 0, dpr = 1;
+        const NODES = [];
+        const N = 44;
+
+        function nresize() {
+            const r = neuralCanvas.getBoundingClientRect();
+            dpr = Math.min(window.devicePixelRatio || 1, 2);
+            nw = r.width; nh = r.height;
+            neuralCanvas.width = nw * dpr;
+            neuralCanvas.height = nh * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function seed() {
+            NODES.length = 0;
+            for (let i = 0; i < N; i++) {
+                NODES.push({
+                    x: Math.random() * nw,
+                    y: Math.random() * nh,
+                    vx: (Math.random() - 0.5) * 0.35,
+                    vy: (Math.random() - 0.5) * 0.35,
+                    r: 1 + Math.random() * 2.2,
+                    hue: Math.random() < 0.15 ? 'violet' : 'gold'
+                });
+            }
+        }
+
+        nresize(); seed();
+
+        const mouse = { x: -9999, y: -9999 };
+        neuralCanvas.addEventListener('mousemove', (e) => {
+            const r = neuralCanvas.getBoundingClientRect();
+            mouse.x = e.clientX - r.left;
+            mouse.y = e.clientY - r.top;
+        });
+        neuralCanvas.addEventListener('mouseleave', () => {
+            mouse.x = -9999; mouse.y = -9999;
+        });
+
+        let nRaf = null;
+        function nframe() {
+            ctx.clearRect(0, 0, nw, nh);
+
+            // связи узлов
+            for (let i = 0; i < N; i++) {
+                for (let j = i + 1; j < N; j++) {
+                    const a = NODES[i], b = NODES[j];
+                    const dx = a.x - b.x, dy = a.y - b.y;
+                    const d = Math.hypot(dx, dy);
+                    if (d < 150) {
+                        const alpha = (1 - d / 150) * 0.35;
+                        ctx.strokeStyle = `rgba(228,185,99,${alpha})`;
+                        ctx.lineWidth = 0.6;
+                        ctx.beginPath();
+                        ctx.moveTo(a.x, a.y);
+                        ctx.lineTo(b.x, b.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // узлы
+            NODES.forEach(n => {
+                n.x += n.vx; n.y += n.vy;
+                if (n.x < 0 || n.x > nw) n.vx *= -1;
+                if (n.y < 0 || n.y > nh) n.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+                if (n.hue === 'violet') {
+                    ctx.fillStyle = 'rgba(179,152,255,0.95)';
+                    ctx.shadowColor = 'rgba(179,152,255,0.9)';
+                } else {
+                    ctx.fillStyle = 'rgba(247,216,150,0.95)';
+                    ctx.shadowColor = 'rgba(228,185,99,0.9)';
+                }
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+
+            // связи с мышью
+            if (mouse.x > -1000) {
+                NODES.forEach(n => {
+                    const d = Math.hypot(n.x - mouse.x, n.y - mouse.y);
+                    if (d < 190) {
+                        ctx.strokeStyle = `rgba(247,216,150,${(1 - d / 190) * 0.55})`;
+                        ctx.lineWidth = 0.9;
+                        ctx.beginPath();
+                        ctx.moveTo(n.x, n.y);
+                        ctx.lineTo(mouse.x, mouse.y);
+                        ctx.stroke();
+                    }
+                });
+                ctx.beginPath();
+                ctx.arc(mouse.x, mouse.y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                ctx.shadowColor = '#E4B963';
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            nRaf = requestAnimationFrame(nframe);
+        }
+        nframe();
+
+        let nRT;
+        window.addEventListener('resize', () => {
+            clearTimeout(nRT);
+            nRT = setTimeout(() => { nresize(); seed(); }, 200);
+        });
+
+        // Пауза, когда не видно
+        if ('IntersectionObserver' in window) {
+            const vio = new IntersectionObserver((es) => {
+                es.forEach(e => {
+                    if (e.isIntersecting) { if (!nRaf) nframe(); }
+                    else { cancelAnimationFrame(nRaf); nRaf = null; }
+                });
+            }, { threshold: 0 });
+            vio.observe(neuralCanvas);
+        }
+    }
+
+    // ============================================================
+    // WAVEFORM (звуковая волна · RPS-поток)
+    // ============================================================
+    const waveCanvas = document.getElementById('waveCanvas');
+    if (waveCanvas) {
+        const wctx = waveCanvas.getContext('2d');
+        let ww = 0, wh = 0;
+        const POINTS = 180;
+        const values = new Array(POINTS).fill(0);
+        let head = 0;
+
+        function wresize() {
+            const r = waveCanvas.getBoundingClientRect();
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            ww = r.width; wh = r.height;
+            waveCanvas.width = ww * dpr;
+            waveCanvas.height = wh * dpr;
+            wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        wresize();
+
+        function nextVal() {
+            // Имитация RPS: base 40 + шум + редкие всплески
+            const base = 0.35;
+            const noise = (Math.random() - 0.5) * 0.5;
+            const spike = Math.random() < 0.03 ? (Math.random() * 0.6) : 0;
+            return Math.max(0.05, Math.min(1, base + noise * 0.4 + spike));
+        }
+
+        function wframe() {
+            values[head] = nextVal();
+            head = (head + 1) % POINTS;
+
+            wctx.clearRect(0, 0, ww, wh);
+            const mid = wh / 2;
+
+            // градиент
+            const grad = wctx.createLinearGradient(0, 0, ww, 0);
+            grad.addColorStop(0, 'rgba(228,185,99,0.05)');
+            grad.addColorStop(0.5, 'rgba(247,216,150,0.9)');
+            grad.addColorStop(1, 'rgba(228,185,99,0.05)');
+
+            // верхняя и нижняя волна
+            for (let side = -1; side <= 1; side += 2) {
+                wctx.beginPath();
+                for (let i = 0; i < POINTS; i++) {
+                    const idx = (head + i) % POINTS;
+                    const v = values[idx];
+                    const x = (i / (POINTS - 1)) * ww;
+                    const y = mid + side * v * (wh * 0.42);
+                    if (i === 0) wctx.moveTo(x, y);
+                    else wctx.lineTo(x, y);
+                }
+                wctx.strokeStyle = grad;
+                wctx.lineWidth = 1.4;
+                wctx.stroke();
+            }
+
+            // заполнение
+            wctx.beginPath();
+            wctx.moveTo(0, mid);
+            for (let i = 0; i < POINTS; i++) {
+                const idx = (head + i) % POINTS;
+                const v = values[idx];
+                const x = (i / (POINTS - 1)) * ww;
+                wctx.lineTo(x, mid - v * (wh * 0.42));
+            }
+            for (let i = POINTS - 1; i >= 0; i--) {
+                const idx = (head + i) % POINTS;
+                const v = values[idx];
+                const x = (i / (POINTS - 1)) * ww;
+                wctx.lineTo(x, mid + v * (wh * 0.42));
+            }
+            wctx.closePath();
+            const fillGrad = wctx.createLinearGradient(0, 0, 0, wh);
+            fillGrad.addColorStop(0, 'rgba(228,185,99,0.0)');
+            fillGrad.addColorStop(0.5, 'rgba(228,185,99,0.15)');
+            fillGrad.addColorStop(1, 'rgba(228,185,99,0.0)');
+            wctx.fillStyle = fillGrad;
+            wctx.fill();
+
+            requestAnimationFrame(wframe);
+        }
+        wframe();
+
+        let wRT;
+        window.addEventListener('resize', () => {
+            clearTimeout(wRT);
+            wRT = setTimeout(wresize, 200);
+        });
+    }
+
+    // ============================================================
+    // PRISM — реагирует на движение мыши (лёгкий параллакс)
+    // ============================================================
+    const prismStage = document.querySelector('.prism-stage');
+    if (prismStage && isDesktop) {
+        const prismSvg = prismStage.querySelector('.prism-svg');
+        if (prismSvg) {
+            prismStage.addEventListener('mousemove', (e) => {
+                const r = prismStage.getBoundingClientRect();
+                const x = ((e.clientX - r.left) / r.width - 0.5) * 20;
+                const y = ((e.clientY - r.top) / r.height - 0.5) * 20;
+                prismSvg.style.transform = `translate(${x}px, ${y}px) scale(1.03)`;
+                prismSvg.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+            });
+            prismStage.addEventListener('mouseleave', () => {
+                prismSvg.style.transform = '';
+            });
+        }
+    }
+
+    // ============================================================
+    // MANIFEST — вертикальный прогресс рельсы
+    // ============================================================
+    const manifestRail = document.querySelector('.manifest-rail');
+    if (manifestRail) {
+        const sections = document.querySelectorAll('.manifest-section');
+        if ('IntersectionObserver' in window && sections.length) {
+            const rio = new IntersectionObserver((es) => {
+                es.forEach(e => {
+                    if (e.isIntersecting) {
+                        const n = e.target.querySelector('.manifest-num')?.textContent?.trim();
+                        const railNum = manifestRail.querySelector('.manifest-rail-num');
+                        if (railNum && n) railNum.textContent = '§ ' + n;
+                    }
+                });
+            }, { threshold: 0.4 });
+            sections.forEach(s => rio.observe(s));
+        }
+    }
 })();

@@ -2334,3 +2334,363 @@ footer a:hover { color: var(--gold); padding-left: 6px; }
     .proof-cell { padding: 16px 0; }
     .proof-num { font-size: 36px; }
 }
+
+
+/* ============================================================
+   PART II · НОВЫЕ АРТ-ОБЪЕКТЫ
+   Prism · Radar · Neural · Terminal · Atom · Waveform
+   ============================================================ */
+
+/* ---------- 01 · PRISM (вращающийся кристалл) ---------- */
+.prism-stage{
+    position:relative;width:100%;max-width:520px;aspect-ratio:1;
+    display:flex;align-items:center;justify-content:center;
+    perspective:1400px;
+}
+.prism-halo{
+    position:absolute;inset:16%;border-radius:50%;
+    background:radial-gradient(circle,rgba(247,216,150,.35),rgba(228,185,99,.08) 45%,transparent 70%);
+    filter:blur(30px);pointer-events:none;
+    animation:prismHalo 6s ease-in-out infinite;
+}
+@keyframes prismHalo{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.15);opacity:1}}
+.prism-svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 40px rgba(228,185,99,.35))}
+.prism-rotate{transform-origin:200px 200px;animation:prismSpin 40s linear infinite}
+.prism-float{transform-origin:200px 200px;animation:prismFloat 7s ease-in-out infinite}
+@keyframes prismSpin{to{transform:rotate(360deg)}}
+@keyframes prismFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.prism-glint{animation:prismGlint 3.5s ease-in-out infinite}
+@keyframes prismGlint{0%,100%{opacity:.15}50%{opacity:1}}
+.prism-ring{transform-origin:200px 200px}
+.prism-ring.r1{animation:prismSpin 26s linear infinite reverse}
+.prism-ring.r2{animation:prismSpin 18s linear infinite}
+
+/* ---------- 02 · RADAR (сканирующий радар) ---------- */
+.radar-stage{
+    position:relative;width:100%;max-width:480px;aspect-ratio:1;
+    display:flex;align-items:center;justify-content:center;
+}
+.radar-svg{width:100%;height:100%;overflow:visible}
+.radar-ring{fill:none;stroke:rgba(228,185,99,.25);stroke-width:.8}
+.radar-ring.r1{stroke-opacity:.4}
+.radar-cross line{stroke:rgba(228,185,99,.2);stroke-width:.6}
+.radar-sweep{transform-origin:200px 200px;animation:radarSweep 4s linear infinite}
+@keyframes radarSweep{to{transform:rotate(360deg)}}
+.radar-sweep-fill{
+    fill:url(#radarSweepGrad);
+}
+.radar-blip{fill:#F7D896;filter:drop-shadow(0 0 6px #E4B963)}
+.radar-blip.pulse{animation:radarBlip 2.4s ease-out infinite}
+@keyframes radarBlip{
+    0%{r:2;opacity:1}
+    100%{r:14;opacity:0}
+}
+.radar-center{fill:#F7D896;filter:drop-shadow(0 0 12px #E4B963)}
+.radar-label{
+    position:absolute;bottom:0;left:0;width:100%;
+    font-family:'JetBrains Mono',monospace;font-size:10px;
+    letter-spacing:3px;color:var(--muted);text-align:center;opacity:.6;
+}
+
+/* ---------- 03 · NEURAL WEB (canvas-созвездие) ---------- */
+.neural-stage{
+    position:relative;width:100%;height:520px;
+    border:1px solid var(--border);border-radius:18px;
+    background:
+        radial-gradient(circle at 30% 20%,rgba(228,185,99,.06),transparent 60%),
+        radial-gradient(circle at 70% 80%,rgba(179,152,255,.05),transparent 60%),
+        var(--bg-2);
+    overflow:hidden;
+}
+.neural-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.neural-corner{
+    position:absolute;width:22px;height:22px;
+    border-color:var(--gold);border-style:solid;border-width:0;
+    opacity:.5;
+}
+.neural-corner.tl{top:14px;left:14px;border-top-width:1px;border-left-width:1px}
+.neural-corner.tr{top:14px;right:14px;border-top-width:1px;border-right-width:1px}
+.neural-corner.bl{bottom:14px;left:14px;border-bottom-width:1px;border-left-width:1px}
+.neural-corner.br{bottom:14px;right:14px;border-bottom-width:1px;border-right-width:1px}
+.neural-hint{
+    position:absolute;top:20px;left:20px;
+    font-family:'JetBrains Mono',monospace;font-size:10px;
+    letter-spacing:3px;color:var(--gold);opacity:.7;
+    text-transform:uppercase;
+}
+
+/* ---------- 04 · TERMINAL (печатающий терминал) ---------- */
+.terminal{
+    width:100%;max-width:760px;margin:0 auto;
+    background:#07070a;border:1px solid var(--border);
+    border-radius:14px;overflow:hidden;
+    box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 40px rgba(228,185,99,.08);
+    font-family:'JetBrains Mono',monospace;font-size:13.5px;
+}
+.terminal-bar{
+    display:flex;align-items:center;gap:8px;
+    padding:12px 16px;border-bottom:1px solid var(--border);
+    background:rgba(255,255,255,.02);
+}
+.terminal-dot{width:11px;height:11px;border-radius:50%}
+.tdot-r{background:#ff5f57}.tdot-y{background:#febc2e}.tdot-g{background:#28c840}
+.terminal-title{
+    margin-left:12px;font-size:11px;letter-spacing:2px;
+    color:var(--muted);text-transform:uppercase;
+}
+.terminal-body{
+    padding:22px 24px 28px;line-height:1.85;
+    min-height:340px;color:#d8d8d8;
+    white-space:pre-wrap;word-break:break-word;
+}
+.terminal-body .prompt{color:var(--gold)}
+.terminal-body .ok{color:var(--green)}
+.terminal-body .warn{color:#F7B84B}
+.terminal-body .comment{color:#5e5e6e}
+.terminal-cursor{
+    display:inline-block;width:8px;height:15px;
+    background:var(--gold);vertical-align:-2px;
+    animation:termBlink 1s steps(2,start) infinite;
+}
+@keyframes termBlink{50%{opacity:0}}
+
+/* ---------- 05 · ATOM (орбитальная модель) ---------- */
+.atom-stage{
+    position:relative;width:100%;max-width:440px;aspect-ratio:1;
+    display:flex;align-items:center;justify-content:center;
+    perspective:900px;
+}
+.atom-svg{width:100%;height:100%;overflow:visible}
+.atom-orbit{transform-origin:200px 200px;fill:none;stroke:rgba(228,185,99,.3);stroke-width:.8}
+.atom-orbit.o1{animation:atomSpin 9s linear infinite}
+.atom-orbit.o2{animation:atomSpin 13s linear infinite reverse}
+.atom-orbit.o3{animation:atomSpin 17s linear infinite}
+@keyframes atomSpin{to{transform:rotate(360deg)}}
+.atom-electron{fill:#F7D896;filter:drop-shadow(0 0 8px #E4B963)}
+.atom-nucleus{
+    fill:#F7D896;filter:drop-shadow(0 0 20px #E4B963);
+    animation:atomPulse 3s ease-in-out infinite;
+}
+@keyframes atomPulse{0%,100%{opacity:.9}50%{opacity:1;transform:scale(1.08)}}
+.atom-nucleus{transform-origin:200px 200px}
+
+/* ---------- 06 · WAVEFORM (звуковая волна) ---------- */
+.wave-stage{
+    width:100%;height:180px;position:relative;
+    border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+    overflow:hidden;
+}
+.wave-canvas{width:100%;height:100%;display:block}
+.wave-grid{
+    position:absolute;inset:0;pointer-events:none;
+    background-image:linear-gradient(90deg,var(--border) 1px,transparent 1px);
+    background-size:40px 100%;opacity:.35;
+}
+.wave-label{
+    position:absolute;bottom:12px;right:20px;
+    font-family:'JetBrains Mono',monospace;font-size:10px;
+    letter-spacing:3px;color:var(--gold);opacity:.7;
+}
+
+/* ============================================================
+   СТРАНИЦА MANIFEST.HTML
+   ============================================================ */
+.manifest{
+    display:grid;grid-template-columns:120px 1fr;
+    max-width:1500px;margin:0 auto;
+    padding:140px 60px 0;
+}
+.manifest-rail{
+    position:sticky;top:140px;align-self:start;
+    height:calc(100vh - 200px);
+    display:flex;flex-direction:column;align-items:center;
+    gap:24px;padding-top:20px;
+}
+.manifest-rail-text{
+    writing-mode:vertical-rl;transform:rotate(180deg);
+    font-family:'JetBrains Mono',monospace;font-size:10px;
+    letter-spacing:6px;color:var(--muted);
+    text-transform:uppercase;
+}
+.manifest-rail-line{
+    flex:1;width:1px;
+    background:linear-gradient(180deg,var(--gold),var(--border) 60%,transparent);
+}
+.manifest-rail-num{
+    font-family:'Cormorant Garamond',serif;font-size:22px;
+    color:var(--gold);font-style:italic;
+}
+.manifest-main{padding-left:60px}
+
+.manifest-hero{
+    display:grid;grid-template-columns:1.2fr 1fr;gap:80px;
+    align-items:center;padding:60px 0 140px;
+    border-bottom:1px solid var(--border);
+}
+.manifest-kicker{
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    letter-spacing:5px;color:var(--gold);margin-bottom:32px;
+    text-transform:uppercase;
+}
+.manifest-hero h1{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(52px,7vw,110px);
+    font-weight:300;line-height:.96;letter-spacing:-.03em;
+    margin-bottom:36px;
+}
+.manifest-hero h1 em{font-style:italic;color:var(--gold);font-weight:400}
+.manifest-hero p{
+    font-size:19px;color:var(--text-2);line-height:1.7;
+    max-width:540px;
+}
+
+.manifest-section{
+    display:grid;grid-template-columns:180px 1fr;
+    gap:80px;padding:120px 0;
+    border-bottom:1px solid var(--border);
+}
+.manifest-num{
+    font-family:'Cormorant Garamond',serif;
+    font-size:120px;font-weight:300;line-height:.85;
+    color:transparent;-webkit-text-stroke:1px var(--border-gold);
+    letter-spacing:-.04em;
+}
+.manifest-body{max-width:680px}
+.manifest-body h2{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(38px,4.5vw,64px);
+    font-weight:300;line-height:1.06;letter-spacing:-.02em;
+    margin-bottom:32px;
+}
+.manifest-body h2 em{font-style:italic;color:var(--gold);font-weight:400}
+.manifest-body p{
+    font-size:17px;color:var(--text-2);line-height:1.85;
+    margin-bottom:22px;
+}
+.manifest-body p:first-of-type::first-letter{
+    font-family:'Cormorant Garamond',serif;
+    font-size:76px;font-weight:400;font-style:italic;
+    color:var(--gold);float:left;line-height:.85;
+    padding:8px 14px 0 0;
+}
+.manifest-pull{
+    margin:48px 0;padding:32px 0 32px 32px;
+    border-left:2px solid var(--gold);
+    font-family:'Cormorant Garamond',serif;
+    font-size:30px;font-style:italic;font-weight:400;
+    line-height:1.35;color:var(--text);
+}
+
+/* ============================================================
+   СТРАНИЦА TECHNOLOGY.HTML
+   ============================================================ */
+.tech-hero{
+    position:relative;padding:200px 60px 120px;
+    max-width:1400px;margin:0 auto;
+    text-align:center;
+}
+.tech-hero .manifest-kicker{
+    display:inline-block;padding:8px 18px;
+    border:1px solid var(--border-gold);border-radius:100px;
+    background:rgba(228,185,99,.05);margin-bottom:40px;
+}
+.tech-hero h1{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(56px,9vw,140px);
+    font-weight:300;line-height:.96;letter-spacing:-.035em;
+    margin-bottom:28px;
+}
+.tech-hero h1 em{font-style:italic;color:var(--gold);font-weight:400}
+.tech-hero p{
+    font-size:19px;color:var(--text-2);line-height:1.7;
+    max-width:640px;margin:0 auto 60px;
+}
+.tech-hero-terminal{padding:0 20px}
+
+.tech-split{
+    display:grid;grid-template-columns:1fr 1fr;
+    gap:100px;align-items:center;
+    max-width:1400px;margin:0 auto;
+    padding:140px 60px;
+}
+.tech-split.reverse{direction:rtl}
+.tech-split.reverse > *{direction:ltr}
+.tech-split-text .manifest-kicker{margin-bottom:24px}
+.tech-split-text h2{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(40px,4.5vw,64px);
+    font-weight:300;line-height:1.06;letter-spacing:-.02em;
+    margin-bottom:26px;
+}
+.tech-split-text h2 em{font-style:italic;color:var(--gold);font-weight:400}
+.tech-split-text p{
+    font-size:16px;color:var(--text-2);line-height:1.8;
+    margin-bottom:18px;
+}
+.tech-split-meta{
+    display:flex;gap:14px;flex-wrap:wrap;margin-top:32px;
+}
+.tech-split-meta span{
+    padding:6px 14px;border:1px solid var(--border-gold);
+    border-radius:100px;font-family:'JetBrains Mono',monospace;
+    font-size:11px;color:var(--gold);letter-spacing:1px;
+    background:rgba(228,185,99,.05);
+}
+
+.tech-stack-section{
+    max-width:1400px;margin:0 auto;padding:140px 60px;
+}
+.tech-stack-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    gap:0;border-top:1px solid var(--border);
+}
+.tech-stack-cell{
+    position:relative;padding:36px 26px;
+    border-right:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+    transition:background .4s var(--ease);
+    cursor:default;
+}
+.tech-stack-cell:nth-child(4n){border-right:none}
+.tech-stack-cell:hover{background:var(--bg-2)}
+.tech-stack-cell::before{
+    content:attr(data-idx);
+    position:absolute;top:18px;right:20px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;color:var(--muted-2);
+    letter-spacing:2px;
+}
+.tech-stack-cell .name{
+    font-family:'Cormorant Garamond',serif;
+    font-size:24px;font-weight:600;
+    margin-bottom:8px;letter-spacing:-.01em;
+}
+.tech-stack-cell .desc{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;color:var(--muted);
+    letter-spacing:.5px;line-height:1.6;
+}
+
+/* RESPONSIVE для новых страниц */
+@media(max-width:900px){
+    .manifest{grid-template-columns:1fr;padding:100px 24px 0}
+    .manifest-rail{display:none}
+    .manifest-main{padding-left:0}
+    .manifest-hero{grid-template-columns:1fr;gap:40px;padding:20px 0 80px}
+    .manifest-section{grid-template-columns:1fr;gap:20px;padding:80px 0}
+    .manifest-num{font-size:80px}
+
+    .tech-hero{padding:140px 24px 80px}
+    .tech-split{grid-template-columns:1fr;gap:50px;padding:90px 24px}
+    .tech-stack-section{padding:90px 24px}
+    .tech-stack-grid{grid-template-columns:1fr 1fr}
+    .tech-stack-cell:nth-child(4n){border-right:1px solid var(--border)}
+    .tech-stack-cell:nth-child(2n){border-right:none}
+
+    .neural-stage{height:400px}
+    .terminal-body{min-height:280px;padding:18px;font-size:12.5px}
+}
+@media(max-width:500px){
+    .tech-stack-grid{grid-template-columns:1fr}
+    .tech-stack-cell{border-right:none}
+}

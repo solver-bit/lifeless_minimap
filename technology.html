@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Технологии — LIFELESS</title>
+<meta name="description" content="Технологический стек LIFELESS: Python, FastAPI, aiogram, SQLite WAL, нейросети, аналитика. Без фреймворков там, где не нужны.">
+<meta property="og:title" content="Технологии — LIFELESS">
+<meta property="og:description" content="Как устроен движок LIFELESS.">
+<meta property="og:image" content="https://solver-bit.github.io/lifeless_minimap/durov4.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="scroll-progress"><div class="scroll-progress-bar" id="scrollBar"></div></div>
+<div class="mouse-trail" id="mouseTrail"></div>
+
+<header id="header">
+    <a href="index.html" class="logo"><span class="logo-mark"></span><span>LIFELESS</span></a>
+    <nav>
+        <a href="index.html">Главная</a>
+        <a href="manifest.html">Манифест</a>
+        <a href="technology.html">Технологии</a>
+        <a href="bot.html">Бот</a>
+        <a href="https://t.me/Solver_Life_bot" class="nav-cta" target="_blank">Открыть <span>→</span></a>
+    </nav>
+    <button class="burger" id="burger" aria-label="Меню"><span></span><span></span><span></span></button>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Главная</a>
+    <a href="manifest.html">Манифест</a>
+    <a href="technology.html">Технологии</a>
+    <a href="bot.html">Бот</a>
+    <a href="https://t.me/Solver_Life_bot" class="mobile-cta" target="_blank">Открыть бота</a>
+</div>
+
+<!-- HERO -->
+<section class="tech-hero">
+    <div class="hero-glow"></div>
+    <div class="hero-glow-2"></div>
+    <div class="manifest-kicker" style="border:1px solid var(--border-gold);padding:8px 18px;border-radius:100px;background:rgba(228,185,99,.05)">§ TECHNOLOGY · 2026</div>
+    <h1>Движок<br><em>LIFELESS</em></h1>
+    <p>Всё, что работает внутри LIFELESS — от ботов до Mini Apps — построено на собственном стеке. Без фреймворков там, где они не нужны. Без облаков там, где хватает одного сервера.</p>
+</section>
+
+<!-- TERMINAL HERO -->
+<section style="padding:0 60px 140px;max-width:1400px;margin:0 auto">
+    <div class="terminal">
+        <div class="terminal-bar">
+            <span class="terminal-dot tdot-r"></span>
+            <span class="terminal-dot tdot-y"></span>
+            <span class="terminal-dot tdot-g"></span>
+            <span class="terminal-title">lifeless@core — bash — 80×24</span>
+        </div>
+        <div class="terminal-body" id="terminalBody"></div>
+    </div>
+</section>
+
+<!-- NEURAL WEB SPLIT -->
+<section class="tech-split">
+    <div class="tech-split-text">
+        <div class="manifest-kicker">§ 01 · АРХИТЕКТУРА</div>
+        <h2>Нейросеть <em>взаимосвязей</em></h2>
+        <p>Все продукты LIFELESS связаны между собой. Пользователь, зашедший в бота, может увидеть свои покупки в магазине, статистику в Mini App и статус в аналитических сервисах — в одной сессии.</p>
+        <p>Ниже — живая визуализация связей внутри экосистемы. Каждая точка — сервис или модуль, каждая линия — активный поток данных.</p>
+        <div class="tech-split-meta">
+            <span>HMAC · WebApp Auth</span>
+            <span>FastAPI · JSON-RPC</span>
+            <span>SQLite WAL</span>
+        </div>
+    </div>
+    <div class="neural-stage" id="neuralStage">
+        <canvas class="neural-canvas" id="neuralCanvas"></canvas>
+        <div class="neural-hint">СЕТЬ · LIVE</div>
+        <div class="neural-corner tl"></div>
+        <div class="neural-corner tr"></div>
+        <div class="neural-corner bl"></div>
+        <div class="neural-corner br"></div>
+    </div>
+</section>
+
+<!-- WAVEFORM -->
+<section style="max-width:1400px;margin:0 auto;padding:0 60px 140px">
+    <div class="manifest-kicker" style="margin-bottom:32px">§ 02 · НАГРУЗКА В РЕАЛЬНОМ ВРЕМЕНИ</div>
+    <div class="wave-stage">
+        <div class="wave-grid"></div>
+        <canvas class="wave-canvas" id="waveCanvas"></canvas>
+        <div class="wave-label">RPS · LIVE STREAM</div>
+    </div>
+</section>
+
+<!-- RADAR SPLIT -->
+<section class="tech-split reverse">
+    <div class="tech-split-text">
+        <div class="manifest-kicker">§ 03 · МОНИТОРИНГ</div>
+        <h2>Радар <em>системы</em></h2>
+        <p>Каждый запрос, каждая транзакция, каждая ошибка — отслеживается. Метрики снимаются в реальном времени, алерты приходят в Telegram за секунды.</p>
+        <p>Мы не ждём, пока пользователь напишет в поддержку. Мы знаем о проблеме раньше, чем он.</p>
+        <div class="tech-split-meta">
+            <span>Sentry · Alerts</span>
+            <span>Cloudflare · WAF</span>
+            <span>Prometheus · Grafana</span>
+        </div>
+    </div>
+    <div class="radar-stage">
+        <svg class="radar-svg" viewBox="0 0 400 400">
+            <defs>
+                <linearGradient id="radarSweepGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#F7D896" stop-opacity="0.6"/>
+                    <stop offset="100%" stop-color="#E4B963" stop-opacity="0"/>
+                </linearGradient>
+            </defs>
+            <circle cx="200" cy="200" r="180" class="radar-ring"/>
+            <circle cx="200" cy="200" r="130" class="radar-ring r1"/>
+            <circle cx="200" cy="200" r="80" class="radar-ring"/>
+            <circle cx="200" cy="200" r="30" class="radar-ring r1"/>
+            <g class="radar-cross">
+                <line x1="20" y1="200" x2="380" y2="200"/>
+                <line x1="200" y1="20" x2="200" y2="380"/>
+                <line x1="72" y1="72" x2="328" y2="328"/>
+                <line x1="328" y1="72" x2="72" y2="328"/>
+            </g>
+            <g class="radar-sweep">
+                <path d="M200,200 L200,20 A180,180 0 0,1 380,200 Z" fill="url(#radarSweepGrad)" opacity="0.6"/>
+                <line x1="200" y1="200" x2="200" y2="20" stroke="#F7D896" stroke-width="1.2"/>
+            </g>
+            <circle cx="200" cy="200" r="3" class="radar-center"/>
+            <circle cx="290" cy="150" r="3" class="radar-blip"/>
+            <circle cx="290" cy="150" r="3" class="radar-blip pulse"/>
+            <circle cx="140" cy="290" r="3" class="radar-blip"/>
+            <circle cx="140" cy="290" r="3" class="radar-blip pulse" style="animation-delay:1.2s"/>
+            <circle cx="260" cy="270" r="2.5" class="radar-blip"/>
+            <circle cx="260" cy="270" r="2.5" class="radar-blip pulse" style="animation-delay:2s"/>
+        </svg>
+        <div class="radar-label">SCAN · 4.0s · 0 ALERTS</div>
+    </div>
+</section>
+
+<!-- ATOM SPLIT -->
+<section class="tech-split">
+    <div class="tech-split-text">
+        <div class="manifest-kicker">§ 04 · ЯДРО</div>
+        <h2>Атом <em>экономики</em></h2>
+        <p>В центре — баланс пользователя. Вокруг — орбиты: кейсы, магазин, VIP, рефералы, квесты. Каждая транзакция проходит через единый ledger, атомарно и без гонок.</p>
+        <p>Никаких «примерно», никаких «может быть». Баланс сходится всегда — это не фича, это фундамент.</p>
+        <div class="tech-split-meta">
+            <span>ACID · Transactions</span>
+            <span>Double-entry ledger</span>
+            <span>Audit log</span>
+        </div>
+    </div>
+    <div class="atom-stage">
+        <svg class="atom-svg" viewBox="0 0 400 400">
+            <g class="atom-orbit o1">
+                <ellipse cx="200" cy="200" rx="170" ry="60" fill="none" class="atom-orbit" stroke="rgba(228,185,99,.35)"/>
+                <circle cx="370" cy="200" r="4" class="atom-electron"/>
+            </g>
+            <g class="atom-orbit o2">
+                <ellipse cx="200" cy="200" rx="170" ry="60" fill="none" class="atom-orbit" stroke="rgba(228,185,99,.35)" transform="rotate(60 200 200)"/>
+                <circle cx="370" cy="200" r="4" class="atom-electron" transform="rotate(60 200 200)"/>
+            </g>
+            <g class="atom-orbit o3">
+                <ellipse cx="200" cy="200" rx="170" ry="60" fill="none" class="atom-orbit" stroke="rgba(228,185,99,.35)" transform="rotate(120 200 200)"/>
+                <circle cx="370" cy="200" r="4" class="atom-electron" transform="rotate(120 200 200)"/>
+            </g>
+            <circle cx="200" cy="200" r="16" class="atom-nucleus"/>
+            <circle cx="200" cy="200" r="6" fill="#fff" opacity="0.9"/>
+        </svg>
+    </div>
+</section>
+
+<!-- STACK GRID -->
+<section class="tech-stack-section">
+    <div class="manifest-kicker">§ 05 · ПОЛНЫЙ СТЕК</div>
+    <h2 class="section-title" style="margin-bottom:60px">Что внутри <em>движка</em></h2>
+    <div class="tech-stack-grid">
+        <div class="tech-stack-cell" data-idx="01"><div class="name">Python 3.14</div><div class="desc">Бэкенд · async/await · type hints</div></div>
+        <div class="tech-stack-cell" data-idx="02"><div class="name">FastAPI</div><div class="desc">REST API для Mini Apps</div></div>
+        <div class="tech-stack-cell" data-idx="03"><div class="name">aiogram 3</div><div class="desc">Telegram Bot Framework</div></div>
+        <div class="tech-stack-cell" data-idx="04"><div class="name">SQLite WAL</div><div class="desc">БД с параллельным доступом</div></div>
+        <div class="tech-stack-cell" data-idx="05"><div class="name">Vanilla JS</div><div class="desc">Без React и сборщиков</div></div>
+        <div class="tech-stack-cell" data-idx="06"><div class="name">Canvas 2D</div><div class="desc">Визуализации и эффекты</div></div>
+        <div class="tech-stack-cell" data-idx="07"><div class="name">HMAC-SHA256</div><div class="desc">Верификация WebAppData</div></div>
+        <div class="tech-stack-cell" data-idx="08"><div class="name">Cloudflare</div><div class="desc">CDN · WAF · Anti-DDoS</div></div>
+        <div class="tech-stack-cell" data-idx="09"><div class="name">Sentry</div><div class="desc">Мониторинг и алерты</div></div>
+        <div class="tech-stack-cell" data-idx="10"><div class="name">Docker</div><div class="desc">Изоляция и деплой</div></div>
+        <div class="tech-stack-cell" data-idx="11"><div class="name">Grafana</div><div class="desc">Дашборды метрик</div></div>
+        <div class="tech-stack-cell" data-idx="12"><div class="name">Git · GitHub</div><div class="desc">Версионирование и CI</div></div>
+    </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final">
+    <div class="cta-final-glow"></div>
+    <div class="cta-final-inner">
+        <div class="cta-final-tag">ТЕХНОЛОГИИ · В ДЕЙСТВИИ</div>
+        <h2>Попробуй <em>сам</em></h2>
+        <p>Красивая архитектура бесполезна, если её не видно. Открой бота — и почувствуй, как всё работает.</p>
+        <a href="https://t.me/Solver_Life_bot" class="btn btn-primary btn-large magnetic" target="_blank">
+            <span>Открыть бота</span><span class="btn-arrow">→</span>
+        </a>
+    </div>
+</section>
+
+<footer>
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <div class="footer-logo"><span class="logo-mark"></span> LIFELESS</div>
+            <p>Независимая технологическая компания</p>
+            <div class="footer-status"><span class="status-dot"></span><span>Все системы работают</span></div>
+        </div>
+        <div class="footer-col">
+            <div class="footer-label">НАВИГАЦИЯ</div>
+            <a href="index.html">Главная</a>
+            <a href="manifest.html">Манифест</a>
+            <a href="technology.html">Технологии</a>
+            <a href="bot.html">Бот</a>
+        </div>
+        <div class="footer-col">
+            <div class="footer-label">СВЯЗЬ</div>
+            <a href="https://t.me/durvww" target="_blank">Канал</a>
+            <a href="https://t.me/wwlifeless" target="_blank">Чат</a>
+            <a href="https://t.me/wwsolver" target="_blank">Поддержка</a>
+        </div>
+        <div class="footer-col">
+            <div class="footer-label">ПРАВОВОЕ</div>
+            <a href="index.html#privacy">Конфиденциальность</a>
+            <a href="index.html#faq">FAQ</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <div>© 2026 LIFELESS. Все права защищены.</div>
+        <div class="footer-disclaimer">18+ · Играй ответственно</div>
+    </div>
+</footer>
+
+<div class="sticky-cta" id="stickyCta">
+    <div class="sticky-cta-inner">
+        <div class="sticky-cta-text">
+            <div class="sticky-cta-title">Первый продукт LIFELESS</div>
+            <div class="sticky-cta-sub">Игровая экосистема в Telegram</div>
+        </div>
+        <a href="https://t.me/Solver_Life_bot" class="sticky-cta-btn" target="_blank">
+            <span>Открыть</span><span class="sticky-cta-arrow">→</span>
+        </a>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

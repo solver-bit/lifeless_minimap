@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Манифест — LIFELESS</title>
+<meta name="description" content="Манифест LIFELESS: зачем мы делаем технологии, во что верим и против чего идём.">
+<meta property="og:title" content="Манифест — LIFELESS">
+<meta property="og:description" content="Мы не обещаем. Мы делаем.">
+<meta property="og:image" content="https://solver-bit.github.io/lifeless_minimap/durov4.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="scroll-progress"><div class="scroll-progress-bar" id="scrollBar"></div></div>
+<div class="mouse-trail" id="mouseTrail"></div>
+
+<header id="header">
+    <a href="index.html" class="logo"><span class="logo-mark"></span><span>LIFELESS</span></a>
+    <nav>
+        <a href="index.html">Главная</a>
+        <a href="manifest.html">Манифест</a>
+        <a href="technology.html">Технологии</a>
+        <a href="bot.html">Бот</a>
+        <a href="#start" class="nav-cta">Начать <span>→</span></a>
+    </nav>
+    <button class="burger" id="burger" aria-label="Меню"><span></span><span></span><span></span></button>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Главная</a>
+    <a href="manifest.html">Манифест</a>
+    <a href="technology.html">Технологии</a>
+    <a href="bot.html">Бот</a>
+    <a href="https://t.me/Solver_Life_bot" class="mobile-cta" target="_blank">Открыть бота</a>
+</div>
+
+<div class="manifest">
+    <aside class="manifest-rail">
+        <div class="manifest-rail-text">MANIFEST · LIFELESS · MMXXVI</div>
+        <div class="manifest-rail-line"></div>
+        <div class="manifest-rail-num">§ I</div>
+    </aside>
+
+    <main class="manifest-main">
+
+        <section class="manifest-hero">
+            <div>
+                <div class="manifest-kicker">§ 00 · ВСТУПЛЕНИЕ</div>
+                <h1>Мы не обещаем.<br><em>Мы делаем.</em></h1>
+                <p>LIFELESS — не стартап. Не корпорация. Не «проект с потенциалом». Это заявление о том, что технологии могут быть другими: честными, тихими, точными.</p>
+            </div>
+            <div class="prism-stage">
+                <div class="prism-halo"></div>
+                <svg class="prism-svg" viewBox="0 0 400 400">
+                    <defs>
+                        <linearGradient id="pf1" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#F7D896" stop-opacity="0.9"/>
+                            <stop offset="100%" stop-color="#B88838" stop-opacity="0.1"/>
+                        </linearGradient>
+                        <linearGradient id="pf2" x1="1" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#E4B963" stop-opacity="0.7"/>
+                            <stop offset="100%" stop-color="#B88838" stop-opacity="0.05"/>
+                        </linearGradient>
+                        <radialGradient id="pCore">
+                            <stop offset="0%" stop-color="#fff" stop-opacity="0.9"/>
+                            <stop offset="50%" stop-color="#F7D896" stop-opacity="0.4"/>
+                            <stop offset="100%" stop-color="#E4B963" stop-opacity="0"/>
+                        </radialGradient>
+                    </defs>
+                    <g class="prism-ring r1"><circle cx="200" cy="200" r="170" fill="none" stroke="#E4B963" stroke-width="0.5" stroke-dasharray="2 8" opacity="0.35"/></g>
+                    <g class="prism-ring r2"><circle cx="200" cy="200" r="130" fill="none" stroke="#E4B963" stroke-width="0.5" stroke-dasharray="1 6" opacity="0.5"/></g>
+                    <g class="prism-rotate"><g class="prism-float">
+                        <polygon points="200,40 360,200 200,360 40,200" fill="url(#pf1)" stroke="#E4B963" stroke-width="1"/>
+                        <polygon points="200,40 200,200 40,200" fill="url(#pf2)" stroke="#E4B963" stroke-width="0.6" opacity="0.75"/>
+                        <polygon points="200,40 360,200 200,200" fill="url(#pf2)" stroke="#E4B963" stroke-width="0.6" opacity="0.75"/>
+                        <polygon points="200,360 40,200 200,200" fill="url(#pf2)" stroke="#E4B963" stroke-width="0.6" opacity="0.5"/>
+                        <polygon points="200,360 360,200 200,200" fill="url(#pf2)" stroke="#E4B963" stroke-width="0.6" opacity="0.5"/>
+                        <line x1="200" y1="40" x2="200" y2="360" stroke="#F7D896" stroke-width="0.5" opacity="0.4"/>
+                        <line x1="40" y1="200" x2="360" y2="200" stroke="#F7D896" stroke-width="0.5" opacity="0.4"/>
+                        <circle cx="200" cy="200" r="38" fill="url(#pCore)"/>
+                        <circle cx="200" cy="200" r="3" fill="#fff" class="prism-glint"/>
+                    </g></g>
+                </svg>
+            </div>
+        </section>
+
+        <section class="manifest-section">
+            <div class="manifest-num">01</div>
+            <div class="manifest-body">
+                <h2>Мы <em>не верим</em> в шум</h2>
+                <p>Каждый день появляются тысячи новых продуктов. Они кричат, обещают, торопятся. Мы не такие. Мы строим медленно, точно и надолго.</p>
+                <div class="manifest-pull">«Технология — это не то, что продаётся. Это то, что остаётся».</div>
+                <p>Наши продукты не гонятся за хайпом. Они решают конкретные задачи конкретных людей — и делают это безупречно. Игровая экосистема в Telegram — только начало.</p>
+            </div>
+        </section>
+
+        <section class="manifest-section">
+            <div class="manifest-num">02</div>
+            <div class="manifest-body">
+                <h2>Три <em>правила</em>, которые не нарушаем</h2>
+                <p>Первое — не обманывать. Ни в текстах, ни в ценах, ни в мелком шрифте. Если что-то стоит денег — об этом сказано прямо. Если что-то бесплатно — оно правда бесплатно.</p>
+                <p>Второе — не продавать данные. Никогда. Ни за какие деньги. Это не «политика конфиденциальности» — это личное правило.</p>
+                <p>Третье — не бросать. Если продукт запущен — он работает. Не «экспериментальный режим», не «мы пересмотрели стратегию». Работает — значит работает.</p>
+            </div>
+        </section>
+
+        <section class="manifest-section">
+            <div class="manifest-num">03</div>
+            <div class="manifest-body">
+                <h2>Наши <em>враги</em></h2>
+                <p>Мы не воюем с людьми. Но у нас есть враги — и это идеи. Бюрократия. Посредничество ради посредничества. Продукты, сделанные для инвесторов, а не для пользователей.</p>
+                <div class="manifest-pull">«Простота — это не отсутствие сложности. Это её преодоление».</div>
+                <p>Всё, что мы строим, пытается доказать: без миллионов инвестиций, без отделов маркетинга, без «продуктовых команд» — можно сделать качественно. Нужен только один человек с ясной головой и код.</p>
+            </div>
+        </section>
+
+        <section class="manifest-section">
+            <div class="manifest-num">04</div>
+            <div class="manifest-body">
+                <h2>Что мы <em>строим</em></h2>
+                <p>Игровую экосистему, которая развлекает. Магазин, который экономит время. Инструменты, которые открывают данные. Кошелёк, который упрощает крипту. Всё — под одним брендом, с одной философией.</p>
+                <p>И дальше — выход за пределы Telegram. Не как «расширение платформы», а как самостоятельная система со своим характером.</p>
+            </div>
+        </section>
+
+        <section class="manifest-section" style="border-bottom:none">
+            <div class="manifest-num">05</div>
+            <div class="manifest-body">
+                <h2>Клятва <em>одного</em></h2>
+                <p>Пока LIFELESS существует — я не продам его. Никому. Ни за какие деньги. Он останется независимым, живым и честным. Это не бизнес-план. Это обещание.</p>
+                <div class="tech-split-meta" style="margin-top:40px">
+                    <span>LIFELESS · INDEPENDENT SINCE 2025</span>
+                    <span>Код · Дизайн · Слово</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<section class="cta-final">
+    <div class="cta-final-glow"></div>
+    <div class="cta-final-inner">
+        <div class="cta-final-tag">ПРОДОЛЖЕНИЕ · В ПРОДУКТЕ</div>
+        <h2>Посмотри, <em>что вышло</em></h2>
+        <p>Манифест — это слова. Продукты — доказательство.</p>
+        <a href="https://t.me/Solver_Life_bot" class="btn btn-primary btn-large magnetic" target="_blank">
+            <span>Открыть бота</span><span class="btn-arrow">→</span>
+        </a>
+    </div>
+</section>
+
+<footer>
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <div class="footer-logo"><span class="logo-mark"></span> LIFELESS</div>
+            <p>Независимая технологическая компания</p>
+            <div class="footer-status"><span class="status-dot"></span><span>Все системы работают</span></div>
+        </div>
+        <div class="footer-col">
+            <div class="footer-label">НАВИГАЦИЯ</div>
+            <a href="index.html">Главная</a>
+            <a href="manifest.html">Манифест</a>
+            <a href="technology.html">Технологии</a>
+            <a href="bot.html">Бот</a>
+        </div>
+        <div class="footer-col">
+            <div class="footer-label">СВЯЗЬ</div>
+            <a href="https://t.me/durvww" target="_blank">Канал</a>
+            <a href="https://t.me/wwlifeless" target="_blank">Чат</a>
+            <a href="https://t.me/wwsolver" target="_blank">Поддержка</a>
+        </div>
+        <div class="footer-col">
+            <div class="footer-label">ПРАВОВОЕ</div>
+            <a href="index.html#privacy">Конфиденциальность</a>
+            <a href="index.html#faq">FAQ</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <div>© 2026 LIFELESS. Все права защищены.</div>
+        <div class="footer-disclaimer">18+ · Играй ответственно</div>
+    </div>
+</footer>
+
+<div class="sticky-cta" id="stickyCta">
+    <div class="sticky-cta-inner">
+        <div class="sticky-cta-text">
+            <div class="sticky-cta-title">Первый продукт LIFELESS</div>
+            <div class="sticky-cta-sub">Игровая экосистема в Telegram</div>
+        </div>
+        <a href="https://t.me/Solver_Life_bot" class="sticky-cta-btn" target="_blank">
+            <span>Открыть</span><span class="sticky-cta-arrow">→</span>
+        </a>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
