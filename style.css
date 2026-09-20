@@ -2054,3 +2054,283 @@ footer a:hover { color: var(--gold); padding-left: 6px; }
     .gyro-orbit-3 { width: 220px; height: 220px; margin: -110px 0 0 -110px; }
     .gyro-orbit-4 { width: 260px; height: 260px; margin: -130px 0 0 -130px; }
 }
+
+/* ============================================================
+   PROOF BAR (social proof)
+   ============================================================ */
+.proof-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 48px 60px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-2);
+}
+.proof-cell {
+    text-align: center;
+    padding: 0 20px;
+    border-right: 1px solid var(--border);
+}
+.proof-cell:last-child { border-right: none; }
+.proof-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 52px;
+    font-weight: 300;
+    color: var(--gold);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+    font-variant-numeric: tabular-nums;
+}
+.proof-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+/* ============================================================
+   SECTION LEAD
+   ============================================================ */
+.section-lead {
+    font-size: 18px;
+    color: var(--text-2);
+    max-width: 620px;
+    line-height: 1.7;
+    margin: -40px 0 60px;
+}
+
+/* ============================================================
+   FEATURE GRID (bot.html · "Что внутри")
+   ============================================================ */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+.feature-card {
+    position: relative;
+    padding: 40px 32px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    transition: all 0.5s var(--ease);
+    overflow: hidden;
+}
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 60px;
+    height: 2px;
+    background: var(--gold);
+    transition: width 0.6s var(--ease);
+}
+.feature-card:hover {
+    border-color: var(--border-gold);
+    background: var(--bg-3);
+    transform: translateY(-4px);
+}
+.feature-card:hover::before { width: 100%; }
+.feature-card-accent {
+    background: linear-gradient(155deg, rgba(228,185,99,0.08), var(--bg-2));
+    border-color: rgba(228,185,99,0.28);
+}
+.feature-icon {
+    font-size: 40px;
+    margin-bottom: 20px;
+    line-height: 1;
+    display: inline-block;
+    filter: grayscale(1) brightness(1.6);
+    transition: filter 0.4s var(--ease), transform 0.4s var(--ease);
+}
+.feature-card:hover .feature-icon {
+    filter: grayscale(0) brightness(1);
+    transform: translateY(-4px) scale(1.05);
+}
+.feature-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+}
+.feature-card p {
+    font-size: 15px;
+    color: var(--text-2);
+    line-height: 1.7;
+}
+
+/* ============================================================
+   STEPS (bot.html · "Как начать")
+   ============================================================ */
+.steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 64px;
+}
+.step {
+    position: relative;
+    padding: 48px 36px 40px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: all 0.5s var(--ease);
+}
+.step::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(228,185,99,0.08), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+}
+.step:hover {
+    border-color: var(--border-gold);
+    transform: translateY(-6px);
+}
+.step:hover::before { opacity: 1; }
+.step-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 96px;
+    font-weight: 300;
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--border-gold);
+    margin-bottom: 28px;
+    transition: -webkit-text-stroke 0.5s var(--ease), color 0.5s var(--ease);
+}
+.step:hover .step-num {
+    -webkit-text-stroke: 1px var(--gold);
+    color: rgba(228,185,99,0.08);
+}
+.step h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    letter-spacing: -0.01em;
+}
+.step p {
+    font-size: 15px;
+    color: var(--text-2);
+    line-height: 1.75;
+}
+.steps-cta {
+    text-align: center;
+    padding: 20px 0 0;
+}
+.steps-cta-note {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 20px;
+    letter-spacing: 0.5px;
+}
+
+/* ============================================================
+   TRUST GRID (bot.html · "Безопасность")
+   ============================================================ */
+.trust-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+.trust-card {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    padding: 32px 32px 32px 28px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    transition: all 0.4s var(--ease);
+}
+.trust-card:hover {
+    border-color: var(--border-gold);
+    background: var(--bg-3);
+    transform: translateY(-3px);
+}
+.trust-icon {
+    font-size: 36px;
+    flex-shrink: 0;
+    line-height: 1;
+    filter: grayscale(0.5);
+    transition: filter 0.4s, transform 0.4s var(--ease);
+}
+.trust-card:hover .trust-icon {
+    filter: grayscale(0);
+    transform: scale(1.1) rotate(-4deg);
+}
+.trust-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+}
+.trust-card p {
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.7;
+}
+
+/* ============================================================
+   HERO BOT — небольшая корректировка заголовка
+   ============================================================ */
+.hero-bot h1 {
+    font-size: clamp(56px, 8vw, 118px);
+}
+.hero-bot .hero-tag {
+    color: var(--green);
+    border-color: rgba(34,221,136,0.35);
+    background: rgba(34,221,136,0.05);
+}
+.hero-bot .hero-tag .dot {
+    background: var(--green);
+    box-shadow: 0 0 0 0 rgba(34,221,136,0.5);
+    animation: pulseGreen 2s ease-in-out infinite;
+}
+@keyframes pulseGreen {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,221,136,0.5); }
+    50% { opacity: 0.6; box-shadow: 0 0 0 8px rgba(34,221,136,0); }
+}
+
+/* ============================================================
+   RESPONSIVE для новых блоков
+   ============================================================ */
+@media (max-width: 900px) {
+    .proof-bar {
+        grid-template-columns: 1fr 1fr;
+        padding: 32px 24px;
+        gap: 24px 0;
+    }
+    .proof-cell { border-right: none; }
+    .proof-cell:nth-child(odd) { border-right: 1px solid var(--border); }
+    .proof-num { font-size: 40px; }
+
+    .section-lead { margin: -20px 0 40px; font-size: 16px; }
+
+    .feature-grid { grid-template-columns: 1fr; }
+    .feature-card { padding: 32px 24px; }
+
+    .steps { grid-template-columns: 1fr; gap: 16px; }
+    .step { padding: 36px 28px; }
+    .step-num { font-size: 72px; margin-bottom: 20px; }
+
+    .trust-grid { grid-template-columns: 1fr; }
+    .trust-card { padding: 26px 24px; gap: 18px; }
+
+    .hero-bot h1 { font-size: clamp(44px, 11vw, 72px); }
+}
+
+@media (max-width: 500px) {
+    .proof-bar { grid-template-columns: 1fr; }
+    .proof-cell:nth-child(odd) { border-right: none; }
+    .proof-cell { padding: 16px 0; }
+    .proof-num { font-size: 36px; }
+}

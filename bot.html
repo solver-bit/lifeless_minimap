@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIFELESS Games — бот с играми и реальными подарками</title>
+<meta name="description" content="Открой бота в Telegram, забери первый кейс бесплатно. 6 игр, реальные Telegram-подарки, ранги, магазин. Без кошельков, без комиссий.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="LIFELESS Games — бот с играми и реальными подарками">
+<meta property="og:description" content="Первый кейс — бесплатно. Реальные Telegram-подарки приходят в профиль мгновенно.">
+<meta property="og:image" content="https://solver-bit.github.io/lifeless_minimap/durov4.jpg">
+<meta property="og:url" content="https://solver-bit.github.io/lifeless_minimap/bot.html">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="scroll-progress"><div class="scroll-progress-bar" id="scrollBar"></div></div>
+<div class="mouse-trail" id="mouseTrail"></div>
+
+<header id="header">
+    <a href="index.html" class="logo">
+        <span class="logo-mark"></span>
+        <span>LIFELESS</span>
+    </a>
+    <nav>
+        <a href="index.html">Главная</a>
+        <a href="#inside">Что внутри</a>
+        <a href="#start">Как начать</a>
+        <a href="#trust">Безопасность</a>
+        <a href="#faq">FAQ</a>
+        <a href="https://t.me/Solver_Life_bot" class="nav-cta" target="_blank">Открыть бота <span>→</span></a>
+    </nav>
+    <button class="burger" id="burger" aria-label="Меню">
+        <span></span><span></span><span></span>
+    </button>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Главная</a>
+    <a href="#inside">Что внутри</a>
+    <a href="#start">Как начать</a>
+    <a href="#trust">Безопасность</a>
+    <a href="#faq">FAQ</a>
+    <a href="https://t.me/Solver_Life_bot" class="mobile-cta" target="_blank">Открыть бота</a>
+</div>
+
+<!-- HERO -->
+<section class="hero hero-bot">
+    <div class="hero-glow"></div>
+    <div class="hero-glow-2"></div>
+    <div class="hero-bg-text">PLAY</div>
+
+    <div class="hero-inner">
+        <div class="hero-left">
+            <div class="hero-tag">
+                <span class="dot"></span>
+                ПЕРВЫЙ КЕЙС · БЕСПЛАТНО
+            </div>
+            <h1>
+                Играй.<br>
+                Забирай.<br>
+                <em>Возвращайся.</em>
+            </h1>
+            <p class="hero-desc">
+                Шесть игр внутри Telegram. Реальные подарки приходят прямо в профиль — <strong>за секунды, без кошельков и комиссий</strong>. Начни с бесплатного кейса, дальше — как пойдёт.
+            </p>
+            <div class="hero-actions">
+                <a href="https://t.me/Solver_Life_bot" class="btn btn-primary magnetic" target="_blank">
+                    <span>Открыть бота</span>
+                    <span class="btn-arrow">→</span>
+                </a>
+                <a href="#inside" class="btn btn-ghost">Что внутри</a>
+            </div>
+        </div>
+
+        <div class="hero-right">
+            <div class="gyro-caption">Один клик до старта</div>
+            <div class="gyro-stage" id="gyroStage">
+                <svg class="gyro-svg" viewBox="0 0 500 500" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                        <linearGradient id="gyroLineGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#E4B963" stop-opacity="0"/>
+                            <stop offset="50%" stop-color="#F7D896" stop-opacity="0.85"/>
+                            <stop offset="100%" stop-color="#E4B963" stop-opacity="0"/>
+                        </linearGradient>
+                    </defs>
+                    <g class="gyro-lines" stroke="url(#gyroLineGrad)" stroke-width="0.8" fill="none" stroke-dasharray="3 8">
+                        <line x1="250" y1="250" x2="250" y2="60" />
+                        <line x1="250" y1="250" x2="440" y2="250" />
+                        <line x1="250" y1="250" x2="250" y2="440" />
+                        <line x1="250" y1="250" x2="60" y2="250" />
+                    </g>
+                </svg>
+                <div class="gyroscope" id="gyroscope">
+                    <div class="gyro-ring gyro-ring-1"></div>
+                    <div class="gyro-ring gyro-ring-2"></div>
+                    <div class="gyro-ring gyro-ring-3"></div>
+                    <div class="gyro-core-halo"></div>
+                    <div class="gyro-core"></div>
+                    <div class="gyro-orbit gyro-orbit-1"><span></span><span></span></div>
+                    <div class="gyro-orbit gyro-orbit-2"><span></span><span></span></div>
+                    <div class="gyro-orbit gyro-orbit-3"><span></span></div>
+                    <div class="gyro-orbit gyro-orbit-4"><span></span></div>
+                </div>
+                <div class="gyro-ripples" id="gyroRipples"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SOCIAL PROOF BAR -->
+<section class="proof-bar">
+    <div class="proof-cell">
+        <div class="proof-num" data-count="5000">0</div>
+        <div class="proof-label">ИГРОКОВ</div>
+    </div>
+    <div class="proof-cell">
+        <div class="proof-num" data-count="120000">0</div>
+        <div class="proof-label">ОТКРЫТЫХ КЕЙСОВ</div>
+    </div>
+    <div class="proof-cell">
+        <div class="proof-num" data-count="8400">0</div>
+        <div class="proof-label">ПОДАРКОВ ВЫДАНО</div>
+    </div>
+    <div class="proof-cell">
+        <div class="proof-num">24/7</div>
+        <div class="proof-label">ОНЛАЙН</div>
+    </div>
+</section>
+
+<!-- WHAT'S INSIDE -->
+<section class="section" id="inside">
+    <div class="section-label">01 · ЧТО ВНУТРИ</div>
+    <h2 class="section-title">Открой и <em>посмотри</em></h2>
+    <p class="section-lead">Не будем спойлерить все механики — так интереснее. Вот что точно найдёшь внутри.</p>
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🎰</div>
+            <h3>Шесть игр</h3>
+            <p>Кейсы, колёса фортуны, сапёр, кости, монетка и пару сюрпризов, о которых пока молчим.</p>
+        </div>
+        <div class="feature-card feature-card-accent">
+            <div class="feature-icon">🎁</div>
+            <h3>Реальные подарки</h3>
+            <p>Не «виртуальные очки». Настоящие Telegram-подарки в твой профиль — мгновенно, без ручных заявок.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">👑</div>
+            <h3>Ранги и профиль</h3>
+            <p>Прокачивай уровень, открывай украшения, попадай в топ игроков. Чем выше ранг — тем жирнее бонусы.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">⭐</div>
+            <h3>Магазин</h3>
+            <p>Пакеты монет, VIP-подписки, питомцы и кастом. Всё внутри Telegram Stars — карту вводить не надо.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">👥</div>
+            <h3>Друзья</h3>
+            <p>Приглашай друзей — получай бонусы оба. Никаких «за 10 друзей откроем функцию», всё честно и сразу.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">💬</div>
+            <h3>Живая поддержка</h3>
+            <p>Что-то сломалось или непонятно — пиши, ответим. Не бот с шаблонами, а реальный человек.</p>
+        </div>
+    </div>
+</section>
+
+<!-- HOW TO START -->
+<section class="section" id="start">
+    <div class="section-label">02 · КАК НАЧАТЬ</div>
+    <h2 class="section-title">Три шага — <em>и играешь</em></h2>
+
+    <div class="steps">
+        <div class="step">
+            <div class="step-num">01</div>
+            <h3>Открой бота</h3>
+            <p>Жми кнопку — Telegram откроет бота и подтянет твой аккаунт сам. Никаких регистраций, форм и паролей.</p>
+        </div>
+        <div class="step">
+            <div class="step-num">02</div>
+            <h3>Забери старт</h3>
+            <p>Бесплатный кейс + монеты на старт. Это не «демо-версия» — реальный кейс с реальным подарком внутри.</p>
+        </div>
+        <div class="step">
+            <div class="step-num">03</div>
+            <h3>Играй</h3>
+            <p>Открывай, собирай, соревнуйся. Дальше — сам решишь, остаться на бесплатном или ускориться.</p>
+        </div>
+    </div>
+
+    <div class="steps-cta">
+        <a href="https://t.me/Solver_Life_bot" class="btn btn-primary btn-large magnetic" target="_blank">
+            <span>Забрать бесплатный кейс</span>
+            <span class="btn-arrow">→</span>
+        </a>
+        <p class="steps-cta-note">Бонус доступен только при первом заходе</p>
+    </div>
+</section>
+
+<!-- TRUST -->
+<section class="section" id="trust">
+    <div class="section-label">03 · БЕЗОПАСНОСТЬ</div>
+    <h2 class="section-title">Без подвохов. <em>Правда.</em></h2>
+
+    <div class="trust-grid">
+        <div class="trust-card">
+            <div class="trust-icon">🔒</div>
+            <h3>Авторизация через Telegram</h3>
+            <p>Мы не запрашиваем пароли, номера и почту. Только то, что Telegram передаёт автоматически.</p>
+        </div>
+        <div class="trust-card">
+            <div class="trust-icon">⚡</div>
+            <h3>Мгновенная выдача</h3>
+            <p>Подарок приходит в профиль Telegram за секунды. Без очередей, заявок в поддержку и «ожидайте 24 часа».</p>
+        </div>
+        <div class="trust-card">
+            <div class="trust-icon">💳</div>
+            <h3>Оплата только через Stars</h3>
+            <p>Официальная валюта Telegram. Карта не привязана к боту, платёжные данные нам не видны.</p>
+        </div>
+        <div class="trust-card">
+            <div class="trust-icon">📢</div>
+            <h3>Открытые правила</h3>
+            <p>Все механики и правила — в боте. Никаких скрытых условий, которые «нашлись в последний момент».</p>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+    <div class="section-label">04 · FAQ</div>
+    <h2 class="section-title">Коротко о <em>главном</em></h2>
+
+    <div class="faq">
+        <div class="faq-item">
+            <button class="faq-question">
+                <span>Это правда бесплатно на старте?</span>
+                <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+                <p>Да. Первый кейс выдаётся сразу при заходе в бота, без оплат и без «введи данные». Дальше можно играть только на бесплатных механиках — колесо раз в сутки, стрики, квесты. Платить никто не заставляет.</p>
+            </div>
+        </div>
+        <div class="faq-item">
+            <button class="faq-question">
+                <span>Мне 16 лет — можно?</span>
+                <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+                <p>Продукт помечен 18+, но реальных денежных ставок тут нет. Монеты — внутриигровые, не выводятся, не обмениваются на деньги. Если тебе меньше 18 — посоветуйся с родителями перед покупкой Stars.</p>
+            </div>
+        </div>
+        <div class="faq-item">
+            <button class="faq-question">
+                <span>Как быстро приходят подарки?</span>
+                <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+                <p>Мгновенно. Как только в кейсе выпал подарок — бот сразу отправляет его в твой Telegram. Он появится в профиле в течение пары секунд. Никаких ручных заявок и «ожидайте подтверждения».</p>
+            </div>
+        </div>
+        <div class="faq-item">
+            <button class="faq-question">
+                <span>Что если что-то сломалось?</span>
+                <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+                <p>Напиши в поддержку прямо в боте. Реальный человек отвечает, а не шаблонный автоответчик. Если что-то списалось ошибочно — вернём.</p>
+            </div>
+        </div>
+        <div class="faq-item">
+            <button class="faq-question">
+                <span>Что будет с моими данными?</span>
+                <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+                <p>Храним минимум: ID, имя, username от Telegram. Ничего не передаём третьим лицам. По запросу — удалим аккаунт и все данные в течение суток.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final">
+    <div class="cta-final-glow"></div>
+    <div class="cta-final-inner">
+        <div class="cta-final-tag">ПЕРВЫЙ КЕЙС ЖДЁТ</div>
+        <h2>Начни <em>за 10 секунд</em></h2>
+        <p>Открой бота в Telegram. Бесплатный кейс — сразу, без регистрации.</p>
+        <a href="https://t.me/Solver_Life_bot" class="btn btn-primary btn-large magnetic" target="_blank">
+            <span>Открыть бота</span>
+            <span class="btn-arrow">→</span>
+        </a>
+    </div>
+</section>
+
+<footer>
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <div class="footer-logo"><span class="logo-mark"></span> LIFELESS</div>
+            <p>Независимая технологическая компания</p>
+            <div class="footer-status">
+                <span class="status-dot"></span>
+                <span>Все системы работают</span>
+            </div>
+        </div>
+        <div class="footer-col">
+            <div class="footer-label">КОМПАНИЯ</div>
+            <a href="index.html#company">О компании</a>
+            <a href="index.html#principles">Принципы</a>
+            <a href="index.html#products">Продукты</a>
+            <a href="index.html#roadmap">Roadmap</a>
+        </div>
+        <div class="footer-col">
+            <div class="footer-label">БОТ</div>
+            <a href="#inside">Что внутри</a>
+            <a href="#start">Как начать</a>
+            <a href="#trust">Безопасность</a>
+            <a href="#faq">FAQ</a>
+        </div>
+        <div class="footer-col">
+            <div class="footer-label">СВЯЗЬ</div>
+            <a href="https://t.me/durvww" target="_blank">Канал</a>
+            <a href="https://t.me/wwlifeless" target="_blank">Чат</a>
+            <a href="https://t.me/wwsolver" target="_blank">Поддержка</a>
+            <a href="https://t.me/Solver_Life_bot" target="_blank">Открыть бота</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <div>© 2026 LIFELESS. Все права защищены.</div>
+        <div class="footer-disclaimer">18+ · Играй ответственно</div>
+    </div>
+</footer>
+
+<div class="sticky-cta" id="stickyCta">
+    <div class="sticky-cta-inner">
+        <div class="sticky-cta-text">
+            <div class="sticky-cta-title">Первый кейс — бесплатно</div>
+            <div class="sticky-cta-sub">Только при первом заходе</div>
+        </div>
+        <a href="https://t.me/Solver_Life_bot" class="sticky-cta-btn" target="_blank">
+            <span>Открыть</span>
+            <span class="sticky-cta-arrow">→</span>
+        </a>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
